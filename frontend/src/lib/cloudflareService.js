@@ -182,9 +182,19 @@ export async function deleteProductFromDB(productId) {
 }
 
 // ==================== ORDERS ====================
-export async function getOrders() {
+export async function getOrders(email = '') {
   try {
-    const res = await fetch('/api/orders');
+    let token = null;
+    try {
+      token = localStorage.getItem('vw_admin_token');
+    } catch {}
+    const url = email ? `/api/orders?email=${encodeURIComponent(email)}` : '/api/orders';
+    const res = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
     if (res.ok) {
       const data = await res.json();
       const list = unwrapData(data);
@@ -523,7 +533,16 @@ export async function emptyTrash() {
 // ==================== MESSAGES & LIVE INQUIRIES ====================
 export async function getMessages() {
   try {
-    const res = await fetch('/api/messages');
+    let token = null;
+    try {
+      token = localStorage.getItem('vw_admin_token');
+    } catch {}
+    const res = await fetch('/api/messages', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
     if (res.ok) {
       const data = await res.json();
       const list = unwrapData(data);

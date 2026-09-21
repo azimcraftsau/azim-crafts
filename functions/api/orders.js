@@ -40,6 +40,26 @@ export async function onRequestGet(context) {
       });
     }
 
+    if (email) {
+      const cleanEmail = email.toLowerCase().trim();
+      const { results } = await env.DB.prepare(
+        'SELECT * FROM orders WHERE LOWER(customer_email) = LOWER(?) ORDER BY created_at DESC'
+      ).bind(cleanEmail).all();
+
+      return new Response(JSON.stringify((results || []).map(mapOrder)), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Admin authorization guard: viewing all store orders requires valid admin token
+    const authHeader = request.headers.get('Authorization') || '';
+    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.length < 15) {
+      return new Response(JSON.stringify({ error: 'Unauthorized. Admin authentication required to view all orders.' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const { results } = await env.DB.prepare(
       'SELECT * FROM orders ORDER BY created_at DESC'
     ).all();

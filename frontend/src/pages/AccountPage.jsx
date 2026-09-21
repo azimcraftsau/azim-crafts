@@ -77,11 +77,12 @@ export const AccountPage = () => {
     } catch (e) {}
 
     try {
-      const remote = await getOrders();
+      const userEmail = (user?.email || '').toLowerCase().trim();
+      const remote = await getOrders(userEmail);
       if (Array.isArray(remote)) {
         const userOnly = remote.filter(o => {
           const oEmail = (o.customerEmail || o.customer_email || '').toLowerCase().trim();
-          const uEmail = (user.email || '').toLowerCase().trim();
+          const uEmail = userEmail;
           const oCust = (o.customer || '').toLowerCase().trim();
           const uName = (user.name || '').toLowerCase().trim();
           return (oEmail && oEmail === uEmail) || (oCust && uName && oCust === uName);

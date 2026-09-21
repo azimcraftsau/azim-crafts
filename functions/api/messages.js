@@ -8,6 +8,14 @@ export async function onRequestGet(context) {
       });
     }
 
+    const authHeader = request.headers.get('Authorization') || '';
+    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.length < 15) {
+      return new Response(JSON.stringify({ error: 'Unauthorized. Admin authentication required to view messages.' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const { results } = await env.DB.prepare(
       'SELECT * FROM messages ORDER BY id DESC'
     ).all();
