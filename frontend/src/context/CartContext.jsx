@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { allProducts } from '../data/products';
 import { getProducts, getCoupons, getOrders, getStoreSettings, getCategories } from '../lib/cloudflareService';
 
@@ -10,6 +10,17 @@ export const CartProvider = ({ children }) => {
   const [categoriesList, setCategoriesList] = useState([]);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(200);
   const [standardShippingFee, setStandardShippingFee] = useState(20);
+
+  const refreshCategories = useCallback(async () => {
+    try {
+      const cats = await getCategories();
+      if (Array.isArray(cats) && cats.length > 0) {
+        setCategoriesList(cats);
+      }
+    } catch (err) {
+      console.warn('Failed to refresh categories from DB:', err);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -51,15 +62,6 @@ export const CartProvider = ({ children }) => {
           }
         }
       } catch {}
-    };
-
-    const refreshCategories = async () => {
-      try {
-        const cats = await getCategories();
-        if (isMounted && Array.isArray(cats) && cats.length > 0) {
-          setCategoriesList(cats);
-        }
-      } catch (err) {}
     };
 
     refreshProducts();
