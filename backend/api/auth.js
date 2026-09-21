@@ -657,12 +657,13 @@ export async function onRequestPost(context) {
       `;
 
       const dispatchEmail = async () => {
-        if (env.RESEND_API_KEY) {
+        const resendKey = env.RESEND_API_KEY;
+        if (resendKey) {
           try {
-            await fetch('https://api.resend.com/emails', {
+            const rRes = await fetch('https://api.resend.com/emails', {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Authorization': `Bearer ${resendKey}`,
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
@@ -671,14 +672,17 @@ export async function onRequestPost(context) {
                 subject: 'Reset your Azim Crafts Administrator Password',
                 html: emailHtml
               }),
-              signal: AbortSignal.timeout(3000)
+              signal: AbortSignal.timeout(10000)
             });
-            return;
-          } catch (err) {}
+            const rData = await rRes.json();
+            return { provider: 'resend', success: rRes.ok, data: rData };
+          } catch (err) {
+            console.error('Resend dispatch failed:', err.message);
+          }
         }
 
         try {
-          await fetch('https://api.mailchannels.net/tx/v1/send', {
+          const mRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -687,15 +691,17 @@ export async function onRequestPost(context) {
               subject: 'Reset your Azim Crafts Administrator Password',
               content: [{ type: 'text/html', value: emailHtml }]
             }),
-            signal: AbortSignal.timeout(3000)
+            signal: AbortSignal.timeout(6000)
           });
+          return { provider: 'mailchannels', success: mRes.ok };
         } catch (err) {}
+        return null;
       };
 
-      if (context && typeof context.waitUntil === 'function') {
-        context.waitUntil(dispatchEmail());
-      } else {
-        dispatchEmail().catch(() => null);
+      try {
+        await dispatchEmail();
+      } catch (err) {
+        console.error('Email dispatch error:', err);
       }
 
       return new Response(JSON.stringify({
