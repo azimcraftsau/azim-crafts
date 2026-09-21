@@ -1370,14 +1370,14 @@ export function AdminProducts({ onNavigate }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500 border-b border-gray-100">
-                <th className="px-5 py-3.5 text-left font-semibold w-16">Item</th>
-                <th className="px-5 py-3.5 text-left font-semibold">Title & Specs</th>
-                <th className="px-5 py-3.5 text-left font-semibold">Category</th>
-                <th className="px-5 py-3.5 text-left font-semibold">Price</th>
-                <th className="px-5 py-3.5 text-left font-semibold">Weight & Dimensions</th>
-                <th className="px-5 py-3.5 text-left font-semibold">Stock</th>
-                <th className="px-5 py-3.5 text-right font-semibold">Actions</th>
+              <tr className="bg-neutral-50 text-[11px] uppercase tracking-wider text-neutral-500 border-b border-neutral-200 font-semibold">
+                <th className="px-4 py-3.5 text-left w-16">Item</th>
+                <th className="px-4 py-3.5 text-left">Title &amp; Specs</th>
+                <th className="px-4 py-3.5 text-left">Category</th>
+                <th className="px-4 py-3.5 text-left">Price</th>
+                <th className="px-4 py-3.5 text-left">Specs</th>
+                <th className="px-4 py-3.5 text-left">Stock</th>
+                <th className="px-4 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -1392,91 +1392,104 @@ export function AdminProducts({ onNavigate }) {
                 </tr>
               ) : (
                 <>
-                  {filtered.map((p) => (
-                    <tr key={p.id} className="hover:bg-neutral-50/70 transition-colors">
-                      <td className="px-5 py-3.5">
-                        <div className="w-12 h-12 rounded-xl bg-neutral-50 border border-neutral-200 overflow-hidden flex items-center justify-center p-1">
-                          <img
-                            src={encodeURI(p.image || '')}
-                            alt={p.title}
-                            className="w-full h-full object-contain"
-                            onError={(e) => { e.target.src = '/logo.png'; }}
-                          />
-                        </div>
-                      </td>
-                  <td className="px-5 py-3.5">
-                    <div className="font-bold text-gray-900 line-clamp-1 max-w-sm">{p.title}</div>
-                    <div className="flex items-center flex-wrap gap-2 mt-1">
-                      <span className="text-[11px] text-gray-400 font-mono">ID: {p.id}</span>
-                      {p.badge && (
-                        <span className="bg-amber-50 text-[#c8924b] text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-200 uppercase">
-                          {p.badge}
-                        </span>
-                      )}
-                      {p.sizes && p.sizes.length > 0 && (
-                        <span className="bg-amber-50 text-[#9b6b28] text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-200/80">
-                          Sizes: {p.sizes.join(', ')}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className="inline-block bg-neutral-100 text-neutral-800 text-xs px-2.5 py-1 rounded-lg font-medium">
-                      {p.categoryName || p.category}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="font-bold text-gray-900">${Number(p.price).toFixed(2)}</div>
-                    {p.regularPrice > p.price && (
-                      <span className="text-xs text-gray-400 line-through">${Number(p.regularPrice).toFixed(2)}</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-xs text-gray-600">
-                    <div className="font-medium text-gray-800">{p.weight || '3.5 kg'}</div>
-                    <div className="text-[11px] text-gray-400 truncate max-w-[180px]">{p.dimensions || '24" Diameter'}</div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    {(() => {
-                      const qty = p.stockQuantity !== undefined ? Number(p.stockQuantity) : (p.stock_quantity !== undefined ? Number(p.stock_quantity) : (p.isSoldOut ? 0 : 10));
-                      const isSold = p.isSoldOut || qty <= 0;
-                      return (
-                        <div className="space-y-1">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            isSold 
-                              ? 'bg-red-100 text-red-700' 
-                              : qty <= 5 
-                                ? 'bg-amber-100 text-amber-800' 
-                                : 'bg-emerald-100 text-emerald-800'
-                          }`}>
-                            {isSold ? 'Sold Out' : qty <= 5 ? `🔥 Low Stock (${qty})` : 'In Stock'}
-                          </span>
-                          <div className="text-[11px] font-medium text-gray-500">
-                            {isSold ? '0 units left' : `${qty} units in stock`}
+                  {filtered.map((p) => {
+                    const catObj = categories.find(c => c.key === p.category);
+                    const catName = catObj?.name || p.categoryName || (p.category ? p.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Uncategorized');
+                    const qty = p.stockQuantity !== undefined ? Number(p.stockQuantity) : (p.stock_quantity !== undefined ? Number(p.stock_quantity) : (p.isSoldOut ? 0 : 10));
+                    const isSold = p.isSoldOut || qty <= 0;
+
+                    return (
+                      <tr key={p.id} className="hover:bg-neutral-50/70 transition-colors">
+                        <td className="px-4 py-3.5">
+                          <div className="w-12 h-12 rounded-xl bg-white border border-neutral-200 overflow-hidden flex items-center justify-center p-1 shadow-2xs">
+                            <img
+                              src={encodeURI(p.image || '')}
+                              alt={p.title}
+                              className="w-full h-full object-contain"
+                              onError={(e) => { e.target.src = '/logo.png'; }}
+                            />
                           </div>
-                        </div>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => setModal(p)} 
-                        className="p-2 rounded-xl hover:bg-amber-50 text-[#c8924b] hover:text-[#b57f38] transition-colors cursor-pointer" 
-                        title="Edit Full Product Details"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <button 
-                        onClick={() => setDeleteConfirm(p)} 
-                        className="p-2 rounded-xl hover:bg-red-50 text-red-600 transition-colors cursor-pointer" 
-                        title="Move to Trash"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        </td>
+                        <td className="px-4 py-3.5 max-w-sm">
+                          <div className="font-bold text-neutral-900 leading-snug line-clamp-2 text-xs md:text-sm" title={p.title}>
+                            {p.title}
+                          </div>
+                          <div className="flex items-center flex-wrap gap-1.5 mt-1">
+                            <span className="text-[10px] text-neutral-400 font-mono">#{p.id}</span>
+                            {p.badge && (
+                              <span className="bg-amber-50 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-200 uppercase">
+                                {p.badge}
+                              </span>
+                            )}
+                            {p.sizes && p.sizes.length > 0 && (
+                              <span className="bg-neutral-100 text-neutral-700 text-[10px] font-medium px-1.5 py-0.5 rounded border border-neutral-200/80">
+                                {p.sizes.length} sizes
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-neutral-100 text-neutral-800">
+                            {catName}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <div className="font-bold text-neutral-900 text-sm">${Number(p.price).toFixed(2)}</div>
+                          {p.regularPrice > p.price && (
+                            <div className="text-[11px] text-neutral-400 line-through">${Number(p.regularPrice).toFixed(2)}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3.5 text-xs text-neutral-600 max-w-[140px]">
+                          <div className="font-semibold text-neutral-800 truncate">{p.weight || 'Standard'}</div>
+                          {p.dimensions && (
+                            <div className="text-[11px] text-neutral-400 truncate" title={p.dimensions}>
+                              {p.dimensions.replace(/\s*\(Approx\)/i, '').replace(/,\s*/g, ' • ')}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <div className="flex flex-col gap-0.5">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap w-fit ${
+                              isSold 
+                                ? 'bg-red-50 text-red-700 border border-red-200' 
+                                : qty <= 5 
+                                  ? 'bg-amber-50 text-amber-800 border border-amber-200' 
+                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                isSold ? 'bg-red-500' : qty <= 5 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
+                              }`} />
+                              <span>{isSold ? 'Sold Out' : `${qty} in stock`}</span>
+                            </span>
+                            {qty > 0 && qty <= 5 && (
+                              <span className="text-[10px] text-amber-600 font-semibold pl-1">
+                                🔥 Low Stock
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button 
+                              onClick={() => setModal(p)} 
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-[#c8924b] hover:text-white transition-all cursor-pointer" 
+                              title="Edit Product Details"
+                            >
+                              <Pencil size={12} />
+                              <span>Edit</span>
+                            </button>
+                            <button 
+                              onClick={() => setDeleteConfirm(p)} 
+                              className="p-1.5 rounded-lg text-neutral-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer" 
+                              title="Move to Trash"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-5 py-16 text-center space-y-3">
