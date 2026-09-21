@@ -67,12 +67,12 @@ const EMPTY_PRODUCT = {
     keyAttributes: '100% Handcrafted, Solid Metal & Hardwood, Museum Quality'
   },
   perfectFor: [
-    'Home & executive office dÃ©cor',
+    'Home & executive office décor',
     'Historical display pieces & collector cabinets',
     'Gifts for history, nautical & art lovers',
     'Cosplay, LARP & reenactment prop'
   ],
-  shippingInfo: 'Shipped From: Artisan Workshop, Roorkee, Uttarakhand, India.\nShipping Provider: DHL Express, FedEx, UPS & All Major International Courier services.\nAdditional Delivery Information: Order Processing 2 â€“ 5 Business Days. Handcrafted by master artisans with export-grade protective packaging. Free worldwide shipping available.',
+  shippingInfo: 'Shipped From: Artisan Workshop, Roorkee, Uttarakhand, India.\nShipping Provider: DHL Express, FedEx, UPS & All Major International Courier services.\nAdditional Delivery Information: Order Processing 2 – 5 Business Days. Handcrafted by master artisans with export-grade protective packaging. Free worldwide shipping available.',
   disclaimer: 'All of our items are handmade (HANDCRAFTED) by master artisans who employ techniques (TOOLS) and traditions that are often centuries old. Some natural blemishes or imperfections are to be expected. These are not product flaws. Instead, they are precisely what make these pieces so extraordinary and beautiful.'
 };
 
@@ -438,7 +438,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                     className={inputCls} 
                     value={form.title} 
                     onChange={(e) => set('title', e.target.value)} 
-                    placeholder="e.g. Handmade Viking Wooden Round Shield â€“ Medieval Battle Ready Shield" 
+                    placeholder="e.g. Handmade Viking Wooden Round Shield – Medieval Battle Ready Shield" 
                   />
                 </div>
 
@@ -455,13 +455,13 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                   <label className={labelCls}>Product Badge / Ribbon</label>
                   <select className={inputCls} value={form.badge || ''} onChange={(e) => set('badge', e.target.value)}>
                     <option value="">None (No Badge - Default)</option>
-                    <option value="Best Seller">ðŸ”¥ Best Seller</option>
-                    <option value="Popular">â­ Popular</option>
-                    <option value="Masterpiece">ðŸ‘‘ Masterpiece</option>
-                    <option value="Sale">ðŸ·ï¸ Sale</option>
-                    <option value="Special Deal">âš¡ Special Deal</option>
-                    <option value="New">âœ¨ New Arrival</option>
-                    <option value="In Stock">âœ… In Stock</option>
+                    <option value="Best Seller">🔥 Best Seller</option>
+                    <option value="Popular">⭐ Popular</option>
+                    <option value="Masterpiece">👑 Masterpiece</option>
+                    <option value="Sale">🏷️ Sale</option>
+                    <option value="Special Deal">⚡ Special Deal</option>
+                    <option value="New">✨ New Arrival</option>
+                    <option value="In Stock">✅ In Stock</option>
                   </select>
                 </div>
 
@@ -500,17 +500,17 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                     value={form.isSoldOut ? 'soldout' : 'instock'} 
                     onChange={(e) => set('isSoldOut', e.target.value === 'soldout')}
                   >
-                    <option value="instock">âœ… In Stock (Available for Purchase)</option>
-                    <option value="soldout">âŒ Sold Out (Disabled)</option>
+                    <option value="instock">✅ In Stock (Available for Purchase)</option>
+                    <option value="soldout">❌ Sold Out (Disabled)</option>
                   </select>
                 </div>
 
                 <div>
                   <label className={labelCls}>Customer Rating</label>
                   <select className={inputCls} value={form.rating} onChange={(e) => set('rating', e.target.value)}>
-                    <option value={5}>â­â­â­â­â­ 5 Stars</option>
-                    <option value={4}>â­â­â­â­ 4 Stars</option>
-                    <option value={3}>â­â­â­ 3 Stars</option>
+                    <option value={5}>⭐⭐⭐⭐⭐ 5 Stars</option>
+                    <option value={4}>⭐⭐⭐⭐ 4 Stars</option>
+                    <option value={3}>⭐⭐⭐ 3 Stars</option>
                   </select>
                 </div>
 
@@ -526,7 +526,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                   {/* Shield Sizes (18 inch, 24 inch, 36 inch) */}
                   <div className="bg-amber-50/50 p-3 rounded-xl border border-amber-200/60">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-bold text-gray-800">ðŸ›¡ï¸ Shield Sizes (Diameter):</span>
+                      <span className="text-xs font-bold text-gray-800">🛡️ Shield Sizes (Diameter):</span>
                       <button
                         type="button"
                         onClick={() => set('sizes', ['18 inch', '24 inch', '36 inch'])}
@@ -555,7 +555,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                                 : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                             }`}
                           >
-                            {isSelected ? `âœ“ ${sz}` : `+ ${sz}`}
+                            {isSelected ? `✓ ${sz}` : `+ ${sz}`}
                           </button>
                         );
                       })}
@@ -565,7 +565,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                   {/* Armour & Suits Sizes (M, XL, XXL) */}
                   <div className="bg-neutral-50 p-3 rounded-xl border border-gray-200">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-bold text-gray-800">âš”ï¸ Armour &amp; Suits Sizes:</span>
+                      <span className="text-xs font-bold text-gray-800">⚔️ Armour &amp; Suits Sizes:</span>
                       <button
                         type="button"
                         onClick={() => set('sizes', ['M', 'XL', 'XXL'])}
@@ -594,7 +594,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                                 : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                             }`}
                           >
-                            {isSelected ? `âœ“ Size ${sz}` : `+ Size ${sz}`}
+                            {isSelected ? `✓ Size ${sz}` : `+ Size ${sz}`}
                           </button>
                         );
                       })}
@@ -623,7 +623,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
-                        <span>âš”ï¸ Modular Armour Pieces Breakdown</span>
+                        <span>⚔️ Modular Armour Pieces Breakdown</span>
                         <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
                           4 Separate Pieces
                         </span>
@@ -653,7 +653,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                                <span>{index === 0 ? 'ðŸ›¡ï¸' : index === 1 ? 'ðŸ¥‹' : index === 2 ? 'ðŸ§¤' : 'ðŸ¥¾'}</span>
+                                <span>{index === 0 ? '🛡️' : index === 1 ? '🥋' : index === 2 ? '🧤' : '👢'}</span>
                                 <span>Part {index + 1}</span>
                               </span>
                               <label className="flex items-center gap-1 text-[11px] font-semibold text-gray-600 cursor-pointer">
@@ -1102,7 +1102,8 @@ export function AdminProducts({ onNavigate }) {
       console.error(e);
       setToast('Error creating category.');
     }
-  };  const handleSaveProduct = async (product) => {
+  };
+  const handleSaveProduct = async (product) => {
     if (product.price < 0 || product.stock < 0) {
       setToast({ message: 'Price and stock cannot be negative', type: 'error' });
       return;
@@ -1466,7 +1467,7 @@ export function AdminProducts({ onNavigate }) {
             <p className="text-sm text-gray-600 mb-6 leading-relaxed">
               Are you sure you want to move <strong>{deleteConfirm.title}</strong> to Trash? 
               <br /><br />
-              <span className="text-gray-800 font-medium">â„¹ï¸ It will immediately be hidden from the customer storefront, but you can restore it anytime from the <strong>Trash Bin</strong> tab.</span>
+              <span className="text-gray-800 font-medium">ℹ️ It will immediately be hidden from the customer storefront, but you can restore it anytime from the <strong>Trash Bin</strong> tab.</span>
             </p>
             <div className="flex gap-3 justify-end">
               <button 
