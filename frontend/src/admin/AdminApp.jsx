@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   Trash2,
-  LayoutTemplate
+  LayoutTemplate,
+  ShieldCheck
 } from 'lucide-react';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './views/AdminDashboard';
@@ -23,6 +24,7 @@ import { AdminTrash } from './views/AdminTrash';
 import { AdminBanners } from './views/AdminBanners';
 import { AdminOrders } from './views/AdminOrders';
 import { AdminUsers } from './views/AdminUsers';
+import { AdminTeam } from './views/AdminTeam';
 import { AdminCoupons } from './views/AdminCoupons';
 import { AdminMessages } from './views/AdminMessages';
 import { AdminSettings } from './views/AdminSettings';
@@ -33,6 +35,7 @@ const NAV_ITEMS = [
   { id: 'products', label: 'Products', icon: Package },
   { id: 'orders', label: 'Orders', icon: ShoppingCart },
   { id: 'customers', label: 'Customers', icon: Users },
+  { id: 'team', label: 'Admins & Staff', icon: ShieldCheck },
   { id: 'trash', label: 'Trash Bin', icon: Trash2 },
   { id: 'banners', label: 'Banners & Media', icon: LayoutTemplate },
   { id: 'coupons', label: 'Coupons', icon: Tag },
@@ -45,6 +48,7 @@ const VIEW_COMPONENTS = {
   products: AdminProducts,
   orders: AdminOrders,
   customers: AdminUsers,
+  team: AdminTeam,
   trash: AdminTrash,
   banners: AdminBanners,
   coupons: AdminCoupons,

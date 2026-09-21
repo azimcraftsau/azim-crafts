@@ -49,6 +49,34 @@ async function verifyPassword(password, stored) {
   return sha256 === stored;
 }
 
+// Enterprise-grade PBKDF2 password hasher (SHA-512 + 100k iterations + 16-byte cryptographically secure salt)
+async function hashPasswordPbkdf2(password) {
+  const saltBytes = crypto.getRandomValues(new Uint8Array(16));
+  const saltHex = Array.from(saltBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  const saltUtf8 = new TextEncoder().encode(saltHex);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  );
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: saltUtf8,
+      iterations: 100000,
+      hash: 'SHA-512'
+    },
+    key,
+    64 * 8
+  );
+  const derivedHex = Array.from(new Uint8Array(derivedBits))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  return `pbkdf2:${saltHex}:${derivedHex}`;
+}
+
 export async function onRequestPost(context) {
   try {
     const { request, env } = context;
@@ -438,6 +466,109 @@ export async function onRequestPost(context) {
         }
       }
       return new Response(JSON.stringify({ success: true, users: [] }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 9. ADMIN CREATE USER / STAFF
+    if (action === 'admin_create_user') {
+      const { name, email, password, role, phone } = body;
+      if (!name || !email || !password) {
+        return new Response(JSON.stringify({ error: 'Name, email, and password are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      if (password.length < 6) {
+        return new Response(JSON.stringify({ error: 'Password must be at least 6 characters' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const cleanEmail = email.toLowerCase().trim();
+      if (env.DB) {
+        const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(cleanEmail).first();
+        if (existing) {
+          return new Response(JSON.stringify({ error: 'An account with this email already exists' }), {
+            status: 409,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        const userId = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const hashedPw = await hashPasswordPbkdf2(password);
+        const userRole = role && ['admin', 'manager', 'staff'].includes(role) ? role : 'admin';
+        await env.DB.prepare(`
+          INSERT INTO users (id, name, email, password, phone, country, role, addresses)
+          VALUES (?, ?, ?, ?, ?, 'Australia', ?, '[]')
+        `).bind(userId, name.trim(), cleanEmail, hashedPw, phone || '', userRole).run();
+
+        return new Response(JSON.stringify({
+          success: true,
+          user: { id: userId, name: name.trim(), email: cleanEmail, role: userRole, phone: phone || '', createdAt: new Date().toISOString() }
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return new Response(JSON.stringify({ success: true, user: { id: `usr_${Date.now()}`, name, email: cleanEmail, role: role || 'admin' } }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 10. ADMIN UPDATE USER / CHANGE PASSWORD
+    if (action === 'admin_update_user') {
+      const { userId, name, phone, role, newPassword } = body;
+      if (!userId) {
+        return new Response(JSON.stringify({ error: 'User ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      if (env.DB) {
+        const userRole = role && ['admin', 'manager', 'staff'].includes(role) ? role : 'admin';
+        if (newPassword && newPassword.trim().length >= 6) {
+          const hashedPw = await hashPasswordPbkdf2(newPassword.trim());
+          await env.DB.prepare('UPDATE users SET name = ?, phone = ?, role = ?, password = ? WHERE id = ?')
+            .bind((name || '').trim(), phone || '', userRole, hashedPw, userId).run();
+        } else {
+          await env.DB.prepare('UPDATE users SET name = ?, phone = ?, role = ? WHERE id = ?')
+            .bind((name || '').trim(), phone || '', userRole, userId).run();
+        }
+        return new Response(JSON.stringify({ success: true, message: 'User updated successfully' }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 11. ADMIN DELETE USER / REVOKE ACCESS
+    if (action === 'admin_delete_user') {
+      const { userId, targetEmail } = body;
+      if (!userId && !targetEmail) {
+        return new Response(JSON.stringify({ error: 'User identifier is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      if (targetEmail && targetEmail.toLowerCase().trim() === 'admin@azimcrafts.com') {
+        return new Response(JSON.stringify({ error: 'The primary Master Administrator account cannot be deleted.' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      if (env.DB) {
+        if (userId) {
+          await env.DB.prepare("DELETE FROM users WHERE id = ? AND email != 'admin@azimcrafts.com'").bind(userId).run();
+        } else if (targetEmail) {
+          await env.DB.prepare("DELETE FROM users WHERE email = ? AND email != 'admin@azimcrafts.com'").bind(targetEmail.toLowerCase().trim()).run();
+        }
+        return new Response(JSON.stringify({ success: true, message: 'Staff access revoked successfully.' }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json' }
       });
     }

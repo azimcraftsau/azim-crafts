@@ -679,3 +679,86 @@ export async function resetPassword(email, newPassword, token = '') {
 
   return { success: true, message: 'Password has been updated.' };
 }
+
+// ==================== ADMIN & USER MANAGEMENT ====================
+export async function createAdminUser({ name, email, password, role = 'admin', phone = '' }) {
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_create_user',
+        name,
+        email,
+        password,
+        role,
+        phone
+      })
+    });
+    const data = await res.json().catch(() => null);
+    if (data) {
+      if (data.success) {
+        notifySync('vw_users_updated');
+        return { success: true, user: data.user };
+      }
+      return { success: false, error: data.error || 'Failed to create admin account.' };
+    }
+  } catch (err) {
+    return { success: false, error: err.message || 'Network error' };
+  }
+  return { success: false, error: 'Failed to create user.' };
+}
+
+export async function updateAdminUser({ userId, name, phone, role, newPassword }) {
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_update_user',
+        userId,
+        name,
+        phone,
+        role,
+        newPassword
+      })
+    });
+    const data = await res.json().catch(() => null);
+    if (data) {
+      if (data.success) {
+        notifySync('vw_users_updated');
+        return { success: true, message: data.message };
+      }
+      return { success: false, error: data.error || 'Failed to update user.' };
+    }
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+  return { success: false, error: 'Failed to update user.' };
+}
+
+export async function deleteAdminUser({ userId, targetEmail }) {
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_delete_user',
+        userId,
+        targetEmail
+      })
+    });
+    const data = await res.json().catch(() => null);
+    if (data) {
+      if (data.success) {
+        notifySync('vw_users_updated');
+        return { success: true, message: data.message };
+      }
+      return { success: false, error: data.error || 'Failed to delete user.' };
+    }
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+  return { success: false, error: 'Failed to delete user.' };
+}
+
