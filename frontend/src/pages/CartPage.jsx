@@ -21,6 +21,8 @@ export const CartPage = () => {
     freeShippingThreshold, 
     freeShippingProgress, 
     amountToFreeShipping, 
+    isFreeShipping,
+    shippingFee,
     clearCart, 
     showToast,
     navigateTo,
@@ -290,10 +292,10 @@ export const CartPage = () => {
                   <div className="flex justify-between">
                     <span>Shipping</span>
                     <span className="font-semibold text-neutral-900">
-                      {amountToFreeShipping === 0 ? (
+                      {isFreeShipping ? (
                         <span className="text-emerald-700 font-bold">FREE</span>
                       ) : (
-                        'Calculated at checkout'
+                        `$${Number(shippingFee || 0).toFixed(2)} USD`
                       )}
                     </span>
                   </div>

@@ -8,6 +8,7 @@ export const CartProvider = ({ children }) => {
   const [products, setProducts] = useState(allProducts);
   const [couponsList, setCouponsList] = useState([]);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(200);
+  const [standardShippingFee, setStandardShippingFee] = useState(20);
 
   useEffect(() => {
     let isMounted = true;
@@ -40,8 +41,13 @@ export const CartProvider = ({ children }) => {
     const refreshSettings = async () => {
       try {
         const s = await getStoreSettings();
-        if (isMounted && s && s.freeShippingThreshold !== undefined && s.freeShippingThreshold !== null) {
-          setFreeShippingThreshold(Number(s.freeShippingThreshold));
+        if (isMounted && s) {
+          if (s.freeShippingThreshold !== undefined && s.freeShippingThreshold !== null) {
+            setFreeShippingThreshold(Number(s.freeShippingThreshold));
+          }
+          if (s.standardShippingFee !== undefined && s.standardShippingFee !== null) {
+            setStandardShippingFee(Number(s.standardShippingFee));
+          }
         }
       } catch {}
     };
@@ -507,9 +513,14 @@ export const CartProvider = ({ children }) => {
     }
   }
 
-  const finalTotal = Math.max(0, subtotal - discountAmount);
-
   const effectiveThreshold = Number(freeShippingThreshold) > 0 ? Number(freeShippingThreshold) : 200;
+  const isFreeShipping = totalItems > 0 && subtotal >= effectiveThreshold;
+  const shippingFee = (totalItems > 0 && !isFreeShipping)
+    ? (Number(standardShippingFee) >= 0 ? Number(standardShippingFee) : 20)
+    : 0;
+
+  const finalTotal = Math.max(0, subtotal - discountAmount + shippingFee);
+
   const freeShippingProgress = Math.min(100, (subtotal / effectiveThreshold) * 100);
   const amountToFreeShipping = Math.max(0, effectiveThreshold - subtotal);
 
@@ -533,6 +544,9 @@ export const CartProvider = ({ children }) => {
         isAuthModalOpen,
         authRedirectAction,
         freeShippingThreshold,
+        standardShippingFee,
+        isFreeShipping,
+        shippingFee,
         freeShippingProgress,
         amountToFreeShipping,
         selectedCategory,

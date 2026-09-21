@@ -6,6 +6,7 @@ export async function onRequestGet(context) {
       return new Response(JSON.stringify({
         announcementText: 'Free Worldwide Express Shipping Over $200 USD',
         freeShippingThreshold: 200,
+        standardShippingFee: 20,
         storeEmail: 'contact@azimcrafts.com',
         whatsappNumber: '+61 426 285 439',
         storeAddress: 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
@@ -22,6 +23,7 @@ export async function onRequestGet(context) {
       return new Response(JSON.stringify({
         announcementText: 'Free Worldwide Express Shipping Over $200 USD',
         freeShippingThreshold: 200,
+        standardShippingFee: 20,
         storeEmail: 'contact@azimcrafts.com',
         whatsappNumber: '+61 426 285 439',
         storeAddress: 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
@@ -33,6 +35,7 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify({
       announcementText: result.announcement_text || 'Free Worldwide Express Shipping Over $200 USD',
       freeShippingThreshold: result.free_shipping_threshold != null ? Number(result.free_shipping_threshold) : 200,
+      standardShippingFee: result.standard_shipping_fee != null ? Number(result.standard_shipping_fee) : 20,
       storeEmail: result.store_email || 'contact@azimcrafts.com',
       whatsappNumber: result.whatsapp_number || '+61 426 285 439',
       storeAddress: result.store_address || 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
@@ -56,11 +59,12 @@ export async function onRequestPost(context) {
       // Ensure row exists
       await env.DB.prepare(`
         INSERT OR IGNORE INTO store_settings (
-          id, announcement_text, free_shipping_threshold, store_email, whatsapp_number, store_address
+          id, announcement_text, free_shipping_threshold, standard_shipping_fee, store_email, whatsapp_number, store_address
         ) VALUES (
           "main",
           "Free Worldwide Express Shipping Over $200 USD",
           200,
+          20,
           "contact@azimcrafts.com",
           "+61 426 285 439",
           "Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK"
@@ -79,6 +83,13 @@ export async function onRequestPost(context) {
         if (!isNaN(num)) {
           updates.push('free_shipping_threshold = ?');
           values.push(num);
+        }
+      }
+      if (s.standardShippingFee !== undefined && s.standardShippingFee !== null && s.standardShippingFee !== '') {
+        const fee = Number(s.standardShippingFee);
+        if (!isNaN(fee)) {
+          updates.push('standard_shipping_fee = ?');
+          values.push(fee);
         }
       }
       if (s.storeEmail !== undefined && s.storeEmail !== null) {
@@ -109,6 +120,7 @@ export async function onRequestPost(context) {
         settings: {
           announcementText: result.announcement_text,
           freeShippingThreshold: Number(result.free_shipping_threshold),
+          standardShippingFee: Number(result.standard_shipping_fee != null ? result.standard_shipping_fee : 20),
           storeEmail: result.store_email,
           whatsappNumber: result.whatsapp_number,
           storeAddress: result.store_address

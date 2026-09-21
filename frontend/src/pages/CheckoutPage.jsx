@@ -36,7 +36,11 @@ export const CheckoutPage = () => {
     requireAuth,
     clearCart, 
     showToast, 
-    navigateTo 
+    navigateTo,
+    freeShippingThreshold = 200,
+    standardShippingFee = 20,
+    isFreeShipping = false,
+    shippingFee = 0
   } = useCart() || {};
 
   // Form states
@@ -117,6 +121,8 @@ export const CheckoutPage = () => {
     cart,
     subtotal,
     discountAmount,
+    shippingFee,
+    isFreeShipping,
     finalTotal,
     appliedCoupon,
     firstName,
@@ -292,10 +298,10 @@ export const CheckoutPage = () => {
           requestShipping: true,
           shippingOptions: [
             {
-              id: 'free-express',
-              label: 'Worldwide Express Courier',
+              id: isFreeShipping ? 'free-express' : 'standard-express',
+              label: isFreeShipping ? `Worldwide Express Courier (Free Over $${freeShippingThreshold})` : 'Worldwide Standard Express Courier',
               detail: 'DHL / FedEx / UPS (3-5 Days)',
-              amount: 0,
+              amount: Math.round(Number(shippingFee || 0) * 100),
             }
           ]
         });
@@ -620,6 +626,7 @@ export const CheckoutPage = () => {
             itemsList: structuredItems,
             subtotal: Number(subtotal || 0),
             discountAmount: Number(discountAmount || 0),
+            shippingFee: Number(shippingFee || 0),
             appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
             total: Number(finalTotal || 0),
             payment: `Paid (Stripe Live: ${paymentIntent.id})`,
@@ -654,6 +661,7 @@ export const CheckoutPage = () => {
         itemsList: structuredItems,
         subtotal: Number(subtotal || 0),
         discountAmount: Number(discountAmount || 0),
+        shippingFee: Number(shippingFee || 0),
         appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
         total: Number(finalTotal || 0),
         payment: 'Pending (Bank / Wire Transfer)',
@@ -969,7 +977,11 @@ export const CheckoutPage = () => {
               )}
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span className="font-semibold text-emerald-600">FREE</span>
+                {isFreeShipping ? (
+                  <span className="font-semibold text-emerald-600">FREE</span>
+                ) : (
+                  <span className="font-semibold text-neutral-900">${Number(shippingFee || 0).toFixed(2)} USD</span>
+                )}
               </div>
               <div className="flex justify-between font-bold text-neutral-900 pt-1 border-t border-neutral-100">
                 <span>Total</span>
@@ -1376,10 +1388,16 @@ export const CheckoutPage = () => {
               <h2 className="text-base font-bold text-neutral-900">Shipping method</h2>
               <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200 flex items-center justify-between text-xs md:text-sm">
                 <div>
-                  <span className="font-semibold text-neutral-900 block">Standard Express Shipping</span>
-                  <span className="text-[11px] text-neutral-500">Estimated 3-5 business days</span>
+                  <span className="font-semibold text-neutral-900 block">
+                    {isFreeShipping ? `Worldwide Express Shipping (Free Over $${freeShippingThreshold})` : 'Worldwide Standard Express Shipping'}
+                  </span>
+                  <span className="text-[11px] text-neutral-500">Estimated 3-5 business days (DHL / FedEx / UPS)</span>
                 </div>
-                <span className="font-bold text-emerald-700">FREE</span>
+                {isFreeShipping ? (
+                  <span className="font-bold text-emerald-700">FREE</span>
+                ) : (
+                  <span className="font-bold text-neutral-900">${Number(shippingFee || 0).toFixed(2)} USD</span>
+                )}
               </div>
             </div>
 
@@ -1656,7 +1674,11 @@ export const CheckoutPage = () => {
               )}
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span className="font-semibold text-emerald-700">FREE</span>
+                {isFreeShipping ? (
+                  <span className="font-semibold text-emerald-700">FREE</span>
+                ) : (
+                  <span className="font-semibold text-neutral-900">${Number(shippingFee || 0).toFixed(2)} USD</span>
+                )}
               </div>
               <div className="flex items-baseline justify-between text-base md:text-lg font-bold text-neutral-900 pt-3 border-t border-neutral-200">
                 <span>Total</span>

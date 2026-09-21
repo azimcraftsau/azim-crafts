@@ -18,6 +18,8 @@ export const CartDrawer = () => {
     freeShippingThreshold,
     freeShippingProgress,
     amountToFreeShipping,
+    isFreeShipping,
+    shippingFee,
     clearCart,
     showToast,
     navigateTo,
@@ -238,7 +240,11 @@ export const CartDrawer = () => {
                 <div className="flex justify-between">
                   <span>Estimated Shipping</span>
                   <span className="font-medium text-neutral-800">
-                    {amountToFreeShipping === 0 ? 'FREE' : 'Calculated at checkout'}
+                    {isFreeShipping ? (
+                      <span className="text-emerald-700 font-bold">FREE</span>
+                    ) : (
+                      `$${Number(shippingFee || 0).toFixed(2)} USD`
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-neutral-900 pt-2 border-t border-neutral-200">

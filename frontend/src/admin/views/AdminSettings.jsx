@@ -43,6 +43,7 @@ export function AdminSettings() {
 
   const [announcement, setAnnouncement] = useState('Free Worldwide Express Shipping Over $200 USD');
   const [freeShipping, setFreeShipping] = useState('200');
+  const [standardShipping, setStandardShipping] = useState('20');
 
   useEffect(() => {
     getStoreSettings().then(s => {
@@ -50,6 +51,9 @@ export function AdminSettings() {
         if (s.announcementText) setAnnouncement(s.announcementText);
         if (s.freeShippingThreshold !== undefined && s.freeShippingThreshold !== null) {
           setFreeShipping(String(s.freeShippingThreshold));
+        }
+        if (s.standardShippingFee !== undefined && s.standardShippingFee !== null) {
+          setStandardShipping(String(s.standardShippingFee));
         }
         if (s.storeEmail || s.whatsappNumber || s.storeAddress) {
           setStoreInfo(prev => ({
@@ -72,10 +76,17 @@ export function AdminSettings() {
         await saveStoreSettingsToDB({ announcementText: cleanVal });
       }
       if (key === 'shipping') {
-        const parsed = parseFloat(value);
-        const val = !isNaN(parsed) && parsed >= 0 ? parsed : 200;
-        setFreeShipping(String(val));
-        await saveStoreSettingsToDB({ freeShippingThreshold: val });
+        const parsedThreshold = parseFloat(freeShipping);
+        const thresholdVal = !isNaN(parsedThreshold) && parsedThreshold >= 0 ? parsedThreshold : 200;
+        const parsedFee = parseFloat(standardShipping);
+        const feeVal = !isNaN(parsedFee) && parsedFee >= 0 ? parsedFee : 20;
+
+        setFreeShipping(String(thresholdVal));
+        setStandardShipping(String(feeVal));
+        await saveStoreSettingsToDB({
+          freeShippingThreshold: thresholdVal,
+          standardShippingFee: feeVal
+        });
       }
       if (key === 'store') {
         setStoreInfo(value);
@@ -183,32 +194,54 @@ export function AdminSettings() {
 
       {/* Shipping */}
       <SectionCard title="Shipping Settings">
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Free Shipping Threshold (USD)</label>
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1 max-w-xs">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold">$</span>
-              <input
-                className={inputCls + ' pl-7'}
-                type="number"
-                value={freeShipping}
-                onChange={(e) => setFreeShipping(e.target.value)}
-                placeholder="200"
-                min={0}
-                step="any"
-              />
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Free Shipping Threshold (USD)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold">$</span>
+                <input
+                  className={inputCls + ' pl-7'}
+                  type="number"
+                  value={freeShipping}
+                  onChange={(e) => setFreeShipping(e.target.value)}
+                  placeholder="200"
+                  min={0}
+                  step="any"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">Orders at or above this amount qualify for FREE worldwide shipping.</p>
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Standard Express Shipping Fee (USD)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold">$</span>
+                <input
+                  className={inputCls + ' pl-7'}
+                  type="number"
+                  value={standardShipping}
+                  onChange={(e) => setStandardShipping(e.target.value)}
+                  placeholder="20"
+                  min={0}
+                  step="any"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">Shipping fee applied when order subtotal is below the free shipping threshold.</p>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
             <button
-              onClick={() => saveSection('shipping', freeShipping, 'Shipping threshold')}
+              onClick={() => saveSection('shipping', null, 'Shipping settings')}
               disabled={savingSection === 'shipping'}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #c8924b, #e8b06a)', color: '#0f1117' }}
             >
               {savingSection === 'shipping' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-              {savingSection === 'shipping' ? 'Saving...' : 'Save'}
+              {savingSection === 'shipping' ? 'Saving...' : 'Save Shipping Settings'}
             </button>
           </div>
-          <p className="text-xs text-gray-400 mt-1.5">Orders above this amount qualify for free worldwide shipping.</p>
         </div>
       </SectionCard>
 
