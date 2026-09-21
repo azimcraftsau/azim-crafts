@@ -123,8 +123,8 @@ export function AdminShippingSlipModal({ order, onClose }) {
                 </span>
               </div>
               <p className="font-bold text-sm text-neutral-900">{order.customer || 'Valued Customer'}</p>
-              <p className="text-neutral-700">{order.shippingAddress || `${order.country || 'Australia'}`}</p>
-              <p className="text-neutral-600 font-medium">Email: {order.customerEmail || 'collector@vtmcraft.com'}</p>
+              <p className="text-neutral-700 font-medium">{order.shipping_address || order.shippingAddress || (order.country ? `${order.customer || 'Customer'}, ${order.country}` : 'Customer Address')}</p>
+              <p className="text-neutral-600 font-medium">Email: {order.customer_email || order.customerEmail || 'collector@azimcrafts.com'}</p>
               {order.phone && <p className="text-neutral-600 font-medium">Phone: {order.phone}</p>}
             </div>
 

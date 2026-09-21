@@ -101,12 +101,12 @@ export function AdminOrderDetailsModal({ order, onClose, onOpenPrint, onOpenEdit
               <div className="space-y-1 text-xs">
                 <p className="font-bold text-sm text-gray-900">{order.customer || 'Valued Customer'}</p>
                 <p className="text-gray-600 leading-relaxed font-medium">
-                  {order.shippingAddress || `42a chestnut road, Auburn, NSW 2144, ${order.country || 'Australia'}`}
+                  {order.shipping_address || order.shippingAddress || (order.country ? `${order.customer || 'Customer'}, ${order.country}` : 'Customer Address')}
                 </p>
                 <div className="pt-2 border-t border-gray-100 space-y-1 text-[11px] text-gray-500">
                   <p className="flex items-center gap-1.5">
                     <Mail size={12} className="text-gray-400" />
-                    <span className="text-gray-700 font-medium">{order.customerEmail || 'collector@vtmcraft.com'}</span>
+                    <span className="text-gray-700 font-medium">{order.customer_email || order.customerEmail || 'collector@azimcrafts.com'}</span>
                   </p>
                   {order.phone && (
                     <p className="flex items-center gap-1.5">

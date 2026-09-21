@@ -224,19 +224,39 @@ export function AdminMessages() {
 
   const messagesEndRef = useRef(null);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent) setLoading(true);
     let allMerged = [];
 
-    // 1. Load Live Chat Threads from Storefront
+    // 1. Load Live Chat Threads from Storefront & D1 Database
     let threads = [];
+    try {
+      const res = await fetch('/api/chat');
+      if (res.ok) {
+        const remoteThreads = await res.json();
+        if (Array.isArray(remoteThreads) && remoteThreads.length > 0) {
+          threads = remoteThreads;
+        }
+      }
+    } catch (e) {}
+
     try {
       const savedThreads = localStorage.getItem('vw_live_chat_threads');
       if (savedThreads) {
-        threads = JSON.parse(savedThreads);
-        setLiveThreads(threads);
+        const localThreads = JSON.parse(savedThreads);
+        if (Array.isArray(localThreads)) {
+          const map = new Map();
+          threads.forEach(t => map.set(t.id, t));
+          localThreads.forEach(t => {
+            if (!map.has(t.id) || (t.lastUpdated || 0) > (map.get(t.id).lastUpdated || 0)) {
+              map.set(t.id, t);
+            }
+          });
+          threads = Array.from(map.values());
+        }
       }
     } catch (e) {}
+    setLiveThreads(threads);
 
     // 2. Load CRM Messages from DB
     let crm = [];
@@ -311,6 +331,15 @@ export function AdminMessages() {
           localStorage.setItem('vw_live_chat_threads', JSON.stringify(up));
         }
       } catch (e) {}
+
+      fetch('/api/chat', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: id,
+          isResolved: nextStatus
+        })
+      }).catch(() => {});
     }
 
     try {
@@ -329,14 +358,19 @@ export function AdminMessages() {
 
   useEffect(() => {
     loadData();
-    window.addEventListener('vw_live_chat_updated', loadData);
-    window.addEventListener('vw_messages_updated', loadData);
-    window.addEventListener('storage', loadData);
+    const handleUpdate = () => loadData(true);
+    window.addEventListener('vw_live_chat_updated', handleUpdate);
+    window.addEventListener('vw_messages_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    // Auto-poll live chat every 4 seconds from D1 database so mobile chats show up live
+    const pollInterval = setInterval(() => loadData(true), 4000);
 
     return () => {
-      window.removeEventListener('vw_live_chat_updated', loadData);
-      window.removeEventListener('vw_messages_updated', loadData);
-      window.removeEventListener('storage', loadData);
+      window.removeEventListener('vw_live_chat_updated', handleUpdate);
+      window.removeEventListener('vw_messages_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      clearInterval(pollInterval);
     };
   }, []);
 
@@ -387,15 +421,17 @@ export function AdminMessages() {
             timestamp: Date.now()
           };
 
+          const prevMsgs = (threads.find(t => t.id === selected.id)?.messages) || selected.messages || [];
+          const nextMsgs = [...prevMsgs, adminReplyObj];
+
           const upThreads = threads.map(t => {
             if (t.id === selected.id) {
-              const prevMsgs = t.messages || [];
               return {
                 ...t,
                 read: true,
                 replied: true,
                 lastMessage: `Admin: ${replyText}`,
-                messages: [...prevMsgs, adminReplyObj]
+                messages: nextMsgs
               };
             }
             return t;
@@ -403,6 +439,19 @@ export function AdminMessages() {
 
           localStorage.setItem('vw_live_chat_threads', JSON.stringify(upThreads));
           window.dispatchEvent(new Event('vw_live_chat_updated'));
+
+          // Push to Cloudflare D1 so customer sees it live
+          fetch('/api/chat', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: selected.id,
+              messages: nextMsgs,
+              lastMessage: `Admin: ${replyText}`,
+              replied: true,
+              read: true
+            })
+          }).catch(() => {});
         } catch (e) {}
       }
 
@@ -487,6 +536,22 @@ export function AdminMessages() {
 
         localStorage.setItem('vw_live_chat_threads', JSON.stringify(upThreads));
         window.dispatchEvent(new Event('vw_live_chat_updated'));
+
+        // Push to Cloudflare D1
+        const updatedThread = upThreads.find(t => t.id === selected.id);
+        if (updatedThread) {
+          fetch('/api/chat', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: selected.id,
+              messages: updatedThread.messages,
+              lastMessage: `Admin sent product: ${product.title}`,
+              replied: true,
+              read: true
+            })
+          }).catch(() => {});
+        }
       } catch (e) {}
     }
 

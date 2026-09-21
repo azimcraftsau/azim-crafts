@@ -63,10 +63,13 @@ export const AccountPage = () => {
       if (res.ok) {
         const orders = await res.json();
         if (Array.isArray(orders)) {
-          const userOnly = orders.filter(o => 
-            (o.customerEmail && o.customerEmail.toLowerCase() === user.email.toLowerCase()) ||
-            (o.customer && user.name && o.customer.toLowerCase() === user.name.toLowerCase())
-          );
+          const userOnly = orders.filter(o => {
+            const oEmail = (o.customerEmail || o.customer_email || '').toLowerCase().trim();
+            const uEmail = (user.email || '').toLowerCase().trim();
+            const oCust = (o.customer || '').toLowerCase().trim();
+            const uName = (user.name || '').toLowerCase().trim();
+            return (oEmail && oEmail === uEmail) || (oCust && uName && oCust === uName);
+          });
           setUserOrders(userOnly);
           return;
         }
@@ -76,10 +79,13 @@ export const AccountPage = () => {
     try {
       const remote = await getOrders();
       if (Array.isArray(remote)) {
-        const userOnly = remote.filter(o => 
-          (o.customerEmail && o.customerEmail.toLowerCase() === user.email.toLowerCase()) ||
-          (o.customer && user.name && o.customer.toLowerCase() === user.name.toLowerCase())
-        );
+        const userOnly = remote.filter(o => {
+          const oEmail = (o.customerEmail || o.customer_email || '').toLowerCase().trim();
+          const uEmail = (user.email || '').toLowerCase().trim();
+          const oCust = (o.customer || '').toLowerCase().trim();
+          const uName = (user.name || '').toLowerCase().trim();
+          return (oEmail && oEmail === uEmail) || (oCust && uName && oCust === uName);
+        });
         setUserOrders(userOnly);
       }
     } catch (e) {}
@@ -311,7 +317,9 @@ export const AccountPage = () => {
               <div className="text-xs md:text-sm text-neutral-700 space-y-1">
                 <p className="font-semibold text-neutral-900">{user.name}</p>
                 <p className="text-neutral-500">{user.email}</p>
-                <p className="text-neutral-700 font-medium pt-1">Australia</p>
+                <p className="text-neutral-700 font-medium pt-1">
+                  {user.country || (userOrders && userOrders[0]?.country) || 'India'}
+                </p>
               </div>
 
               <div className="pt-2">
@@ -319,7 +327,7 @@ export const AccountPage = () => {
                   onClick={() => setShowAddresses(!showAddresses)}
                   className="text-xs md:text-sm text-neutral-800 hover:text-black underline underline-offset-4 transition-colors"
                 >
-                  {showAddresses ? 'Hide addresses' : 'View addresses (1)'}
+                  {showAddresses ? 'Hide addresses' : `View addresses (${(userOrders && userOrders[0] && (userOrders[0].shipping_address || userOrders[0].shippingAddress)) ? '1' : '0'})`}
                 </button>
               </div>
 
@@ -328,10 +336,13 @@ export const AccountPage = () => {
                 <div className="mt-4 p-4 bg-neutral-50 rounded-lg border border-neutral-200 text-xs space-y-3 animate-fade-in">
                   <div className="space-y-1 text-neutral-600">
                     <span className="font-bold text-neutral-900 block">Default Shipping Address:</span>
-                    <p>{user.name || 'Shrin Malik'}</p>
-                    <p>42a chestnut road</p>
-                    <p>Auburn, NSW 2144</p>
-                    <p>Australia</p>
+                    <p className="font-semibold text-neutral-900">{user.name || (userOrders && userOrders[0]?.customer) || 'Valued Customer'}</p>
+                    {userOrders && userOrders[0] && (userOrders[0].shipping_address || userOrders[0].shippingAddress) ? (
+                      <p className="leading-relaxed text-neutral-800 font-medium">{userOrders[0].shipping_address || userOrders[0].shippingAddress}</p>
+                    ) : (
+                      <p className="text-neutral-500 italic">{user.address || 'No saved address yet. Your address will be saved after placing an order.'}</p>
+                    )}
+                    <p className="text-neutral-700 font-medium">{user.country || (userOrders && userOrders[0]?.country) || 'India'}</p>
                   </div>
 
                   {!isAddingAddress ? (
@@ -545,6 +556,10 @@ export const AccountPage = () => {
                     <div className="flex justify-between text-xs">
                       <span className="text-neutral-500">Payment Mode:</span>
                       <span className="font-semibold text-emerald-700">{selectedOrder.payment || 'Paid (Confirmed)'}</span>
+                    </div>
+                    <div className="flex justify-between text-xs items-start pt-1 border-t border-[#ebd7b2]/40">
+                      <span className="text-neutral-500 shrink-0">Delivery Address:</span>
+                      <span className="font-medium text-right text-neutral-900 ml-4">{selectedOrder.shipping_address || selectedOrder.shippingAddress || selectedOrder.country || 'Customer Address'}</span>
                     </div>
 
                     <div className="pt-2 border-t border-[#ebd7b2]/70">

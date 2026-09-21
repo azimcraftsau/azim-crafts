@@ -3,7 +3,7 @@ import { footerQuickLinks } from '../../data/navigation';
 import { useCart } from '../../context/CartContext';
 import { 
   MapPin, Phone, Mail, Clock, Globe, 
-  Facebook, Instagram, Youtube, Linkedin
+  Instagram, Linkedin
 } from 'lucide-react';
 
 export const Footer = () => {
@@ -80,19 +80,10 @@ export const Footer = () => {
             {/* Social Icons */}
             <div className="pt-2 flex items-center gap-3">
               <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-[#ae2828] text-white flex items-center justify-center transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a
                 href="https://www.instagram.com/azimcrafts?stkn=eTkzc2x5YjZ2ZzZ6"
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-[#ae2828] text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-[#c8924b] text-white flex items-center justify-center transition-colors shadow-2xs"
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
@@ -101,19 +92,10 @@ export const Footer = () => {
                 href="https://www.linkedin.com/company/azim-crafts/"
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-[#ae2828] text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-[#c8924b] text-white flex items-center justify-center transition-colors shadow-2xs"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="w-4 h-4" />
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-[#ae2828] text-white flex items-center justify-center transition-colors"
-                aria-label="YouTube"
-              >
-                <Youtube className="w-4 h-4" />
               </a>
             </div>
           </div>

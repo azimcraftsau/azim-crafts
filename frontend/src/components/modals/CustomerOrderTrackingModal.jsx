@@ -45,6 +45,8 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const shippingAddr = order.shipping_address || order.shippingAddress || (order.country ? `${order.country}` : 'Customer Delivery Address');
+
   const steps = [
     {
       title: 'Order Confirmed & Payment Verified',
@@ -77,7 +79,7 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
       title: 'International Customs & Port Clearance',
       subtitle: 'Priority customs clearance with express documentation',
       date: activeStep >= 3 ? `Cleared (${formatStepDate(2)})` : `Est. ${formatStepDate(2)}`,
-      location: `${order.country || 'Australia'} International Gateway`,
+      location: `${order.country || 'Destination'} International Gateway`,
       icon: Globe,
       done: activeStep >= 3,
       current: activeStep === 3
@@ -86,7 +88,7 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
       title: 'Delivered to Your Doorstep',
       subtitle: 'Final delivery with signature & contactless option',
       date: activeStep >= 4 ? `Delivered (${formatStepDate(3)})` : `Est: ${formatStepDate(3)} – ${formatStepDate(5)}`,
-      location: order.shippingAddress || `${order.country || 'Australia'}`,
+      location: shippingAddr,
       icon: MapPin,
       done: activeStep >= 4,
       current: activeStep === 4
@@ -245,7 +247,7 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
               </span>
               <p className="font-bold text-neutral-900">{order.customer || 'Valued Customer'}</p>
               <p className="text-neutral-600 font-medium text-[11px] leading-relaxed">
-                {order.shippingAddress || `Melbourne, Victoria, ${order.country || 'Australia'}`}
+                {shippingAddr}
               </p>
             </div>
 

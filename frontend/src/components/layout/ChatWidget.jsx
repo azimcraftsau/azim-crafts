@@ -72,7 +72,7 @@ export const ChatWidget = () => {
   ];
 
   // Load chat history for this visitor session
-  const loadChatThread = () => {
+  const loadChatThread = async () => {
     try {
       const savedThreads = localStorage.getItem('vw_live_chat_threads');
       if (savedThreads) {
@@ -84,7 +84,23 @@ export const ChatWidget = () => {
             if (chatView === 'home') setChatView('conversation');
           }
           setIsResolved(Boolean(myThread.isResolved));
-          return;
+        }
+      }
+    } catch (e) {}
+
+    // Cloudflare D1 Backend Sync for cross-device persistence
+    try {
+      const res = await fetch(`/api/chat?id=${encodeURIComponent(visitorId)}`);
+      if (res.ok) {
+        const remoteThread = await res.json();
+        if (remoteThread && Array.isArray(remoteThread.messages) && remoteThread.messages.length > 0) {
+          setMessages(prev => {
+            if (remoteThread.messages.length >= prev.length) {
+              return remoteThread.messages;
+            }
+            return prev;
+          });
+          setIsResolved(Boolean(remoteThread.isResolved));
         }
       }
     } catch (e) {}
@@ -95,9 +111,12 @@ export const ChatWidget = () => {
     window.addEventListener('vw_live_chat_updated', loadChatThread);
     window.addEventListener('storage', loadChatThread);
 
+    const pollInterval = setInterval(loadChatThread, 4000);
+
     return () => {
       window.removeEventListener('vw_live_chat_updated', loadChatThread);
       window.removeEventListener('storage', loadChatThread);
+      clearInterval(pollInterval);
     };
   }, []);
 
@@ -168,6 +187,13 @@ export const ChatWidget = () => {
         ...otherAdminMsgs
       ];
       localStorage.setItem('vw_admin_messages', JSON.stringify(updatedAdminMsgs));
+
+      // Asynchronously push to Cloudflare D1 database so Admin sees it live across devices
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(threadObj)
+      }).catch(err => console.warn('Chat server sync notice:', err));
 
       window.dispatchEvent(new Event('vw_live_chat_updated'));
       window.dispatchEvent(new Event('vw_messages_updated'));
