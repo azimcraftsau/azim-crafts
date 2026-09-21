@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { getStoreSettings } from '../../lib/cloudflareService';
 
 export const AnnouncementBar = () => {
-  const [customText, setCustomText] = useState('Free Worldwide Express Shipping Over $200 USD');
+  const [customText, setCustomText] = useState('');
+  const [threshold, setThreshold] = useState(200);
 
   const loadSettings = async () => {
     try {
       const settings = await getStoreSettings();
-      if (settings && settings.announcementText && settings.announcementText.trim()) {
-        setCustomText(settings.announcementText.trim());
+      if (settings) {
+        if (settings.announcementText && settings.announcementText.trim()) {
+          setCustomText(settings.announcementText.trim());
+        }
+        if (settings.freeShippingThreshold !== undefined && settings.freeShippingThreshold !== null) {
+          setThreshold(Number(settings.freeShippingThreshold));
+        }
       }
     } catch (e) {}
   };
@@ -16,16 +22,25 @@ export const AnnouncementBar = () => {
   useEffect(() => {
     loadSettings();
     window.addEventListener('vw_announcement_updated', loadSettings);
+    window.addEventListener('vw_shipping_updated', loadSettings);
+    window.addEventListener('vw_settings_updated', loadSettings);
     window.addEventListener('focus', loadSettings);
 
     return () => {
       window.removeEventListener('vw_announcement_updated', loadSettings);
+      window.removeEventListener('vw_shipping_updated', loadSettings);
+      window.removeEventListener('vw_settings_updated', loadSettings);
       window.removeEventListener('focus', loadSettings);
     };
   }, []);
 
-  const displayText = customText.trim() || 'Free Worldwide Express Shipping Over $200 USD';
-  
+  let displayText = customText.trim();
+  if (!displayText || displayText.startsWith('Free Worldwide Express Shipping')) {
+    displayText = threshold <= 0
+      ? 'Free Worldwide Express Shipping on All Orders'
+      : `Free Worldwide Express Shipping Over $${threshold} USD`;
+  }
+
   // Repeat the exact text 8 times so the marquee ticker scrolls smoothly across wide screens
   const items = Array(8).fill(displayText);
 

@@ -83,7 +83,17 @@ export function AdminSettings() {
 
         setFreeShipping(String(thresholdVal));
         setStandardShipping(String(feeVal));
+
+        let updatedAnnouncement = announcement;
+        if (!announcement || announcement.includes('Free Worldwide Express Shipping')) {
+          updatedAnnouncement = thresholdVal <= 0
+            ? 'Free Worldwide Express Shipping on All Orders'
+            : `Free Worldwide Express Shipping Over $${thresholdVal} USD`;
+          setAnnouncement(updatedAnnouncement);
+        }
+
         await saveStoreSettingsToDB({
+          announcementText: updatedAnnouncement,
           freeShippingThreshold: thresholdVal,
           standardShippingFee: feeVal
         });

@@ -513,16 +513,20 @@ export const CartProvider = ({ children }) => {
     }
   }
 
-  const effectiveThreshold = Number(freeShippingThreshold) > 0 ? Number(freeShippingThreshold) : 200;
-  const isFreeShipping = totalItems > 0 && subtotal >= effectiveThreshold;
-  const shippingFee = (totalItems > 0 && !isFreeShipping)
-    ? (Number(standardShippingFee) >= 0 ? Number(standardShippingFee) : 20)
-    : 0;
+  const threshold = (freeShippingThreshold !== undefined && freeShippingThreshold !== null && !isNaN(Number(freeShippingThreshold)))
+    ? Number(freeShippingThreshold)
+    : 200;
 
+  const isFreeShipping = totalItems > 0 && (threshold <= 0 || subtotal >= threshold);
+  const standardFee = (standardShippingFee !== undefined && standardShippingFee !== null && !isNaN(Number(standardShippingFee)))
+    ? Number(standardShippingFee)
+    : 20;
+
+  const shippingFee = (totalItems > 0 && !isFreeShipping) ? standardFee : 0;
   const finalTotal = Math.max(0, subtotal - discountAmount + shippingFee);
 
-  const freeShippingProgress = Math.min(100, (subtotal / effectiveThreshold) * 100);
-  const amountToFreeShipping = Math.max(0, effectiveThreshold - subtotal);
+  const freeShippingProgress = threshold <= 0 ? 100 : Math.min(100, (subtotal / threshold) * 100);
+  const amountToFreeShipping = threshold <= 0 ? 0 : Math.max(0, threshold - subtotal);
 
   return (
     <CartContext.Provider

@@ -299,7 +299,9 @@ export const CheckoutPage = () => {
           shippingOptions: [
             {
               id: isFreeShipping ? 'free-express' : 'standard-express',
-              label: isFreeShipping ? `Worldwide Express Courier (Free Over $${freeShippingThreshold})` : 'Worldwide Standard Express Courier',
+              label: isFreeShipping
+                ? (Number(freeShippingThreshold) <= 0 ? 'Worldwide Express Courier (FREE Shipping)' : `Worldwide Express Courier (Free Over $${freeShippingThreshold})`)
+                : 'Worldwide Standard Express Courier',
               detail: 'DHL / FedEx / UPS (3-5 Days)',
               amount: Math.round(Number(shippingFee || 0) * 100),
             }
@@ -1389,7 +1391,9 @@ export const CheckoutPage = () => {
               <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200 flex items-center justify-between text-xs md:text-sm">
                 <div>
                   <span className="font-semibold text-neutral-900 block">
-                    {isFreeShipping ? `Worldwide Express Shipping (Free Over $${freeShippingThreshold})` : 'Worldwide Standard Express Shipping'}
+                    {isFreeShipping
+                      ? (Number(freeShippingThreshold) <= 0 ? 'Worldwide Express Shipping (FREE Shipping)' : `Worldwide Express Shipping (Free Over $${freeShippingThreshold})`)
+                      : 'Worldwide Standard Express Shipping'}
                   </span>
                   <span className="text-[11px] text-neutral-500">Estimated 3-5 business days (DHL / FedEx / UPS)</span>
                 </div>
