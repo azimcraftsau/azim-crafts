@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, UserCheck, ShoppingCart, DollarSign, Search, 
-  Mail, Phone, MapPin, Calendar, ArrowRight, X, ExternalLink, ShieldCheck, Clock 
-, Loader2} from 'lucide-react';
+  Mail, Phone, MapPin, Calendar, ArrowRight, X, ExternalLink, ShieldCheck, Clock, Loader2
+} from 'lucide-react';
 import { getOrders, getUsersList } from '../../lib/cloudflareService';
 
 export function AdminUsers() {
@@ -12,8 +12,8 @@ export function AdminUsers() {
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent) setLoading(true);
     let allOrders = [];
     try {
       allOrders = await getOrders();
@@ -26,11 +26,19 @@ export function AdminUsers() {
       console.warn('Failed to load users from DB:', e);
     }
 
-    // Also extract distinct customers from real orders
+    // Filter out Admins and Staff from Customers view (Admins belong in "Admins & Staff" menu)
+    const isStaffOrAdmin = (u) => {
+      const role = (u?.role || '').toLowerCase();
+      const email = (u?.email || '').toLowerCase();
+      const id = (u?.id || '').toLowerCase();
+      return role === 'admin' || role === 'superadmin' || role === 'staff' || email === 'admin@azimcrafts.com' || id.includes('admin');
+    };
+
+    // Extract distinct customers from registered users (excluding admin/staff)
     const usersMap = new Map();
 
     registeredUsers.forEach(u => {
-      if (u.email) {
+      if (u.email && !isStaffOrAdmin(u)) {
         usersMap.set(u.email.toLowerCase(), {
           id: u.id || `usr_${u.email}`,
           name: u.name || 'Valued Customer',
@@ -46,7 +54,7 @@ export function AdminUsers() {
     if (Array.isArray(allOrders)) {
       allOrders.forEach(o => {
         const emailKey = (o.customerEmail || '').toLowerCase();
-        if (emailKey) {
+        if (emailKey && emailKey !== 'admin@azimcrafts.com') {
           if (!usersMap.has(emailKey)) {
             usersMap.set(emailKey, {
               id: `usr_${emailKey}`,
@@ -79,13 +87,14 @@ export function AdminUsers() {
   };
 
   useEffect(() => {
-    loadData();
-    window.addEventListener('vw_users_updated', loadData);
-    window.addEventListener('vw_orders_updated', loadData);
-    const interval = setInterval(loadData, 3000);
+    loadData(false);
+    const onUpdate = () => loadData(true);
+    window.addEventListener('vw_users_updated', onUpdate);
+    window.addEventListener('vw_orders_updated', onUpdate);
+    const interval = setInterval(() => loadData(true), 15000);
     return () => {
-      window.removeEventListener('vw_users_updated', loadData);
-      window.removeEventListener('vw_orders_updated', loadData);
+      window.removeEventListener('vw_users_updated', onUpdate);
+      window.removeEventListener('vw_orders_updated', onUpdate);
       clearInterval(interval);
     };
   }, []);
@@ -200,16 +209,8 @@ export function AdminUsers() {
               ) : (
                 filteredUsers.map((u) => {
                   const initials = u.name ? u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
-                  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
-        <span className="ml-3 text-gray-500">Loading...</span>
-      </div>
-    );
-  }
 
-  return (
+                  return (
                     <tr key={u.id} className="hover:bg-gray-50/70 transition-colors">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
