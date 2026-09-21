@@ -144,8 +144,8 @@ export const CheckoutPage = () => {
     }
   }, [user]);
 
-  // Stripe configuration strictly loaded from environment
-  const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
+  // Stripe configuration strictly loaded from environment with live fallback
+  const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51UCyAZBqEUeXNNxVCCBmQ21HYaxkvhkrMrukURvj5IN6J6nX06VOgB99sdZFMsd88JQg0Xcqj5IBaEsHgIXWE5rq00S90KRKaX';
 
   // Payment states (Stripe Card, Bank Transfer)
   const [paymentMethod, setPaymentMethod] = useState('credit-card'); // 'credit-card' | 'bank'
