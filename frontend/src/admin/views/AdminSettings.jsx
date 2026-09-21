@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Download, CheckCircle } from 'lucide-react';
+import { Save, Download, CheckCircle, Loader2 } from 'lucide-react';
 import { allProducts } from '../../data/products';
 
 function Toast({ msg, onClose }) {
@@ -29,6 +29,7 @@ import { getStoreSettings, saveStoreSettingsToDB, getProducts, getOrders } from 
 
 export function AdminSettings() {
   const [toast, setToast] = useState('');
+  const [savingSection, setSavingSection] = useState(null);
   const [session] = useState(() => {
     try { return JSON.parse(localStorage.getItem('vw_admin_session') || '{}'); } catch { return {}; }
   });
@@ -41,18 +42,21 @@ export function AdminSettings() {
   });
 
   const [announcement, setAnnouncement] = useState('Free Worldwide Express Shipping Over $200 USD');
-  const [freeShipping, setFreeShipping] = useState(200);
+  const [freeShipping, setFreeShipping] = useState('200');
 
   useEffect(() => {
     getStoreSettings().then(s => {
       if (s) {
         if (s.announcementText) setAnnouncement(s.announcementText);
-        if (s.freeShippingThreshold) setFreeShipping(s.freeShippingThreshold);
-        if (s.storeEmail || s.whatsappNumber) {
+        if (s.freeShippingThreshold !== undefined && s.freeShippingThreshold !== null) {
+          setFreeShipping(String(s.freeShippingThreshold));
+        }
+        if (s.storeEmail || s.whatsappNumber || s.storeAddress) {
           setStoreInfo(prev => ({
             ...prev,
             email: s.storeEmail || prev.email,
-            whatsapp: s.whatsappNumber || prev.whatsapp
+            whatsapp: s.whatsappNumber || prev.whatsapp,
+            address: s.storeAddress || prev.address
           }));
         }
       }
@@ -60,21 +64,34 @@ export function AdminSettings() {
   }, []);
 
   const saveSection = async (key, value, label) => {
-    if (key === 'announcement') {
-      const cleanVal = (value || '').trim() || 'Free Worldwide Express Shipping Over $200 USD';
-      setAnnouncement(cleanVal);
-      await saveStoreSettingsToDB({ announcementText: cleanVal, freeShippingThreshold: freeShipping });
+    setSavingSection(key);
+    try {
+      if (key === 'announcement') {
+        const cleanVal = (value || '').trim() || 'Free Worldwide Express Shipping Over $200 USD';
+        setAnnouncement(cleanVal);
+        await saveStoreSettingsToDB({ announcementText: cleanVal });
+      }
+      if (key === 'shipping') {
+        const parsed = parseFloat(value);
+        const val = !isNaN(parsed) && parsed >= 0 ? parsed : 200;
+        setFreeShipping(String(val));
+        await saveStoreSettingsToDB({ freeShippingThreshold: val });
+      }
+      if (key === 'store') {
+        setStoreInfo(value);
+        await saveStoreSettingsToDB({
+          storeEmail: value.email,
+          whatsappNumber: value.whatsapp,
+          storeAddress: value.address
+        });
+      }
+      setToast(`${label} saved & synced live to Database!`);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      setToast(`Failed to save ${label}. Please try again.`);
+    } finally {
+      setSavingSection(null);
     }
-    if (key === 'shipping') {
-      const val = parseInt(value) || 200;
-      setFreeShipping(val);
-      await saveStoreSettingsToDB({ announcementText: announcement, freeShippingThreshold: val });
-    }
-    if (key === 'store') {
-      setStoreInfo(value);
-      await saveStoreSettingsToDB({ storeEmail: value.email, whatsappNumber: value.whatsapp });
-    }
-    setToast(`${label} saved & synced live to Database!`);
   };
 
   const exportCSV = async (type) => {
@@ -127,9 +144,14 @@ export function AdminSettings() {
           </div>
         </div>
         <div className="mt-4 flex justify-end">
-          <button onClick={() => saveSection('store', storeInfo, 'Store information')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all" style={{ background: 'linear-gradient(135deg, #c8924b, #e8b06a)', color: '#0f1117' }}>
-            <Save size={14} />
-            Save Store Info
+          <button
+            onClick={() => saveSection('store', storeInfo, 'Store information')}
+            disabled={savingSection === 'store'}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #c8924b, #e8b06a)', color: '#0f1117' }}
+          >
+            {savingSection === 'store' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {savingSection === 'store' ? 'Saving...' : 'Save Store Info'}
           </button>
         </div>
       </SectionCard>
@@ -147,9 +169,14 @@ export function AdminSettings() {
           <p className="text-xs text-gray-400 mt-1.5">This text appears in the scrolling announcement bar at the top of the storefront.</p>
         </div>
         <div className="mt-4 flex justify-end">
-          <button onClick={() => saveSection('announcement', announcement, 'Announcement text')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all" style={{ background: 'linear-gradient(135deg, #c8924b, #e8b06a)', color: '#0f1117' }}>
-            <Save size={14} />
-            Save Announcement
+          <button
+            onClick={() => saveSection('announcement', announcement, 'Announcement text')}
+            disabled={savingSection === 'announcement'}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #c8924b, #e8b06a)', color: '#0f1117' }}
+          >
+            {savingSection === 'announcement' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {savingSection === 'announcement' ? 'Saving...' : 'Save Announcement'}
           </button>
         </div>
       </SectionCard>
@@ -165,13 +192,20 @@ export function AdminSettings() {
                 className={inputCls + ' pl-7'}
                 type="number"
                 value={freeShipping}
-                onChange={(e) => setFreeShipping(parseInt(e.target.value) || 0)}
+                onChange={(e) => setFreeShipping(e.target.value)}
+                placeholder="200"
                 min={0}
+                step="any"
               />
             </div>
-            <button onClick={() => saveSection('shipping', freeShipping, 'Shipping threshold')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all" style={{ background: 'linear-gradient(135deg, #c8924b, #e8b06a)', color: '#0f1117' }}>
-              <Save size={14} />
-              Save
+            <button
+              onClick={() => saveSection('shipping', freeShipping, 'Shipping threshold')}
+              disabled={savingSection === 'shipping'}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #c8924b, #e8b06a)', color: '#0f1117' }}
+            >
+              {savingSection === 'shipping' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              {savingSection === 'shipping' ? 'Saving...' : 'Save'}
             </button>
           </div>
           <p className="text-xs text-gray-400 mt-1.5">Orders above this amount qualify for free worldwide shipping.</p>

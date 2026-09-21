@@ -364,11 +364,14 @@ export async function getStoreSettings() {
     const res = await fetch('/api/settings');
     if (res.ok) {
       const raw = await res.json();
-      const data = (raw && raw.data && typeof raw.data === 'object') ? raw.data : raw;
+      const data = (raw && raw.data && typeof raw.data === 'object') ? raw.data : (raw && raw.settings ? raw.settings : raw);
       if (data && typeof data === 'object') {
+        const threshold = (data.freeShippingThreshold !== undefined && data.freeShippingThreshold !== null && data.freeShippingThreshold !== '')
+          ? Number(data.freeShippingThreshold)
+          : 200;
         return {
           announcementText: data.announcementText || 'Free Worldwide Express Shipping Over $200 USD',
-          freeShippingThreshold: Number(data.freeShippingThreshold || 200),
+          freeShippingThreshold: !isNaN(threshold) ? threshold : 200,
           storeEmail: data.storeEmail || 'contact@azimcrafts.com',
           whatsappNumber: data.whatsappNumber || '0426285439 (+61 426 285 439)',
           storeAddress: data.storeAddress || data.address || 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
@@ -389,9 +392,16 @@ export async function getStoreSettings() {
 
 export async function saveStoreSettingsToDB(settings) {
   try {
+    let token = null;
+    try {
+      token = localStorage.getItem('vw_admin_token');
+    } catch {}
     const res = await fetch('/api/settings', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify(settings)
     });
     notifySync('vw_announcement_updated');

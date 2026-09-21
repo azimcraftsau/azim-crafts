@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { allProducts } from '../data/products';
-import { getProducts, getCoupons, getOrders } from '../lib/cloudflareService';
+import { getProducts, getCoupons, getOrders, getStoreSettings } from '../lib/cloudflareService';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [products, setProducts] = useState(allProducts);
   const [couponsList, setCouponsList] = useState([]);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(200);
 
   useEffect(() => {
     let isMounted = true;
@@ -36,18 +37,34 @@ export const CartProvider = ({ children }) => {
       } catch (err) {}
     };
 
+    const refreshSettings = async () => {
+      try {
+        const s = await getStoreSettings();
+        if (isMounted && s && s.freeShippingThreshold !== undefined && s.freeShippingThreshold !== null) {
+          setFreeShippingThreshold(Number(s.freeShippingThreshold));
+        }
+      } catch {}
+    };
+
     refreshProducts();
     refreshCoupons();
+    refreshSettings();
 
     window.addEventListener('vw_products_updated', refreshProducts);
     window.addEventListener('vw_coupons_updated', refreshCoupons);
+    window.addEventListener('vw_shipping_updated', refreshSettings);
+    window.addEventListener('vw_settings_updated', refreshSettings);
     window.addEventListener('focus', refreshProducts);
+    window.addEventListener('focus', refreshSettings);
 
     return () => {
       isMounted = false;
       window.removeEventListener('vw_products_updated', refreshProducts);
       window.removeEventListener('vw_coupons_updated', refreshCoupons);
+      window.removeEventListener('vw_shipping_updated', refreshSettings);
+      window.removeEventListener('vw_settings_updated', refreshSettings);
       window.removeEventListener('focus', refreshProducts);
+      window.removeEventListener('focus', refreshSettings);
     };
   }, []);
 
@@ -492,9 +509,9 @@ export const CartProvider = ({ children }) => {
 
   const finalTotal = Math.max(0, subtotal - discountAmount);
 
-  const freeShippingThreshold = 200;
-  const freeShippingProgress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
-  const amountToFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+  const effectiveThreshold = Number(freeShippingThreshold) > 0 ? Number(freeShippingThreshold) : 200;
+  const freeShippingProgress = Math.min(100, (subtotal / effectiveThreshold) * 100);
+  const amountToFreeShipping = Math.max(0, effectiveThreshold - subtotal);
 
   return (
     <CartContext.Provider
