@@ -14,7 +14,8 @@ export async function onRequestGet(context) {
 
     const mapped = (results || []).map(c => ({
       ...c,
-      active: Boolean(c.is_active)
+      active: Boolean(c.is_active),
+      uses: c.uses_count != null ? Number(c.uses_count) : (c.uses != null ? Number(c.uses) : 0)
     }));
 
     return new Response(JSON.stringify(mapped), {
@@ -41,7 +42,7 @@ export async function onRequestPost(context) {
           ?, ?, ?, ?, ?, ?, ?
         )
       `).bind(
-        c.id, c.code.toUpperCase(), c.type, c.value, c.description || '', c.active ? 1 : 0, c.uses || 0
+        c.id, c.code.toUpperCase(), c.type, c.value, c.description || '', c.active ? 1 : 0, c.uses || c.uses_count || 0
       ).run();
     }
 

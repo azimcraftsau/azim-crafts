@@ -203,8 +203,8 @@ export function AdminCoupons() {
   }, []);
 
   const handleSave = async (coupon) => {
-    if (coupon.price < 0 || coupon.stock < 0) {
-      setToast({ message: 'Price and stock cannot be negative', type: 'error' });
+    if (!coupon.value || Number(coupon.value) <= 0) {
+      setToast('Discount value must be greater than 0');
       return;
     }
     const isNew = !coupon.id || typeof coupon.id !== 'number';

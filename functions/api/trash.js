@@ -85,8 +85,8 @@ export async function onRequestPut(context) {
             category, category_name, is_sold_out, is_on_sale, badge, image,
             hover_image, images, videos, vendor, description, specifications,
             perfect_for, dimensions, weight, materials, shipping_info, disclaimer,
-            rating, reviews_count
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            rating, reviews_count, sizes, stock_quantity
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           p.id, p.productNumber || p.product_number || 0, p.title || p.name || '', p.handle || '',
           p.price || 0, p.regularPrice || p.regular_price || p.price || 0, p.currency || 'USD',
@@ -96,7 +96,8 @@ export async function onRequestPut(context) {
           p.vendor || 'Azim Crafts', p.description || '', JSON.stringify(p.specifications || {}),
           JSON.stringify(p.perfectFor || p.perfect_for || []), p.dimensions || '', p.weight || '',
           p.materials || '', p.shippingInfo || p.shipping_info || '', p.disclaimer || '',
-          p.rating || 5, p.reviewsCount || p.reviews_count || 10
+          p.rating || 5, p.reviewsCount || p.reviews_count || 10,
+          JSON.stringify(p.sizes || []), p.stockQuantity ?? p.stock_quantity ?? 10
         ).run();
 
         await env.DB.prepare('DELETE FROM trash WHERE id = ?').bind(id).run();

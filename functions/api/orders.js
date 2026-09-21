@@ -12,6 +12,22 @@ export async function onRequestGet(context) {
     const orderId = url.searchParams.get('orderId') || url.searchParams.get('id');
     const email = url.searchParams.get('email');
 
+    const mapOrder = (r) => {
+      let parsedItems = [];
+      try {
+        parsedItems = typeof r.items_list === 'string' ? JSON.parse(r.items_list) : (r.items_list || []);
+      } catch (e) {
+        parsedItems = [];
+      }
+      return {
+        ...r,
+        customerEmail: r.customer_email || r.customerEmail || '',
+        shippingAddress: r.shipping_address || r.shippingAddress || '',
+        itemsList: parsedItems,
+        createdAt: r.created_at || r.createdAt || '',
+      };
+    };
+
     if (orderId && email) {
       const cleanId = orderId.replace('#', '').trim();
       const cleanEmail = email.toLowerCase().trim();
@@ -19,7 +35,7 @@ export async function onRequestGet(context) {
         'SELECT * FROM orders WHERE (LOWER(REPLACE(id, "#", "")) = LOWER(?)) AND (LOWER(customer_email) = LOWER(?)) ORDER BY created_at DESC'
       ).bind(cleanId, cleanEmail).all();
 
-      return new Response(JSON.stringify(results || []), {
+      return new Response(JSON.stringify((results || []).map(mapOrder)), {
         headers: { 'Content-Type': 'application/json' }
       });
     }
@@ -28,7 +44,7 @@ export async function onRequestGet(context) {
       'SELECT * FROM orders ORDER BY created_at DESC'
     ).all();
 
-    return new Response(JSON.stringify(results || []), {
+    return new Response(JSON.stringify((results || []).map(mapOrder)), {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (err) {

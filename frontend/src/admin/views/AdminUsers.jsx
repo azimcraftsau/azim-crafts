@@ -53,16 +53,16 @@ export function AdminUsers() {
 
     if (Array.isArray(allOrders)) {
       allOrders.forEach(o => {
-        const emailKey = (o.customerEmail || '').toLowerCase();
+        const emailKey = (o.customerEmail || o.customer_email || '').toLowerCase();
         if (emailKey && emailKey !== 'admin@azimcrafts.com') {
           if (!usersMap.has(emailKey)) {
             usersMap.set(emailKey, {
               id: `usr_${emailKey}`,
-              name: o.customer || 'Valued Customer',
-              email: o.customerEmail,
-              phone: o.phone || '+61 400 000 000',
-              country: o.country || 'Australia',
-              createdAt: o.date || 'Recent',
+              name: o.customer || o.customer_name || 'Valued Customer',
+              email: o.customerEmail || o.customer_email,
+              phone: o.phone || o.customer_phone || '+61 400 000 000',
+              country: o.country || (o.shippingAddress && o.shippingAddress.country) || 'Australia',
+              createdAt: o.date || o.created_at || 'Recent',
               orders: []
             });
           }

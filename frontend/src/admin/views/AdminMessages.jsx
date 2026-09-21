@@ -395,6 +395,17 @@ export function AdminMessages() {
       }
       localStorage.setItem('vw_admin_messages', JSON.stringify(updated));
     } catch (e) {}
+
+    const target = messages.find(m => m.id === id);
+    if (target?.isLiveChat) {
+      fetch('/api/chat', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, read: true })
+      }).catch(() => {});
+    } else if (id) {
+      updateMessageStatusInDB(id, { read: true }).catch(() => {});
+    }
   };
 
   // Send Text Reply
@@ -453,6 +464,12 @@ export function AdminMessages() {
             })
           }).catch(() => {});
         } catch (e) {}
+      } else {
+        updateMessageStatusInDB(selected.id, {
+          read: true,
+          replied: true,
+          replyText: replyText
+        }).catch(() => {});
       }
 
       const updatedMessages = messages.map((m) => {
@@ -578,7 +595,7 @@ export function AdminMessages() {
     setToast(`"${product.title}" card sent to ${selected.name} in chat!`);
   };
 
-  const handleDeleteMessage = (id) => {
+  const handleDeleteMessage = async (id) => {
     if (!window.confirm('Delete this conversation?')) return;
     const updated = messages.filter(m => m.id !== id);
     setMessages(updated);
@@ -592,6 +609,13 @@ export function AdminMessages() {
       localStorage.setItem('vw_admin_messages', JSON.stringify(updated));
       window.dispatchEvent(new Event('vw_live_chat_updated'));
       window.dispatchEvent(new Event('vw_messages_updated'));
+    } catch (e) {}
+
+    try {
+      await fetch('/api/chat?id=' + encodeURIComponent(id), { method: 'DELETE' });
+    } catch (e) {}
+    try {
+      await deleteMessageFromDB(id);
     } catch (e) {}
 
     if (selectedId === id) {

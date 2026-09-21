@@ -79,3 +79,24 @@ export async function onRequestPut(context) {
     });
   }
 }
+
+export async function onRequestDelete(context) {
+  try {
+    const { request, env } = context;
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+
+    if (env.DB && id) {
+      await env.DB.prepare('DELETE FROM messages WHERE id = ?').bind(id).run();
+    }
+
+    return new Response(JSON.stringify({ success: true, deletedId: id }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}

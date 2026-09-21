@@ -14,7 +14,8 @@ import {
   uploadProductVideo,
   getCategories,
   saveCategoryToDB,
-  getTrashProducts
+  getTrashProducts,
+  moveToTrashDB
 } from '../../lib/cloudflareService';
 
 export const DEFAULT_CATEGORIES = [
@@ -1342,7 +1343,7 @@ export function AdminProducts({ onNavigate }) {
       setProducts(updated);
       setDeleteConfirm(null);
       setToast(`"${productToTrash.title}" moved to Trash.`);
-      await deleteProductFromDB(productToTrash.id);
+      await moveToTrashDB(productToTrash);
       updateTrashCount();
     } catch (e) {
       console.error(e);

@@ -49,8 +49,13 @@ export async function onRequestPost(context) {
 
     const slides = Array.isArray(body) ? body : (body.slides || [body]);
 
-    for (const b of slides) {
-      if (!b.id) continue;
+    if (Array.isArray(body)) {
+      await env.DB.prepare('DELETE FROM banner_slides').run();
+    }
+
+    for (let i = 0; i < slides.length; i++) {
+      const b = slides[i];
+      if (!b || !b.id) continue;
       await env.DB.prepare(`
         INSERT OR REPLACE INTO banner_slides (
           id, title, subtitle, badge_text, btn_text, target_product_id,
@@ -68,7 +73,7 @@ export async function onRequestPost(context) {
         b.desktopVideo || b.desktop_video || '',
         b.mobileVideo || b.mobile_video || '',
         b.active !== undefined ? (b.active ? 1 : 0) : 1,
-        b.slide_order !== undefined ? b.slide_order : 0
+        b.slide_order !== undefined ? b.slide_order : i
       ).run();
     }
 

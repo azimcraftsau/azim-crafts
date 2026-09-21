@@ -6,7 +6,13 @@ import {
   ExternalLink, Play, Layers
 , Loader2} from 'lucide-react';
 import { allProducts } from '../../data/products';
-import { getHeroSlides, saveHeroSlidesToDB, getStoreSettings, saveStoreSettingsToDB } from '../../lib/cloudflareService';
+import { 
+  getHeroSlides, 
+  saveHeroSlidesToDB, 
+  getStoreSettings, 
+  saveStoreSettingsToDB,
+  uploadBannerMedia 
+} from '../../lib/cloudflareService';
 
 export const DEFAULT_HERO_SLIDES = [
   {
@@ -100,9 +106,39 @@ function SlideModal({ slide, isNew, onSave, onClose }) {
     mobileVideo: '/mobile banner/video1.mp4',
     active: true
   });
+  const [uploadingDesktop, setUploadingDesktop] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
 
   const inputCls = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-xs bg-white focus:ring-2 focus:ring-[#c8924b] focus:border-transparent outline-none transition-all';
   const labelCls = 'block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5';
+
+  const handleUploadDesktop = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingDesktop(true);
+    try {
+      const url = await uploadBannerMedia(file);
+      setForm(prev => ({ ...prev, desktopVideo: url }));
+    } catch (err) {
+      console.error('Failed to upload desktop banner media:', err);
+    } finally {
+      setUploadingDesktop(false);
+    }
+  };
+
+  const handleUploadMobile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingMobile(true);
+    try {
+      const url = await uploadBannerMedia(file);
+      setForm(prev => ({ ...prev, mobileVideo: url }));
+    } catch (err) {
+      console.error('Failed to upload mobile banner media:', err);
+    } finally {
+      setUploadingMobile(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 p-4 font-menu">
@@ -178,19 +214,14 @@ function SlideModal({ slide, isNew, onSave, onClose }) {
               />
               <div className="flex items-center gap-2">
                 <label className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-gray-300 hover:border-[#c8924b] bg-gray-50 hover:bg-amber-50/50 text-xs font-bold text-gray-700 hover:text-[#c8924b] transition-all cursor-pointer">
-                  <Video size={13} />
-                  <span>📁 Choose Desktop File</span>
+                  {uploadingDesktop ? <Loader2 size={13} className="animate-spin text-[#c8924b]" /> : <Video size={13} />}
+                  <span>{uploadingDesktop ? 'Uploading to Storage...' : '📁 Choose Desktop File'}</span>
                   <input
                     type="file"
                     accept="video/*,image/*"
                     className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const blobUrl = URL.createObjectURL(file);
-                        setForm({ ...form, desktopVideo: blobUrl });
-                      }
-                    }}
+                    disabled={uploadingDesktop}
+                    onChange={handleUploadDesktop}
                   />
                 </label>
               </div>
@@ -207,19 +238,14 @@ function SlideModal({ slide, isNew, onSave, onClose }) {
               />
               <div className="flex items-center gap-2">
                 <label className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-gray-300 hover:border-[#c8924b] bg-gray-50 hover:bg-amber-50/50 text-xs font-bold text-gray-700 hover:text-[#c8924b] transition-all cursor-pointer">
-                  <Smartphone size={13} />
-                  <span>📁 Choose Mobile File</span>
+                  {uploadingMobile ? <Loader2 size={13} className="animate-spin text-[#c8924b]" /> : <Smartphone size={13} />}
+                  <span>{uploadingMobile ? 'Uploading to Storage...' : '📁 Choose Mobile File'}</span>
                   <input
                     type="file"
                     accept="video/*,image/*"
                     className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const blobUrl = URL.createObjectURL(file);
-                        setForm({ ...form, mobileVideo: blobUrl });
-                      }
-                    }}
+                    disabled={uploadingMobile}
+                    onChange={handleUploadMobile}
                   />
                 </label>
               </div>
@@ -279,8 +305,6 @@ function SlideModal({ slide, isNew, onSave, onClose }) {
 }
 
 export function AdminBanners() {
-  const [loading, setLoading] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState('banners'); // 'banners' | 'announcement'
   const [slides, setSlides] = useState([]);
   const [announcementText, setAnnouncementText] = useState('');
   const [toast, setToast] = useState('');
@@ -342,7 +366,7 @@ export function AdminBanners() {
     setIsNewSlide(false);
   };
 
-  const handleDeleteSlide = (id) => {
+  const handleDeleteSlide = async (id) => {
     if (slides.length <= 1) {
       setToast('You must have at least 1 active slide in the banner.');
       return;
@@ -350,6 +374,7 @@ export function AdminBanners() {
     if (!window.confirm('Delete this banner slide?')) return;
     const updated = slides.filter(s => s.id !== id);
     saveSlides(updated);
+    fetch('/api/banners?id=' + encodeURIComponent(id), { method: 'DELETE' }).catch(() => {});
     setToast('Slide deleted.');
   };
 

@@ -450,6 +450,21 @@ export async function saveStoreSettingsToDB(settings) {
 }
 
 // ==================== TRASH PRODUCTS ====================
+export async function moveToTrashDB(product) {
+  try {
+    const res = await fetch('/api/trash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product)
+    });
+    notifySync('vw_products_updated');
+    notifySync('vw_trash_updated');
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.error('Error moving product to trash in DB:', err);
+  }
+}
+
 export async function getTrashProducts() {
   try {
     const res = await fetch('/api/trash');
