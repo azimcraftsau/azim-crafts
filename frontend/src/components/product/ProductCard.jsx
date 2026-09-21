@@ -48,6 +48,12 @@ export const ProductCard = ({ product }) => {
     setActiveImageIndex(0); // Guarantee reset to Image 1
   };
 
+  const stockQty = product.stockQuantity !== undefined 
+    ? Number(product.stockQuantity) 
+    : (product.stock_quantity !== undefined ? Number(product.stock_quantity) : 10);
+  const isSoldOut = Boolean(product.isSoldOut) || stockQty <= 0;
+  const isLowStock = !isSoldOut && stockQty > 0 && stockQty <= 5;
+
   const currentMedia = mediaList[activeImageIndex] || mediaList[0] || { type: 'image', src: product.image };
 
   return (
@@ -61,7 +67,7 @@ export const ProductCard = ({ product }) => {
       <div className="aspect-square w-full relative mb-3 bg-white rounded-lg overflow-hidden flex items-center justify-center">
         
         {/* Sold Out Badge (only if sold out) */}
-        {product.isSoldOut ? (
+        {isSoldOut ? (
           <div className="absolute top-1 left-1 z-10">
             <span className="bg-[#757575] text-white text-[9.5px] font-semibold px-2 py-0.5 rounded-xs tracking-wider uppercase shadow-2xs">
               Sold out
@@ -96,11 +102,18 @@ export const ProductCard = ({ product }) => {
           />
         ) : (
           <img
-            src={currentMedia.src}
+            src={encodeURI(currentMedia.src || '')}
             alt={product.title}
             className="w-full h-full object-contain p-1 transition-all duration-300 transform group-hover:scale-105"
             loading="lazy"
             decoding="async"
+            onError={(e) => {
+              if (product.image && e.target.src !== encodeURI(product.image)) {
+                e.target.src = encodeURI(product.image);
+              } else {
+                e.target.src = '/logo.png';
+              }
+            }}
           />
         )}
 
@@ -133,11 +146,32 @@ export const ProductCard = ({ product }) => {
           <h3 className="font-heading text-xs sm:text-[13.5px] font-normal text-neutral-900 leading-snug line-clamp-2 group-hover:text-[#ae2828] transition-colors">
             {product.title}
           </h3>
+
+          {/* Low Stock Alert Badge / Sold Out Label */}
+          {isLowStock ? (
+            <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50/90 border border-amber-200/90 px-2 py-0.5 rounded-md">
+              <span className="animate-pulse text-xs">🔥</span>
+              <span>Only {stockQty} left in stock!</span>
+            </div>
+          ) : isSoldOut ? (
+            <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">
+              <span>Sold out</span>
+            </div>
+          ) : null}
         </div>
 
         {/* Polished Price Button Box */}
         <div className="w-full border border-neutral-300 group-hover:border-neutral-800 rounded-md py-2 px-3 text-center bg-white group-hover:bg-neutral-50/80 transition-all shadow-2xs">
-          {product.isOnSale ? (
+          {isSoldOut ? (
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="text-xs sm:text-[13px] font-semibold text-neutral-400 uppercase tracking-wide">
+                Sold Out
+              </span>
+              <span className="text-xs text-neutral-400">
+                • ${product.price.toFixed(2)} USD
+              </span>
+            </div>
+          ) : product.isOnSale ? (
             <div className="flex items-center justify-center gap-1.5">
               <span className="text-xs sm:text-[13px] font-bold text-[#ae2828]">
                 ${product.price.toFixed(2)} USD

@@ -16,6 +16,11 @@ export const CartProvider = ({ children }) => {
         const data = await getProducts();
         if (isMounted && Array.isArray(data) && data.length > 0) {
           setProducts(data);
+          setQuickViewProductState(current => {
+            if (!current) return null;
+            const updated = data.find(p => p.id === current.id);
+            return updated ? { ...current, ...updated } : current;
+          });
         }
       } catch (err) {
         console.warn('Failed to refresh products from DB:', err);
@@ -309,7 +314,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = (product, quantity = 1, selectedSize = null) => {
-    if (product.isSoldOut) {
+    const stockQty = product.stockQuantity !== undefined 
+      ? Number(product.stockQuantity) 
+      : (product.stock_quantity !== undefined ? Number(product.stock_quantity) : 10);
+    const isSoldOut = Boolean(product.isSoldOut) || stockQty <= 0;
+
+    if (isSoldOut) {
       showToast(`${product.title} is currently sold out.`, 'error');
       return;
     }
@@ -321,13 +331,14 @@ export const CartProvider = ({ children }) => {
         item => item.product.id === product.id && (item.selectedSize || null) === (effectiveSize || null)
       );
       if (existing) {
+        const nextQty = Math.min(stockQty, existing.quantity + quantity);
         return prevCart.map(item =>
           item.product.id === product.id && (item.selectedSize || null) === (effectiveSize || null)
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: nextQty }
             : item
         );
       }
-      return [...prevCart, { product, quantity, selectedSize: effectiveSize }];
+      return [...prevCart, { product, quantity: Math.min(stockQty, quantity), selectedSize: effectiveSize }];
     });
 
     const sizeMsg = effectiveSize ? ` (Size: ${effectiveSize})` : '';
@@ -355,7 +366,13 @@ export const CartProvider = ({ children }) => {
         const matches = selectedSize !== undefined
           ? (item.product.id === productId && (item.selectedSize || null) === (selectedSize || null))
           : item.product.id === productId;
-        return matches ? { ...item, quantity: newQuantity } : item;
+        if (!matches) return item;
+        const prod = item.product || {};
+        const stockQty = prod.stockQuantity !== undefined 
+          ? Number(prod.stockQuantity) 
+          : (prod.stock_quantity !== undefined ? Number(prod.stock_quantity) : 99);
+        const cappedQty = Math.min(stockQty, newQuantity);
+        return { ...item, quantity: cappedQty };
       })
     );
   };

@@ -44,6 +44,7 @@ const EMPTY_PRODUCT = {
   currency: 'USD',
   badge: '',
   sizes: [],
+  stockQuantity: 12,
   isSoldOut: false,
   isOnSale: false,
   hasModularParts: false,
@@ -242,9 +243,14 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     ? Boolean(initial.hasModularParts) 
     : (isArmourInitial && (initial?.title?.toLowerCase().includes('suit') || isNew));
 
+  const initialStockQty = initial?.stockQuantity !== undefined 
+    ? Number(initial.stockQuantity) 
+    : (initial?.stock_quantity !== undefined ? Number(initial.stock_quantity) : 12);
+
   const [form, setForm] = useState({ 
     ...EMPTY_PRODUCT, 
     ...initial,
+    stockQuantity: initialStockQty,
     hasModularParts: initialHasModularParts,
     modularParts: initialModularParts,
     sizes: initialSizes,
@@ -345,9 +351,16 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     const catObj = categories.find(c => c.key === form.category);
 
     const finalSizes = Array.isArray(form.sizes) ? form.sizes : [];
+    const parsedStock = parseInt(form.stockQuantity, 10);
+    const finalStock = isNaN(parsedStock) || parsedStock < 0 ? 0 : parsedStock;
+    const finalSoldOut = finalStock <= 0 ? true : Boolean(form.isSoldOut);
 
     const updatedProduct = {
       ...form,
+      stockQuantity: finalStock,
+      stock_quantity: finalStock,
+      isSoldOut: finalSoldOut,
+      is_sold_out: finalSoldOut ? 1 : 0,
       categoryName: catObj ? catObj.name : (form.categoryName || 'Authentic Historical Craft'),
       price: parseFloat(form.price),
       regularPrice: form.regularPrice ? parseFloat(form.regularPrice) : parseFloat(form.price),
@@ -494,11 +507,47 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                 </div>
 
                 <div>
+                  <label className={labelCls}>Inventory Units (Available Stock) *</label>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    className={inputCls} 
+                    value={form.stockQuantity !== undefined ? form.stockQuantity : 12} 
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      const newQty = isNaN(val) ? '' : Math.max(0, val);
+                      setForm(f => ({
+                        ...f,
+                        stockQuantity: newQty,
+                        isSoldOut: newQty === 0 ? true : (newQty > 0 && f.isSoldOut ? false : f.isSoldOut)
+                      }));
+                    }} 
+                    placeholder="e.g. 12" 
+                  />
+                  <p className="text-[11px] mt-1 font-medium">
+                    {Number(form.stockQuantity) === 0 ? (
+                      <span className="text-red-600">❌ 0 units: Automatically marked as Sold Out</span>
+                    ) : Number(form.stockQuantity) <= 5 ? (
+                      <span className="text-amber-600">🔥 Low Stock Alert (&le; 5 units will show on store)</span>
+                    ) : (
+                      <span className="text-emerald-600">✅ Normal Stock ({form.stockQuantity} units)</span>
+                    )}
+                  </p>
+                </div>
+
+                <div>
                   <label className={labelCls}>Stock Status</label>
                   <select 
                     className={inputCls} 
                     value={form.isSoldOut ? 'soldout' : 'instock'} 
-                    onChange={(e) => set('isSoldOut', e.target.value === 'soldout')}
+                    onChange={(e) => {
+                      const isSold = e.target.value === 'soldout';
+                      setForm(f => ({
+                        ...f,
+                        isSoldOut: isSold,
+                        stockQuantity: isSold ? 0 : (Number(f.stockQuantity) <= 0 ? 10 : f.stockQuantity)
+                      }));
+                    }}
                   >
                     <option value="instock">✅ In Stock (Available for Purchase)</option>
                     <option value="soldout">❌ Sold Out (Disabled)</option>
@@ -1148,7 +1197,15 @@ export function AdminProducts({ onNavigate }) {
       (p.categoryName && p.categoryName.toLowerCase().includes(search.toLowerCase())) ||
       (p.id && p.id.toLowerCase().includes(search.toLowerCase()));
     const matchCat = catFilter === 'all' || p.category === catFilter;
-    const matchStock = stockFilter === 'all' || (stockFilter === 'instock' ? !p.isSoldOut : p.isSoldOut);
+    const qty = p.stockQuantity !== undefined ? Number(p.stockQuantity) : (p.stock_quantity !== undefined ? Number(p.stock_quantity) : (p.isSoldOut ? 0 : 10));
+    const isSold = p.isSoldOut || qty <= 0;
+    const matchStock = stockFilter === 'all' 
+      ? true 
+      : stockFilter === 'instock' 
+        ? !isSold 
+        : stockFilter === 'lowstock'
+          ? (!isSold && qty <= 5)
+          : isSold;
     return matchSearch && matchCat && matchStock;
   });
 
@@ -1301,6 +1358,7 @@ export function AdminProducts({ onNavigate }) {
           <select className={selectCls} value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}>
             <option value="all">All Stock Status</option>
             <option value="instock">In Stock Only</option>
+            <option value="lowstock">🔥 Low Stock (&le; 5 units)</option>
             <option value="soldout">Sold Out Only</option>
           </select>
         </div>
@@ -1339,10 +1397,10 @@ export function AdminProducts({ onNavigate }) {
                       <td className="px-5 py-3.5">
                         <div className="w-12 h-12 rounded-xl bg-neutral-50 border border-neutral-200 overflow-hidden flex items-center justify-center p-1">
                           <img
-                            src={p.image}
+                            src={encodeURI(p.image || '')}
                             alt={p.title}
                             className="w-full h-full object-contain"
-                            onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="%23f3f4f6"/></svg>'; }}
+                            onError={(e) => { e.target.src = '/logo.png'; }}
                           />
                         </div>
                       </td>
@@ -1378,11 +1436,26 @@ export function AdminProducts({ onNavigate }) {
                     <div className="text-[11px] text-gray-400 truncate max-w-[180px]">{p.dimensions || '24" Diameter'}</div>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      p.isSoldOut ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'
-                    }`}>
-                      {p.isSoldOut ? 'Sold Out' : 'In Stock'}
-                    </span>
+                    {(() => {
+                      const qty = p.stockQuantity !== undefined ? Number(p.stockQuantity) : (p.stock_quantity !== undefined ? Number(p.stock_quantity) : (p.isSoldOut ? 0 : 10));
+                      const isSold = p.isSoldOut || qty <= 0;
+                      return (
+                        <div className="space-y-1">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            isSold 
+                              ? 'bg-red-100 text-red-700' 
+                              : qty <= 5 
+                                ? 'bg-amber-100 text-amber-800' 
+                                : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {isSold ? 'Sold Out' : qty <= 5 ? `🔥 Low Stock (${qty})` : 'In Stock'}
+                          </span>
+                          <div className="text-[11px] font-medium text-gray-500">
+                            {isSold ? '0 units left' : `${qty} units in stock`}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2">

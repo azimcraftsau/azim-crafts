@@ -44,6 +44,25 @@ export async function onRequestPost(context) {
         o.total || 0, o.status || 'Processing', o.payment || 'Paid', o.tracking || '',
         o.carrier || 'DHL Express', o.date || 'Today', o.createdAt || new Date().toISOString()
       ).run();
+
+      // Deduct stock quantity and auto-mark sold out if 0
+      const purchasedItems = Array.isArray(o.itemsList || o.items_list) ? (o.itemsList || o.items_list) : [];
+      for (const it of purchasedItems) {
+        const prodId = it.id || (it.product && it.product.id);
+        const qty = Number(it.quantity) || 1;
+        if (prodId) {
+          try {
+            await env.DB.prepare(`
+              UPDATE products 
+              SET stock_quantity = MAX(0, COALESCE(stock_quantity, 10) - ?),
+                  is_sold_out = CASE WHEN COALESCE(stock_quantity, 10) - ? <= 0 THEN 1 ELSE is_sold_out END
+              WHERE id = ?
+            `).bind(qty, qty, prodId).run();
+          } catch (e) {
+            console.error('Failed to deduct stock for product', prodId, e);
+          }
+        }
+      }
     }
 
     // Send itemized tax receipt / bill email if Resend is configured

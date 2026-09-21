@@ -64,6 +64,22 @@ export const QuickViewModal = () => {
     product.sizes = quickViewProduct.sizes;
   }
 
+  const stockQty = quickViewProduct.stockQuantity !== undefined 
+    ? Number(quickViewProduct.stockQuantity) 
+    : (quickViewProduct.stock_quantity !== undefined 
+        ? Number(quickViewProduct.stock_quantity) 
+        : (masterDefaults.stockQuantity !== undefined 
+            ? Number(masterDefaults.stockQuantity) 
+            : (masterDefaults.stock_quantity !== undefined ? Number(masterDefaults.stock_quantity) : 10)));
+
+  const isSoldOut = Boolean(quickViewProduct.isSoldOut || masterDefaults.isSoldOut) || stockQty <= 0;
+  const isLowStock = !isSoldOut && stockQty > 0 && stockQty <= 5;
+
+  product.stockQuantity = stockQty;
+  product.stock_quantity = stockQty;
+  product.isSoldOut = isSoldOut;
+  product.is_sold_out = isSoldOut ? 1 : 0;
+
   const isArmourCategory = product.category === 'vintage-armour' || 
                            product.category === 'fantasy-gothic-armour' || 
                            (product.categoryName && (product.categoryName.includes('Armour') || product.categoryName.includes('Suit'))) ||
@@ -112,9 +128,10 @@ export const QuickViewModal = () => {
   };
 
   const handleAddToCart = () => {
+    if (isSoldOut) return;
     setIsAdding(true);
     const chosenSize = productSizes ? (selectedSize || productSizes[0]) : null;
-    addToCart(product, quantity, chosenSize);
+    addToCart(product, Math.min(quantity, Math.max(1, stockQty)), chosenSize);
 
     // Add selected add-ons at accurate catalog price
     Object.keys(selectedAddons).forEach(addonId => {
@@ -235,11 +252,18 @@ export const QuickViewModal = () => {
                 ) : (
                   <>
                     <img
-                      src={currentMedia.src}
+                      src={encodeURI(currentMedia.src || '')}
                       alt={product.title}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-contain max-h-[380px] drop-shadow-md transition-all duration-300"
+                      onError={(e) => {
+                        if (product.image && e.target.src !== encodeURI(product.image)) {
+                          e.target.src = encodeURI(product.image);
+                        } else {
+                          e.target.src = '/logo.png';
+                        }
+                      }}
                     />
                     {product.badge && !product.isSoldOut && (
                       <span className="absolute top-3 left-3 bg-[#ae2828] text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-md tracking-wider shadow-sm">
@@ -342,6 +366,28 @@ export const QuickViewModal = () => {
                 <p className="text-[11px] text-neutral-500">
                   Tax included. <span className="underline text-neutral-700 font-medium">Free Worldwide Express Shipping</span> on orders over $200 USD.
                 </p>
+
+                {/* Low Stock Urgency Alert */}
+                {isLowStock && (
+                  <div className="flex items-center gap-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300/80 p-3 rounded-xl text-amber-900 shadow-2xs animate-fade-in">
+                    <span className="text-base animate-bounce">🔥</span>
+                    <div className="text-xs">
+                      <strong className="font-bold text-amber-950">Almost Gone! Only {stockQty} {stockQty === 1 ? 'unit' : 'units'} left in stock.</strong>
+                      <span className="block text-[11px] text-amber-800">Order soon — handcrafted artisan item in high demand.</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sold Out Notice */}
+                {isSoldOut && (
+                  <div className="flex items-center gap-2.5 bg-neutral-100 border border-neutral-300 p-3 rounded-xl text-neutral-700 shadow-2xs">
+                    <span className="text-sm">❌</span>
+                    <div className="text-xs">
+                      <strong className="font-bold text-neutral-900">Currently Sold Out</strong>
+                      <span className="block text-[11px] text-neutral-500">This piece is currently out of stock. Restock updates managed via artisan workshop.</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Size Selector for Armour & Suits and Shields */}
@@ -392,30 +438,38 @@ export const QuickViewModal = () => {
               )}
 
               {/* Quantity Selector */}
-              <div className="space-y-1.5 pt-3 border-t border-neutral-100">
-                <label className="block text-xs font-bold text-neutral-800 uppercase tracking-wider">
-                  Quantity
-                </label>
-                <div className="inline-flex items-center border border-neutral-300 rounded-xl bg-white shadow-2xs">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3.5 py-2 hover:bg-neutral-100 text-neutral-600 transition-colors cursor-pointer rounded-l-xl font-bold"
-                    aria-label="Decrease quantity"
-                  >
-                    -
-                  </button>
-                  <span className="px-5 text-xs font-bold text-neutral-900 min-w-[2.5rem] text-center">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="px-3.5 py-2 hover:bg-neutral-100 text-neutral-600 transition-colors cursor-pointer rounded-r-xl font-bold"
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </button>
+              {!isSoldOut && (
+                <div className="space-y-1.5 pt-3 border-t border-neutral-100">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-neutral-800 uppercase tracking-wider">
+                      Quantity
+                    </label>
+                    <span className="text-[11px] font-medium text-neutral-500">
+                      {stockQty} {stockQty === 1 ? 'unit' : 'units'} available
+                    </span>
+                  </div>
+                  <div className="inline-flex items-center border border-neutral-300 rounded-xl bg-white shadow-2xs">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="px-3.5 py-2 hover:bg-neutral-100 text-neutral-600 transition-colors cursor-pointer rounded-l-xl font-bold"
+                      aria-label="Decrease quantity"
+                    >
+                      -
+                    </button>
+                    <span className="px-5 text-xs font-bold text-neutral-900 min-w-[2.5rem] text-center">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => setQuantity(Math.min(stockQty, quantity + 1))}
+                      disabled={quantity >= stockQty}
+                      className="px-3.5 py-2 hover:bg-neutral-100 text-neutral-600 transition-colors cursor-pointer rounded-r-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Select Optional Add-ons */}
               {availableAddons.length > 0 && (
