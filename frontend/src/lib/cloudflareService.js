@@ -762,3 +762,51 @@ export async function deleteAdminUser({ userId, targetEmail }) {
   return { success: false, error: 'Failed to delete user.' };
 }
 
+export async function adminForgotPassword(email) {
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_forgot_password',
+        email
+      })
+    });
+    const data = await res.json().catch(() => null);
+    if (data) {
+      if (data.success) {
+        return { success: true, message: data.message, resetUrl: data.resetUrl };
+      }
+      return { success: false, error: data.error || 'Failed to send reset link.' };
+    }
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+  return { success: false, error: 'Failed to send reset link.' };
+}
+
+export async function adminResetPassword({ email, token, newPassword }) {
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_reset_password',
+        email,
+        token,
+        newPassword
+      })
+    });
+    const data = await res.json().catch(() => null);
+    if (data) {
+      if (data.success) {
+        return { success: true, message: data.message };
+      }
+      return { success: false, error: data.error || 'Failed to reset password.' };
+    }
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+  return { success: false, error: 'Failed to reset password.' };
+}
+

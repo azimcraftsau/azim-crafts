@@ -497,7 +497,8 @@ export async function onRequestPost(context) {
         }
         const userId = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const hashedPw = await hashPasswordPbkdf2(password);
-        const userRole = role && ['admin', 'manager', 'staff'].includes(role) ? role : 'admin';
+        const allowedRoles = ['admin', 'superadmin', 'subadmin', 'manager', 'staff'];
+        const userRole = role && allowedRoles.includes(role) ? role : 'subadmin';
         await env.DB.prepare(`
           INSERT INTO users (id, name, email, password, phone, country, role, addresses)
           VALUES (?, ?, ?, ?, ?, 'Australia', ?, '[]')
@@ -525,7 +526,8 @@ export async function onRequestPost(context) {
         });
       }
       if (env.DB) {
-        const userRole = role && ['admin', 'manager', 'staff'].includes(role) ? role : 'admin';
+        const allowedRoles = ['admin', 'superadmin', 'subadmin', 'manager', 'staff'];
+        const userRole = role && allowedRoles.includes(role) ? role : 'subadmin';
         if (newPassword && newPassword.trim().length >= 6) {
           const hashedPw = await hashPasswordPbkdf2(newPassword.trim());
           await env.DB.prepare('UPDATE users SET name = ?, phone = ?, role = ?, password = ? WHERE id = ?')
@@ -569,6 +571,189 @@ export async function onRequestPost(context) {
         });
       }
       return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    
+    // 12. ADMIN FORGOT PASSWORD ACTION (Restricted strictly to administrators, subadmins & staff)
+    if (action === 'admin_forgot_password') {
+      if (!email) {
+        return new Response(JSON.stringify({ error: 'Please enter your administrator email address' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const cleanEmail = email.toLowerCase().trim();
+      let user = null;
+      if (env.DB) {
+        user = await env.DB.prepare('SELECT id, name, email, role FROM users WHERE email = ?')
+          .bind(cleanEmail)
+          .first();
+      }
+
+      const allowedRoles = ['admin', 'superadmin', 'subadmin', 'manager', 'staff'];
+      if (!user || !allowedRoles.includes(user.role)) {
+        return new Response(JSON.stringify({
+          error: 'No administrator account found with this email address. Please contact the Master Administrator.'
+        }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const token = (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Math.random().toString(36).substring(2)) + Math.random().toString(36).substring(2, 10);
+      const expires = Date.now() + (30 * 60 * 1000); // 30 Minutes
+
+      if (env.DB) {
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS password_resets (
+            email TEXT PRIMARY KEY,
+            token TEXT NOT NULL,
+            expires INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `).run().catch(() => null);
+
+        await env.DB.prepare(`
+          INSERT INTO password_resets (email, token, expires)
+          VALUES (?, ?, ?)
+          ON CONFLICT(email) DO UPDATE SET token = excluded.token, expires = excluded.expires
+        `).bind(cleanEmail, token, expires).run().catch(() => null);
+      }
+
+      const host = request.headers.get('host') || 'azimcrafts.com';
+      const protocol = request.headers.get('x-forwarded-proto') || 'https';
+      const resetUrl = `${protocol}://${host}/admin?reset_token=${token}&email=${encodeURIComponent(cleanEmail)}`;
+
+      const emailHtml = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 30px 20px; background-color: #0f1117; border: 1px solid #c8924b; border-radius: 12px; color: #ffffff;">
+          <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #2a2d3a;">
+            <h1 style="font-size: 24px; letter-spacing: 2px; text-transform: uppercase; color: #ffffff; margin: 0;">Azim Crafts</h1>
+            <p style="font-size: 11px; letter-spacing: 2px; color: #c8924b; text-transform: uppercase; margin: 5px 0 0 0;">Administrator & Staff Security Portal</p>
+          </div>
+          <div style="background: #181b26; padding: 25px; border-radius: 8px; border: 1px solid #2a2d3a;">
+            <h2 style="font-size: 18px; margin-top: 0; color: #c8924b; font-weight: 600;">Reset Your Admin Password</h2>
+            <p style="font-size: 14px; line-height: 1.6; color: #cccccc;">Hello <strong>${user.name || 'Administrator'}</strong> (${(user.role || 'admin').toUpperCase()}),</p>
+            <p style="font-size: 14px; line-height: 1.6; color: #cccccc;">A request was received to reset the administrator password for your Azim Crafts account. Click the button below to set your new secure password:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetUrl}" style="background-color: #c8924b; color: #ffffff; padding: 14px 28px; text-decoration: none; font-size: 13px; font-weight: bold; letter-spacing: 1.2px; text-transform: uppercase; border-radius: 8px; display: inline-block; box-shadow: 0 4px 15px rgba(200,146,75,0.3);">Set New Admin Password</a>
+            </div>
+            <p style="font-size: 12px; line-height: 1.6; color: #888888;">Or copy and paste this link into your browser:<br/><a href="${resetUrl}" style="color: #c8924b; word-break: break-all;">${resetUrl}</a></p>
+            <p style="font-size: 11px; color: #666666; margin-top: 25px; border-top: 1px solid #2a2d3a; padding-top: 15px;">⏱️ <em>This reset link is valid for 30 minutes. If you did not request this, please notify the SuperAdmin immediately.</em></p>
+          </div>
+        </div>
+      `;
+
+      if (env.RESEND_API_KEY) {
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: 'Azim Crafts Admin <contact@azimcrafts.com>',
+              to: [cleanEmail],
+              subject: 'Reset your Azim Crafts Administrator Password',
+              html: emailHtml
+            })
+          });
+        } catch (err) {}
+      }
+
+      try {
+        await fetch('https://api.mailchannels.net/tx/v1/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: cleanEmail, name: user.name || 'Admin' }] }],
+            from: { email: 'security@azimcrafts.com', name: 'Azim Crafts Security' },
+            subject: 'Reset your Azim Crafts Administrator Password',
+            content: [{ type: 'text/html', value: emailHtml }]
+          })
+        });
+      } catch (err) {}
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: `Password reset link has been sent to ${cleanEmail}. Please check your inbox.`,
+        resetUrl
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 13. ADMIN RESET PASSWORD ACTION (Validates Token & Updates Admin Password with PBKDF2)
+    if (action === 'admin_reset_password') {
+      const { token, newPassword } = body;
+      if (!email || !newPassword || !token) {
+        return new Response(JSON.stringify({ error: 'Email, token, and new password are required.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (newPassword.trim().length < 6) {
+        return new Response(JSON.stringify({ error: 'New password must be at least 6 characters long.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const cleanEmail = email.toLowerCase().trim();
+
+      if (env.DB) {
+        const resetRecord = await env.DB.prepare('SELECT token, expires FROM password_resets WHERE email = ?')
+          .bind(cleanEmail)
+          .first();
+
+        if (!resetRecord || resetRecord.token !== token) {
+          return new Response(JSON.stringify({ error: 'Invalid or expired reset token. Please request a new link.' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        if (Number(resetRecord.expires) < Date.now()) {
+          return new Response(JSON.stringify({ error: 'This reset link has expired. Please request a new one.' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const user = await env.DB.prepare('SELECT id, role FROM users WHERE email = ?')
+          .bind(cleanEmail)
+          .first();
+
+        const allowedRoles = ['admin', 'superadmin', 'subadmin', 'manager', 'staff'];
+        if (!user || !allowedRoles.includes(user.role)) {
+          return new Response(JSON.stringify({ error: 'Unauthorized. This account is not an administrator.' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const hashedNewPw = await hashPasswordPbkdf2(newPassword.trim());
+        await env.DB.prepare('UPDATE users SET password = ? WHERE email = ?')
+          .bind(hashedNewPw, cleanEmail)
+          .run();
+
+        await env.DB.prepare('DELETE FROM password_resets WHERE email = ?')
+          .bind(cleanEmail)
+          .run();
+
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'Admin password reset successfully! You can now log in with your new password.'
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true, message: 'Password updated successfully' }), {
         headers: { 'Content-Type': 'application/json' }
       });
     }

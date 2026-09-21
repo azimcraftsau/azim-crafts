@@ -165,7 +165,7 @@ export function AdminTeam() {
     }
   };
 
-  const adminsList = users.filter(u => u.role === 'admin' || u.role === 'manager' || u.role === 'staff');
+  const adminsList = users.filter(u => u.role === 'admin' || u.role === 'subadmin' || u.role === 'manager' || u.role === 'staff');
   const displayList = (activeTab === 'admins' ? adminsList : users).filter(u => {
     const q = search.toLowerCase();
     return (
@@ -190,6 +190,14 @@ export function AdminTeam() {
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
           <ShieldCheck size={12} className="text-emerald-600" />
           Administrator
+        </span>
+      );
+    }
+    if (role === 'subadmin') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200">
+          <ShieldCheck size={12} className="text-teal-600" />
+          Sub Administrator
         </span>
       );
     }
@@ -513,7 +521,8 @@ export function AdminTeam() {
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c8924b] outline-none bg-white"
                   >
-                    <option value="admin">Administrator</option>
+                    <option value="admin">Super Administrator</option>
+                    <option value="subadmin">Sub Administrator</option>
                     <option value="manager">Store Manager</option>
                     <option value="staff">Staff Support</option>
                   </select>
@@ -637,7 +646,8 @@ export function AdminTeam() {
                     onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c8924b] outline-none bg-white"
                   >
-                    <option value="admin">Administrator</option>
+                    <option value="admin">Super Administrator</option>
+                    <option value="subadmin">Sub Administrator</option>
                     <option value="manager">Store Manager</option>
                     <option value="staff">Staff Support</option>
                   </select>

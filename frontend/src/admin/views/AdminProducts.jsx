@@ -1242,20 +1242,11 @@ export function AdminProducts({ onNavigate }) {
             </span>
           </button>
 
-          {/* Individual Category Tabs */}
+                    {/* Individual Category Tabs */}
           {categories.map((c) => {
-            const count = getProductCountForCat(c.key);
+            const count = products.filter(p => p.category === c.key).length;
             const isSelected = catFilter === c.key;
-            if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
-        <span className="ml-3 text-gray-500">Loading...</span>
-      </div>
-    );
-  }
-
-  return (
+            return (
               <button
                 key={c.key}
                 onClick={() => setCatFilter(c.key)}
