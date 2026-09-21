@@ -301,37 +301,47 @@ export async function onRequestPost(context) {
       `;
 
       // 1. If Resend API Key is configured
-      if (env.RESEND_API_KEY) {
+      const dispatchEmail = async () => {
+        if (env.RESEND_API_KEY) {
+          try {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                from: 'Azim Crafts <contact@azimcrafts.com>',
+                to: [cleanEmail],
+                subject: 'Reset your Azim Crafts password',
+                html: emailHtml
+              }),
+              signal: AbortSignal.timeout(3000)
+            });
+            return;
+          } catch (err) {}
+        }
+
         try {
-          await fetch('https://api.resend.com/emails', {
+          await fetch('https://api.mailchannels.net/tx/v1/send', {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${env.RESEND_API_KEY}`,
-              'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              from: 'Azim Crafts <contact@azimcrafts.com>',
-              to: [cleanEmail],
+              personalizations: [{ to: [{ email: cleanEmail, name: user.name || 'Customer' }] }],
+              from: { email: 'noreply@azimcrafts.com', name: 'Azim Crafts' },
               subject: 'Reset your Azim Crafts password',
-              html: emailHtml
-            })
+              content: [{ type: 'text/html', value: emailHtml }]
+            }),
+            signal: AbortSignal.timeout(3000)
           });
         } catch (err) {}
-      }
+      };
 
-      // 2. Or try MailChannels (Native to Cloudflare Workers)
-      try {
-        await fetch('https://api.mailchannels.net/tx/v1/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            personalizations: [{ to: [{ email: cleanEmail, name: user.name || 'Customer' }] }],
-            from: { email: 'noreply@azimcrafts.com', name: 'Azim Crafts' },
-            subject: 'Reset your Azim Crafts password',
-            content: [{ type: 'text/html', value: emailHtml }]
-          })
-        });
-      } catch (err) {}
+      if (context && typeof context.waitUntil === 'function') {
+        context.waitUntil(dispatchEmail());
+      } else {
+        dispatchEmail().catch(() => null);
+      }
 
       return new Response(JSON.stringify({
         success: true,
@@ -646,36 +656,47 @@ export async function onRequestPost(context) {
         </div>
       `;
 
-      if (env.RESEND_API_KEY) {
+      const dispatchEmail = async () => {
+        if (env.RESEND_API_KEY) {
+          try {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                from: 'Azim Crafts Admin <contact@azimcrafts.com>',
+                to: [cleanEmail],
+                subject: 'Reset your Azim Crafts Administrator Password',
+                html: emailHtml
+              }),
+              signal: AbortSignal.timeout(3000)
+            });
+            return;
+          } catch (err) {}
+        }
+
         try {
-          await fetch('https://api.resend.com/emails', {
+          await fetch('https://api.mailchannels.net/tx/v1/send', {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${env.RESEND_API_KEY}`,
-              'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              from: 'Azim Crafts Admin <contact@azimcrafts.com>',
-              to: [cleanEmail],
+              personalizations: [{ to: [{ email: cleanEmail, name: user.name || 'Admin' }] }],
+              from: { email: 'security@azimcrafts.com', name: 'Azim Crafts Security' },
               subject: 'Reset your Azim Crafts Administrator Password',
-              html: emailHtml
-            })
+              content: [{ type: 'text/html', value: emailHtml }]
+            }),
+            signal: AbortSignal.timeout(3000)
           });
         } catch (err) {}
-      }
+      };
 
-      try {
-        await fetch('https://api.mailchannels.net/tx/v1/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            personalizations: [{ to: [{ email: cleanEmail, name: user.name || 'Admin' }] }],
-            from: { email: 'security@azimcrafts.com', name: 'Azim Crafts Security' },
-            subject: 'Reset your Azim Crafts Administrator Password',
-            content: [{ type: 'text/html', value: emailHtml }]
-          })
-        });
-      } catch (err) {}
+      if (context && typeof context.waitUntil === 'function') {
+        context.waitUntil(dispatchEmail());
+      } else {
+        dispatchEmail().catch(() => null);
+      }
 
       return new Response(JSON.stringify({
         success: true,
