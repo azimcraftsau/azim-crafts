@@ -1,7 +1,7 @@
 // Cloudflare Pages Function: /api/messages (Cloudflare D1 SQL Handler)
 export async function onRequestGet(context) {
   try {
-    const { env } = context;
+    const { request, env } = context;
     if (!env.DB) {
       return new Response(JSON.stringify([]), {
         headers: { 'Content-Type': 'application/json' }
