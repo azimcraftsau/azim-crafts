@@ -8,7 +8,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 1,
     desktopVideo: '/desktop banner/video1.mp4',
+    desktopPoster: '/desktop banner/poster1.webp',
     mobileVideo: '/mobile banner/video1.mp4',
+    mobilePoster: '/mobile banner/poster1.webp',
     badgeText: 'HANDCRAFTED HISTORICAL HERITAGE',
     title: 'Discover Our Vintage\nCollection',
     subtitle: 'Authentic Nautical Antiques, Battle-Ready Medieval Armour & Fine Goods',
@@ -19,7 +21,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 2,
     desktopVideo: '/desktop banner/video2.mp4',
+    desktopPoster: '/desktop banner/poster2.webp',
     mobileVideo: '/mobile banner/video2.mp4',
+    mobilePoster: '/mobile banner/poster2.webp',
     badgeText: '18-GAUGE STEEL & SOLID WOOD',
     title: 'Battle-Ready Viking\nRound Shields & Swords',
     subtitle: 'Hand-painted Norse dragon knotwork with heavy metal rim & center umbo',
@@ -30,7 +34,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 3,
     desktopVideo: '/desktop banner/video3.mp4',
+    desktopPoster: '/desktop banner/poster3.webp',
     mobileVideo: '/mobile banner/video3.mp4',
+    mobilePoster: '/mobile banner/poster3.webp',
     badgeText: 'LEGENDARY MEDIEVAL REENACTMENT',
     title: 'Forged Knight Armour\n& Centurion Helmets',
     subtitle: 'Authentic wearable historical reproductions for cosplay, collectors & decor',
@@ -41,7 +47,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 4,
     desktopVideo: '/desktop banner/video4.mp4',
+    desktopPoster: '/desktop banner/poster4.webp',
     mobileVideo: '/mobile banner/video4.mp4',
+    mobilePoster: '/mobile banner/poster4.webp',
     badgeText: 'HAND-FORGED CARBON STEEL',
     title: 'Thor Mjolnir Hammers\n& Medieval Weaponry',
     subtitle: 'Solid steel casting with carved ashwood handles and Norse rune engravings',
@@ -52,7 +60,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 5,
     desktopVideo: '/desktop banner/video5.mp4',
+    desktopPoster: '/desktop banner/poster5.webp',
     mobileVideo: '/mobile banner/video5.mp4',
+    mobilePoster: '/mobile banner/poster5.webp',
     badgeText: 'AUTHENTIC MARITIME & LEATHER',
     title: 'Solid Brass Compasses\n& Handcrafted Journals',
     subtitle: 'Navigational sextants, diving helmets and 100% genuine buffalo leather crafts',
@@ -63,7 +73,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 6,
     desktopVideo: '/desktop banner/video6.mp4',
+    desktopPoster: '/desktop banner/poster6.webp',
     mobileVideo: '',
+    mobilePoster: '',
     badgeText: 'ORIGINAL ARTISAN ATELIER',
     title: 'Master Artisans &\nHandcrafted Heritage',
     subtitle: 'Generational craftsmen shaping bespoke leather journals, heraldic shields, armour & artisan chandeliers',
@@ -129,17 +141,20 @@ export const HeroSlider = () => {
 
   const totalSlides = displaySlides.length || 1;
 
-  // Lightweight pre-buffer: ONLY the NEXT slide's metadata for current device
+  // Defer pre-buffering next slide to prevent bandwidth competition on initial load
   useEffect(() => {
     if (!Array.isArray(displaySlides) || displaySlides.length <= 1) return;
-    const nextIndex = (currentSlide + 1) % displaySlides.length;
-    const nextSlideData = displaySlides[nextIndex];
-    const targetVideo = isMobile ? nextSlideData?.mobileVideo : nextSlideData?.desktopVideo;
-    if (targetVideo) {
-      const vid = document.createElement('video');
-      vid.src = targetVideo;
-      vid.preload = 'metadata';
-    }
+    const timer = setTimeout(() => {
+      const nextIndex = (currentSlide + 1) % displaySlides.length;
+      const nextSlideData = displaySlides[nextIndex];
+      const targetVideo = isMobile ? nextSlideData?.mobileVideo : nextSlideData?.desktopVideo;
+      if (targetVideo) {
+        const vid = document.createElement('video');
+        vid.src = targetVideo;
+        vid.preload = 'metadata';
+      }
+    }, 3500);
+    return () => clearTimeout(timer);
   }, [currentSlide, displaySlides, isMobile]);
 
   const nextSlide = () => {
@@ -198,10 +213,11 @@ export const HeroSlider = () => {
               key={`desktop-video-${safeSlideIndex}`}
               ref={desktopVideoRef}
               src={activeSlideData.desktopVideo}
+              poster={activeSlideData.desktopPoster || '/desktop banner/poster1.webp'}
               autoPlay
               muted
               playsInline
-              preload="metadata"
+              preload="auto"
               onEnded={nextSlide}
               className="w-full h-full object-cover object-center opacity-90 transition-opacity duration-500"
             />
@@ -290,10 +306,11 @@ export const HeroSlider = () => {
               key={`mobile-video-${safeSlideIndex}`}
               ref={mobileVideoRef}
               src={activeSlideData.mobileVideo}
+              poster={activeSlideData.mobilePoster || '/mobile banner/poster1.webp'}
               autoPlay
               muted
               playsInline
-              preload="metadata"
+              preload="auto"
               onEnded={nextSlide}
               className="w-full h-full object-cover object-top opacity-95 transition-opacity duration-500 pointer-events-none"
             />
