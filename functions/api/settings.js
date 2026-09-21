@@ -48,7 +48,7 @@ export async function onRequestPost(context) {
         )
       `).bind(
         s.announcementText || '', s.freeShippingThreshold || 200,
-        s.storeEmail || 'info@vintagetomodern.com', s.whatsappNumber || '+61 400 000 000'
+        s.storeEmail || 'contact@azimcrafts.com', s.whatsappNumber || '+61 426 285 439'
       ).run();
     }
 

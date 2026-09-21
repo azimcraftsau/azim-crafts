@@ -115,8 +115,10 @@ export async function onRequestPost(context) {
         });
       }
 
+      const token = `adm_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
       return new Response(JSON.stringify({
         success: true,
+        token: token,
         user: {
           id: user.id,
           name: user.name,
@@ -364,11 +366,25 @@ export async function onRequestPost(context) {
       });
     }
 
-    // 7. LIST USERS ACTION (For Admin CRM)
+    // 7. VERIFY TOKEN ACTION
+    if (action === 'verify_token') {
+      const authHeader = request.headers.get('Authorization') || '';
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 8. LIST USERS ACTION (For Admin CRM)
     if (action === 'list_users') {
       if (env.DB) {
         try {
-          const { results } = await env.DB.prepare('SELECT id, name, email, phone, country, createdAt FROM users').all();
+          const { results } = await env.DB.prepare('SELECT id, name, email, phone, role, created_at as createdAt FROM users ORDER BY created_at DESC').all();
           return new Response(JSON.stringify({ success: true, users: results || [] }), {
             headers: { 'Content-Type': 'application/json' }
           });

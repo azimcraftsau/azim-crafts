@@ -1,4 +1,10 @@
 // Cloudflare Pages Function: /api/products (Cloudflare D1 SQL Handler)
+function safeParse(val, fallback) {
+  if (!val) return fallback;
+  if (typeof val !== 'string') return val;
+  try { return JSON.parse(val); } catch (e) { return fallback; }
+}
+
 export async function onRequestGet(context) {
   try {
     const { env } = context;
@@ -14,10 +20,11 @@ export async function onRequestGet(context) {
 
     const mapped = (results || []).map(p => ({
       ...p,
-      images: p.images ? JSON.parse(p.images) : [p.image],
-      videos: p.videos ? JSON.parse(p.videos) : [],
-      perfectFor: p.perfect_for ? JSON.parse(p.perfect_for) : [],
-      specifications: p.specifications ? JSON.parse(p.specifications) : {},
+      sizes: safeParse(p.sizes, []),
+      images: safeParse(p.images, [p.image]),
+      videos: safeParse(p.videos, []),
+      perfectFor: safeParse(p.perfect_for, []),
+      specifications: safeParse(p.specifications, {}),
       isSoldOut: Boolean(p.is_sold_out),
       isOnSale: Boolean(p.is_on_sale)
     }));
@@ -45,20 +52,25 @@ export async function onRequestPost(context) {
           category, category_name, is_sold_out, is_on_sale, badge, image,
           hover_image, images, videos, vendor, description, specifications,
           perfect_for, dimensions, weight, materials, shipping_info, disclaimer,
-          rating, reviews_count
+          rating, reviews_count, sizes
         ) VALUES (
           ?, ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?,
-          ?, ?
+          ?, ?, ?
         )
       `).bind(
-        p.id, p.productNumber || 0, p.title, p.handle || '', p.price || 0, p.regularPrice || p.price || 0, p.currency || 'USD',
-        p.category || 'shields', p.categoryName || '', p.isSoldOut ? 1 : 0, p.isOnSale ? 1 : 0, p.badge || '', p.image || '',
-        p.hoverImage || '', JSON.stringify(p.images || [p.image]), JSON.stringify(p.videos || []), p.vendor || 'Vintage To Modern Craft',
-        p.description || '', JSON.stringify(p.specifications || {}), JSON.stringify(p.perfectFor || []), p.dimensions || '',
-        p.weight || '', p.materials || '', p.shippingInfo || '', p.disclaimer || '', p.rating || 5, p.reviewsCount || 10
+        p.id, p.productNumber || p.product_number || 0, p.title || p.name || '', p.handle || '',
+        Number(p.price) || 0, p.regularPrice ? Number(p.regularPrice) : (Number(p.price) || 0), p.currency || 'USD',
+        p.category || 'general', p.categoryName || p.category_name || '', p.isSoldOut ? 1 : 0, p.isOnSale ? 1 : 0,
+        p.badge || '', p.image || '', p.hoverImage || p.hover_image || '',
+        JSON.stringify(p.images || [p.image]), JSON.stringify(p.videos || []),
+        p.vendor || 'Azim Crafts', p.description || '', JSON.stringify(p.specifications || {}),
+        JSON.stringify(p.perfectFor || p.perfect_for || []), p.dimensions || '', p.weight || '',
+        p.materials || '', p.shippingInfo || p.shipping_info || '', p.disclaimer || '',
+        p.rating || 5, p.reviewsCount || p.reviews_count || 10,
+        JSON.stringify(p.sizes || [])
       ).run();
     }
 

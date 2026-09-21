@@ -201,7 +201,7 @@ export const HeroSlider = () => {
               autoPlay
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               onEnded={nextSlide}
               className="w-full h-full object-cover object-center opacity-90 transition-opacity duration-500"
             />
@@ -293,7 +293,7 @@ export const HeroSlider = () => {
               autoPlay
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               onEnded={nextSlide}
               className="w-full h-full object-cover object-top opacity-95 transition-opacity duration-500 pointer-events-none"
             />

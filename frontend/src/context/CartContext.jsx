@@ -151,14 +151,7 @@ export const CartProvider = ({ children }) => {
       // 1. Handle Product Detail Hash / Route
       if (hash.startsWith('#product-')) {
         const prodId = hash.replace('#product-', '');
-        const currentProducts = (() => {
-          try {
-            const saved = localStorage.getItem('vw_admin_products');
-            return saved ? JSON.parse(saved) : (products || allProducts);
-          } catch {
-            return products || allProducts;
-          }
-        })();
+        const currentProducts = products && products.length > 0 ? products : allProducts;
         const found = currentProducts.find(p => String(p.id) === String(prodId)) || allProducts.find(p => String(p.id) === String(prodId));
         if (found) {
           setQuickViewProductState(found);
