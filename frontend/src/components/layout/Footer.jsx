@@ -3,13 +3,11 @@ import { footerQuickLinks } from '../../data/navigation';
 import { useCart } from '../../context/CartContext';
 import { 
   MapPin, Phone, Mail, Clock, Globe, 
-  Facebook, Instagram, Youtube, Linkedin, ChevronDown, Check
+  Facebook, Instagram, Youtube, Linkedin
 } from 'lucide-react';
 
 export const Footer = () => {
   const { currentPage, navigateTo, openCategory } = useCart();
-  const [selectedCurrency, setSelectedCurrency] = useState('USD ($)');
-  const [currencyOpen, setCurrencyOpen] = useState(false);
 
   const handleFooterLinkClick = (e, link) => {
     e.preventDefault();
@@ -50,15 +48,6 @@ export const Footer = () => {
       window.location.href = link.href;
     }
   };
-
-  const currencies = [
-    { code: 'USD', symbol: '$', label: 'United States (USD $)' },
-    { code: 'AUD', symbol: '$', label: 'Australia (AUD $)' },
-    { code: 'GBP', symbol: '£', label: 'United Kingdom (GBP £)' },
-    { code: 'EUR', symbol: '€', label: 'Eurozone (EUR €)' },
-    { code: 'NZD', symbol: '$', label: 'New Zealand (NZD $)' },
-    { code: 'CAD', symbol: '$', label: 'Canada (CAD $)' }
-  ];
 
   return (
     <footer id="footer-section" className="bg-[#1b1a1a] text-neutral-300 font-menu text-xs border-t border-neutral-800">
@@ -210,35 +199,10 @@ export const Footer = () => {
         {/* Bottom Utility Bar: Currency Selector & Payment Icons */}
         <div className="mt-12 pt-8 border-t border-neutral-800 flex flex-col md:flex-row items-center justify-between gap-6">
           
-          {/* Currency / Region Selector */}
-          <div className="relative">
-            <div className="text-[11px] text-neutral-400 mb-1 font-medium">Country / region:</div>
-            <button
-              onClick={() => setCurrencyOpen(!currencyOpen)}
-              className="flex items-center gap-2 bg-neutral-900 border border-neutral-700 hover:border-neutral-500 text-white px-3.5 py-2 rounded text-xs font-medium transition-colors"
-            >
-              <Globe className="w-3.5 h-3.5 text-[#f7eddb]" />
-              <span>{selectedCurrency}</span>
-              <ChevronDown className="w-3 h-3 text-neutral-400" />
-            </button>
-
-            {currencyOpen && (
-              <div className="absolute bottom-full left-0 mb-2 w-52 bg-neutral-900 border border-neutral-700 rounded-md shadow-2xl py-1 z-30 animate-fade-in">
-                {currencies.map((c) => (
-                  <button
-                    key={c.code}
-                    onClick={() => {
-                      setSelectedCurrency(`${c.code} (${c.symbol})`);
-                      setCurrencyOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800 hover:text-white flex items-center justify-between"
-                  >
-                    <span>{c.label}</span>
-                    {selectedCurrency.startsWith(c.code) && <Check className="w-3 h-3 text-[#f7eddb]" />}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Official Currency & Payment Security */}
+          <div className="flex items-center gap-2 text-xs text-neutral-400 font-medium">
+            <Globe className="w-3.5 h-3.5 text-[#c8924b]" />
+            <span>All catalog pricing in <strong className="text-white font-semibold">USD ($)</strong> • Worldwide Express Delivery</span>
           </div>
 
           {/* Payment Method Badges */}

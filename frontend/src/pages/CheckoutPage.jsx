@@ -110,7 +110,7 @@ export const CheckoutPage = () => {
     return 'Postcode / ZIP';
   };
 
-  // Keep a live ref of form & cart state so PayPal buttons don't re-mount on every keystroke
+  // Keep a live ref of form & cart state to prevent unnecessary re-mounts
   const latestDataRef = useRef({});
   latestDataRef.current = {
     cart,

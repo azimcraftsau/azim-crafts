@@ -202,7 +202,6 @@ export function AdminSettings() {
           {[
             { name: 'Stripe', desc: 'Credit / Debit Cards, Apple Pay & Google Pay (Live USD)', status: 'Active', active: true },
             { name: 'Bank Transfer', desc: 'Direct International Wire / SWIFT / IBAN', status: 'Active', active: true },
-            { name: 'PayPal', desc: 'PayPal Smart Buttons (Disabled by Store Owner)', status: 'Disabled', active: false },
           ].map((gw) => (
             <div key={gw.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
               <div>

@@ -8,7 +8,7 @@ import { useCart } from '../../context/CartContext';
 import { allProducts } from '../../data/products';
 
 export const QuickViewModal = () => {
-  const { quickViewProduct, setQuickViewProduct, addToCart, activeCategoryCollection, navigateTo, requireAuth } = useCart();
+  const { quickViewProduct, setQuickViewProduct, addToCart, activeCategoryCollection, navigateTo, requireAuth, products } = useCart();
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('XL');
@@ -22,6 +22,7 @@ export const QuickViewModal = () => {
     dimensions: false,
     materials: false,
     shipping: false,
+    manufacturer: false,
     disclaimer: false
   });
 
@@ -90,17 +91,18 @@ export const QuickViewModal = () => {
 
   const currentMedia = mediaList[selectedMediaIndex] || mediaList[0] || { type: 'image', src: product.image };
 
-  // Companion add-ons logic
-  const availableAddons = allProducts
-    .filter(p => p.id !== product.id)
-    .slice(0, 2)
-    .map(p => ({
-      id: p.id,
-      title: p.title,
-      image: p.image,
-      originalPrice: p.price,
-      discountPrice: Math.round(p.price * 0.8)
-    }));
+  // Companion add-ons logic (Accurate Real Catalog Price)
+  const catalogList = (products && products.length > 0) ? products : allProducts;
+  const relatedCandidates = catalogList.filter(p => p.id !== product.id && p.category === product.category);
+  const fallbackCandidates = catalogList.filter(p => p.id !== product.id);
+  const chosenAddons = relatedCandidates.length >= 2 ? relatedCandidates.slice(0, 2) : fallbackCandidates.slice(0, 2);
+
+  const availableAddons = chosenAddons.map(p => ({
+    id: p.id,
+    title: p.title || p.name,
+    image: p.image,
+    price: Number(p.price) || 0
+  }));
 
   const toggleAddon = (addonId) => {
     setSelectedAddons(prev => ({
@@ -114,7 +116,7 @@ export const QuickViewModal = () => {
     const chosenSize = productSizes ? (selectedSize || productSizes[0]) : null;
     addToCart(product, quantity, chosenSize);
 
-    // Add selected add-ons
+    // Add selected add-ons at accurate catalog price
     Object.keys(selectedAddons).forEach(addonId => {
       if (selectedAddons[addonId]) {
         const addonObj = availableAddons.find(a => a.id === addonId);
@@ -122,7 +124,7 @@ export const QuickViewModal = () => {
           addToCart({
             id: addonObj.id,
             title: addonObj.title,
-            price: addonObj.discountPrice,
+            price: addonObj.price,
             image: addonObj.image,
             vendor: 'Azim Crafts'
           }, 1);
@@ -290,8 +292,8 @@ export const QuickViewModal = () => {
               {/* Guarantees Box below gallery */}
               <div className="bg-[#fbf9f6] border border-neutral-200/80 rounded-2xl p-3.5 space-y-2.5 text-xs text-neutral-600">
                 <div className="flex items-center gap-2 font-medium">
-                  <MapPin className="w-4 h-4 text-[#ae2828] shrink-0" />
-                  <span><strong>Artisan Workshop:</strong> Roorkee, Uttarakhand, India</span>
+                  <Sparkles className="w-4 h-4 text-[#c8924b] shrink-0" />
+                  <span><strong>Export-Grade Quality:</strong> Multi-Layer Protective Packaging</span>
                 </div>
                 <div className="flex items-center gap-2 font-medium">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -420,8 +422,8 @@ export const QuickViewModal = () => {
                 <div className="space-y-2.5 pt-3 border-t border-neutral-100">
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#c8924b]" />
-                    <h4 className="text-xs font-bold text-neutral-900">
-                      Frequently Bought Together (Save 20%)
+                    <h4 className="text-xs font-bold text-neutral-900 tracking-wide uppercase">
+                      Frequently Bought Together
                     </h4>
                   </div>
 
@@ -451,11 +453,8 @@ export const QuickViewModal = () => {
                             {addon.title}
                           </span>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="font-bold text-[#ae2828]">
-                              ${addon.discountPrice.toFixed(2)}
-                            </span>
-                            <span className="text-[11px] text-neutral-400 line-through">
-                              ${addon.originalPrice.toFixed(2)}
+                            <span className="font-bold text-neutral-900">
+                              ${Number(addon.price).toFixed(2)} <span className="text-[10px] font-normal text-neutral-500">USD</span>
                             </span>
                           </div>
                         </div>
@@ -722,7 +721,7 @@ export const QuickViewModal = () => {
                   {openAccordions.shipping && (
                     <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-neutral-700 animate-fade-in border-t border-neutral-100">
                       <div className="p-3 bg-neutral-50 rounded-xl space-y-2 leading-relaxed">
-                        <div><strong className="text-neutral-900">Manufacturing Unit & Workshop:</strong> Roorkee, Uttarakhand, India.</div>
+                        <div><strong className="text-neutral-900">Manufacturing Unit & Workshop:</strong> 155 / 1A Imli Road, Near Pinewood School, Roorkee Haridwar 247667.</div>
                         <div><strong className="text-neutral-900">Shipping Provider:</strong> DHL Express, FedEx, UPS & All Major International Courier services.</div>
                         <div><strong className="text-neutral-900">Additional Delivery Information:</strong> Order Processing 2 – 5 Business Days. Handcrafted by master artisans with export-grade protective packaging. For custom bulk inquiries or express shipping, please contact our support team.</div>
                       </div>
@@ -730,7 +729,45 @@ export const QuickViewModal = () => {
                   )}
                 </div>
 
-                {/* 5. Disclaimer Accordion */}
+                {/* 5. Manufacturer Details Accordion */}
+                <div>
+                  <button
+                    onClick={() => toggleAccordion('manufacturer')}
+                    className="w-full flex items-center justify-between p-4 text-left font-semibold text-xs text-neutral-900 hover:bg-neutral-50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <MapPin className="w-4 h-4 text-neutral-600" />
+                      <span className="font-bold tracking-wide">Manufacturer Details</span>
+                    </div>
+                    {openAccordions.manufacturer ? (
+                      <ChevronUp className="w-4 h-4 text-neutral-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-neutral-400" />
+                    )}
+                  </button>
+
+                  {openAccordions.manufacturer && (
+                    <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-neutral-700 animate-fade-in border-t border-neutral-100">
+                      <div className="p-3.5 bg-neutral-50 rounded-xl space-y-2.5 leading-relaxed">
+                        <div><strong className="text-neutral-900">Brand / Artisan:</strong> Azim Crafts</div>
+                        <div>
+                          <strong className="text-neutral-900 block mb-1">Manufacturer & Workshop Address:</strong>
+                          <div className="bg-white p-3 rounded-lg border border-neutral-200 font-medium text-neutral-800 leading-relaxed">
+                            155 / 1A Imli Road<br />
+                            Near Pinewood School<br />
+                            Roorkee Haridwar 247667<br />
+                            Uttarakhand, India
+                          </div>
+                        </div>
+                        <div className="text-[11px] text-neutral-500">
+                          Master craftsmen specializing in authentic hand-forged armor, battle shields, genuine leather journals, and maritime vintage antiques.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 6. Disclaimer Accordion */}
                 <div>
                   <button
                     onClick={() => toggleAccordion('disclaimer')}
