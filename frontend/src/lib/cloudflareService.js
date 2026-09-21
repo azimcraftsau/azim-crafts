@@ -69,6 +69,37 @@ export async function uploadProductImage(file) {
   }
 }
 
+export async function uploadProductVideo(file) {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'products/videos');
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) return data.url;
+    }
+
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+  } catch (err) {
+    console.warn('Video upload fallback to DataURL:', err.message);
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
 export async function uploadBannerMedia(file) {
   try {
     const reader = new FileReader();

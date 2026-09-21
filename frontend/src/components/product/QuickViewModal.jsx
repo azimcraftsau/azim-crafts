@@ -97,7 +97,7 @@ export const QuickViewModal = () => {
     ? product.images 
     : [product.image];
 
-  const videos = Array.isArray(product.videos) ? product.videos.filter(Boolean) : [];
+  const videos = Array.isArray(product.videos) ? product.videos.filter(Boolean) : (product.video ? [product.video] : []);
 
   // Combined media list (images first, followed by videos)
   const mediaList = [
@@ -356,9 +356,9 @@ export const QuickViewModal = () => {
                       ${product.price.toFixed(2)} USD
                     </span>
                   </div>
-                  {product.regularPrice > product.price && (
+                  {(product.regularPrice > product.price || product.regular_price > product.price) && (
                     <span className="text-sm font-semibold text-neutral-400 line-through">
-                      ${product.regularPrice.toFixed(2)}
+                      ${Number(product.regularPrice || product.regular_price).toFixed(2)} USD
                     </span>
                   )}
                 </div>

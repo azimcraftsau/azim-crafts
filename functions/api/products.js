@@ -21,18 +21,30 @@ export async function onRequestGet(context) {
     const mapped = (results || []).map(p => {
       const stockQty = p.stock_quantity !== undefined && p.stock_quantity !== null ? Number(p.stock_quantity) : 10;
       const isSoldOut = Boolean(p.is_sold_out) || stockQty <= 0;
+      const price = Number(p.price) || 0;
+      const regPrice = (p.regular_price !== undefined && p.regular_price !== null && p.regular_price !== '')
+        ? Number(p.regular_price)
+        : ((p.regularPrice !== undefined && p.regularPrice !== null && p.regularPrice !== '') ? Number(p.regularPrice) : price);
+      const isOnSale = Boolean(p.is_on_sale) || (regPrice > price);
+      const parsedVideos = safeParse(p.videos, []);
+      const normalizedVideos = Array.isArray(parsedVideos) ? parsedVideos.filter(Boolean) : (p.video ? [p.video] : []);
+
       return {
         ...p,
+        price,
+        regularPrice: regPrice,
+        regular_price: regPrice,
         stockQuantity: stockQty,
         stock_quantity: stockQty,
         isSoldOut,
         is_sold_out: isSoldOut ? 1 : 0,
+        isOnSale,
+        is_on_sale: isOnSale ? 1 : 0,
         sizes: safeParse(p.sizes, []),
         images: safeParse(p.images, [p.image]),
-        videos: safeParse(p.videos, []),
+        videos: normalizedVideos,
         perfectFor: safeParse(p.perfect_for, []),
-        specifications: safeParse(p.specifications, {}),
-        isOnSale: Boolean(p.is_on_sale)
+        specifications: safeParse(p.specifications, {})
       };
     });
 
@@ -52,8 +64,18 @@ export async function onRequestPost(context) {
     const { request, env } = context;
     const p = await request.json();
 
+    const price = Number(p.price) || 0;
+    const regPrice = (p.regularPrice !== undefined && p.regularPrice !== '' && p.regularPrice !== null)
+      ? Number(p.regularPrice)
+      : ((p.regular_price !== undefined && p.regular_price !== '' && p.regular_price !== null) ? Number(p.regular_price) : price);
+    const isOnSale = (regPrice > price) || Boolean(p.isOnSale);
+
     const stockQty = p.stockQuantity !== undefined ? Number(p.stockQuantity) : (p.stock_quantity !== undefined ? Number(p.stock_quantity) : 10);
     const isSoldOut = stockQty <= 0 ? 1 : (p.isSoldOut ? 1 : 0);
+
+    const videosList = Array.isArray(p.videos) ? p.videos.filter(Boolean) : (p.video ? [p.video] : []);
+    const imagesList = Array.isArray(p.images) && p.images.length > 0 ? p.images.filter(Boolean) : [p.image || ''];
+    const primaryImg = p.image || (imagesList.length > 0 ? imagesList[0] : '');
 
     if (env.DB) {
       await env.DB.prepare(`
@@ -72,10 +94,10 @@ export async function onRequestPost(context) {
         )
       `).bind(
         p.id, p.productNumber || p.product_number || 0, p.title || p.name || '', p.handle || '',
-        Number(p.price) || 0, p.regularPrice ? Number(p.regularPrice) : (Number(p.price) || 0), p.currency || 'USD',
-        p.category || 'general', p.categoryName || p.category_name || '', isSoldOut, p.isOnSale ? 1 : 0,
-        p.badge || '', p.image || '', p.hoverImage || p.hover_image || '',
-        JSON.stringify(p.images || [p.image]), JSON.stringify(p.videos || []),
+        price, regPrice, p.currency || 'USD',
+        p.category || 'general', p.categoryName || p.category_name || '', isSoldOut, isOnSale ? 1 : 0,
+        p.badge || '', primaryImg, p.hoverImage || p.hover_image || '',
+        JSON.stringify(imagesList), JSON.stringify(videosList),
         p.vendor || 'Azim Crafts', p.description || '', JSON.stringify(p.specifications || {}),
         JSON.stringify(p.perfectFor || p.perfect_for || []), p.dimensions || '', p.weight || '',
         p.materials || '', p.shippingInfo || p.shipping_info || '', p.disclaimer || '',
@@ -86,7 +108,21 @@ export async function onRequestPost(context) {
 
     return new Response(JSON.stringify({
       success: true,
-      product: { ...p, stockQuantity: stockQty, isSoldOut: Boolean(isSoldOut) }
+      product: { 
+        ...p, 
+        price,
+        regularPrice: regPrice,
+        regular_price: regPrice,
+        isOnSale: Boolean(isOnSale),
+        is_on_sale: isOnSale ? 1 : 0,
+        stockQuantity: stockQty, 
+        stock_quantity: stockQty,
+        isSoldOut: Boolean(isSoldOut),
+        is_sold_out: isSoldOut,
+        image: primaryImg,
+        images: imagesList,
+        videos: videosList
+      }
     }), {
       headers: { 'Content-Type': 'application/json' }
     });

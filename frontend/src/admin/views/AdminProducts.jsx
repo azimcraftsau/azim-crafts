@@ -3,13 +3,15 @@ import { allProducts } from '../../data/products';
 import { 
   Search, Plus, Pencil, Trash2, X, ChevronDown, CheckCircle, 
   Package, Image, FileText, Ruler, Box, Truck, ShieldCheck, 
-  Layers, Star, Sparkles, AlertCircle, Tag, FolderPlus, ArrowRight
-, Loader2} from 'lucide-react';
+  Layers, Star, Sparkles, AlertCircle, Tag, FolderPlus, ArrowRight,
+  Loader2, Video, Film, Play
+} from 'lucide-react';
 import { 
   getProducts, 
   saveProductToDB, 
   deleteProductFromDB, 
   uploadProductImage,
+  uploadProductVideo,
   getCategories,
   saveCategoryToDB,
   getTrashProducts
@@ -247,9 +249,19 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     ? Number(initial.stockQuantity) 
     : (initial?.stock_quantity !== undefined ? Number(initial.stock_quantity) : 12);
 
+  const initialRegPrice = initial?.regularPrice !== undefined && initial?.regularPrice !== null && initial?.regularPrice !== ''
+    ? initial.regularPrice
+    : (initial?.regular_price !== undefined && initial?.regular_price !== null && initial?.regular_price !== '' ? initial.regular_price : '');
+
+  const initialVideos = Array.isArray(initial?.videos) && initial.videos.length > 0
+    ? initial.videos
+    : (initial?.video ? [initial.video] : []);
+
   const [form, setForm] = useState({ 
     ...EMPTY_PRODUCT, 
     ...initial,
+    regularPrice: initialRegPrice,
+    regular_price: initialRegPrice,
     stockQuantity: initialStockQty,
     hasModularParts: initialHasModularParts,
     modularParts: initialModularParts,
@@ -260,11 +272,14 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     },
     perfectFor: initial?.perfectFor || EMPTY_PRODUCT.perfectFor,
     images: initialImages,
-    image: initial?.image || (initialImages.length > 0 ? initialImages[0] : '')
+    image: initial?.image || (initialImages.length > 0 ? initialImages[0] : ''),
+    videos: initialVideos
   });
 
   const [uploading, setUploading] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [newVideoUrl, setNewVideoUrl] = useState('');
   const [formError, setFormError] = useState('');
   const [perfectForText, setPerfectForText] = useState(
     Array.isArray(form.perfectFor) ? form.perfectFor.join('\n') : (form.perfectFor || '')
@@ -330,6 +345,25 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     }));
   };
 
+  const handleAddVideoUrl = () => {
+    if (!newVideoUrl.trim()) return;
+    const url = newVideoUrl.trim();
+    const updated = [...(form.videos || []), url];
+    setForm(f => ({
+      ...f,
+      videos: updated
+    }));
+    setNewVideoUrl('');
+  };
+
+  const handleRemoveVideo = (indexToRemove) => {
+    const updated = (form.videos || []).filter((_, idx) => idx !== indexToRemove);
+    setForm(f => ({
+      ...f,
+      videos: updated
+    }));
+  };
+
   const handleSave = () => {
     if (!form.title || !form.title.trim()) {
       setFormError('Please fill in required fields: Product Title is required.');
@@ -355,6 +389,14 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     const finalStock = isNaN(parsedStock) || parsedStock < 0 ? 0 : parsedStock;
     const finalSoldOut = finalStock <= 0 ? true : Boolean(form.isSoldOut);
 
+    const finalPrice = parseFloat(form.price);
+    const parsedReg = form.regularPrice !== undefined && form.regularPrice !== '' && !isNaN(Number(form.regularPrice))
+      ? parseFloat(form.regularPrice)
+      : (form.regular_price !== undefined && form.regular_price !== '' && !isNaN(Number(form.regular_price)) ? parseFloat(form.regular_price) : finalPrice);
+    const finalRegPrice = parsedReg >= 0 ? parsedReg : finalPrice;
+    const finalIsOnSale = finalRegPrice > finalPrice;
+    const finalVideos = Array.isArray(form.videos) ? form.videos.filter(Boolean) : [];
+
     const updatedProduct = {
       ...form,
       stockQuantity: finalStock,
@@ -362,8 +404,11 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
       isSoldOut: finalSoldOut,
       is_sold_out: finalSoldOut ? 1 : 0,
       categoryName: catObj ? catObj.name : (form.categoryName || 'Authentic Historical Craft'),
-      price: parseFloat(form.price),
-      regularPrice: form.regularPrice ? parseFloat(form.regularPrice) : parseFloat(form.price),
+      price: finalPrice,
+      regularPrice: finalRegPrice,
+      regular_price: finalRegPrice,
+      isOnSale: finalIsOnSale,
+      is_on_sale: finalIsOnSale ? 1 : 0,
       id: form.id || `product-${Date.now()}`,
       rating: Number(form.rating) || 5,
       reviewsCount: Number(form.reviewsCount) || 25,
@@ -376,6 +421,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
       })) : [],
       image: primaryImg,
       images: form.images && form.images.length > 0 ? form.images : [primaryImg],
+      videos: finalVideos,
       perfectFor: parsedPerfectFor.length > 0 ? parsedPerfectFor : EMPTY_PRODUCT.perfectFor,
       specifications: {
         ...form.specifications,
@@ -413,7 +459,7 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
         <div className="flex border-b border-gray-200 px-6 bg-white overflow-x-auto no-scrollbar shrink-0 gap-2 pt-2">
           {[
             { key: 'basic', label: '1. Basic Info & Pricing', icon: Package },
-            { key: 'media', label: '2. Photos & Gallery', icon: Image },
+            { key: 'media', label: '2. Photos, Videos & Media', icon: Video },
             { key: 'specs', label: '3. Dimensions & Materials', icon: Ruler },
             { key: 'lore', label: '4. Description & Story', icon: FileText },
             { key: 'shipping', label: '5. Shipping & Disclaimer', icon: Truck },
@@ -892,6 +938,120 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                   </button>
                 </div>
               </div>
+
+              {/* ================= PRODUCT VIDEOS SECTION ================= */}
+              <div className="pt-6 border-t border-gray-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                      <Video size={16} className="text-[#c8924b]" />
+                      <span>Product Videos &amp; Motion Demos</span>
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Videos auto-play on product card hover and in the interactive player in the Quick View modal.
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                    {form.videos ? form.videos.length : 0} Videos
+                  </span>
+                </div>
+
+                {/* Videos Grid */}
+                {form.videos && form.videos.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-neutral-50 rounded-2xl border border-neutral-200">
+                    {form.videos.map((vidUrl, idx) => (
+                      <div key={idx} className="relative group rounded-xl overflow-hidden border border-neutral-300 bg-black shadow-2xs">
+                        <div className="aspect-video flex items-center justify-center bg-black">
+                          <video 
+                            src={vidUrl} 
+                            controls 
+                            muted 
+                            playsInline 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="p-2.5 bg-neutral-900 flex items-center justify-between gap-2 text-white">
+                          <span className="text-[11px] font-mono truncate text-neutral-300 flex-1" title={vidUrl}>
+                            {vidUrl}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVideo(idx)}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold shrink-0 cursor-pointer flex items-center gap-1 transition-colors"
+                          >
+                            <Trash2 size={12} />
+                            <span>Remove</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload Video File or Enter Video URL */}
+                <div className="space-y-3">
+                  <div className="p-4 bg-blue-50/40 rounded-xl border border-dashed border-blue-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div>
+                      <span className="text-xs font-bold text-gray-800 block flex items-center gap-1.5">
+                        <Film size={14} className="text-blue-600" />
+                        <span>Upload Video File</span>
+                      </span>
+                      <span className="text-[11px] text-gray-500">Supports MP4, WEBM, MOV from your device</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                      disabled={uploadingVideo}
+                      onChange={async (e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          setUploadingVideo(true);
+                          try {
+                            const file = e.target.files[0];
+                            const url = await uploadProductVideo(file);
+                            if (url) {
+                              setForm(f => ({
+                                ...f,
+                                videos: [...(f.videos || []), url]
+                              }));
+                            }
+                          } catch (err) {
+                            console.error('Video upload failed:', err);
+                          } finally {
+                            setUploadingVideo(false);
+                          }
+                        }
+                      }}
+                      className="text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#c8924b] file:text-white hover:file:bg-[#b07d3b] file:cursor-pointer cursor-pointer"
+                    />
+                  </div>
+                  {uploadingVideo && (
+                    <div className="flex items-center gap-2 text-xs text-[#c8924b] font-bold animate-pulse">
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Uploading video to server... Please wait...</span>
+                    </div>
+                  )}
+
+                  {/* Paste Video URL or Path */}
+                  <div className="flex gap-2">
+                    <input
+                      className={inputCls}
+                      value={newVideoUrl}
+                      onChange={(e) => setNewVideoUrl(e.target.value)}
+                      placeholder="Or paste video URL / local path (e.g. /All categories/All Products/Product 56/vid1.mp4)"
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddVideoUrl(); } }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddVideoUrl}
+                      className="px-5 py-2.5 bg-[#c8924b] hover:bg-[#b07d3b] text-white text-xs font-bold rounded-xl shrink-0 transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Plus size={14} />
+                      <span>Add Video URL</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </div>
           )}
 
@@ -1426,6 +1586,12 @@ export function AdminProducts({ onNavigate }) {
                                 {p.sizes.length} sizes
                               </span>
                             )}
+                            {p.videos && p.videos.length > 0 && (
+                              <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-200 flex items-center gap-1">
+                                <Video size={10} className="text-blue-600" />
+                                <span>{p.videos.length} video{p.videos.length > 1 ? 's' : ''}</span>
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="px-4 py-3.5 whitespace-nowrap">
@@ -1435,8 +1601,10 @@ export function AdminProducts({ onNavigate }) {
                         </td>
                         <td className="px-4 py-3.5 whitespace-nowrap">
                           <div className="font-bold text-neutral-900 text-sm">${Number(p.price).toFixed(2)}</div>
-                          {p.regularPrice > p.price && (
-                            <div className="text-[11px] text-neutral-400 line-through">${Number(p.regularPrice).toFixed(2)}</div>
+                          {(p.regularPrice > p.price || p.regular_price > p.price) && (
+                            <div className="text-[11px] text-neutral-400 line-through">
+                              ${Number(p.regularPrice || p.regular_price).toFixed(2)}
+                            </div>
                           )}
                         </td>
                         <td className="px-4 py-3.5 text-xs text-neutral-600 max-w-[140px]">

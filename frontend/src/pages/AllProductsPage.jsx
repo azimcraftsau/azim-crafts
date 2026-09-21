@@ -5,15 +5,15 @@ import { ProductCard } from '../components/product/ProductCard';
 import { Search, ArrowUpDown, Sparkles } from 'lucide-react';
 
 export const AllProductsPage = () => {
-  const { products: liveProducts, navigateTo, selectedCategory, setSelectedCategory } = useCart();
+  const { products: liveProducts, navigateTo, selectedCategory, setSelectedCategory, categories: dynamicCategories } = useCart();
   const sourceProducts = liveProducts && liveProducts.length > 0 ? liveProducts : allProducts;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
   const activeTabRef = useRef(null);
 
-  // 13 Authentic Categories with Strict Product ID Mapping
-  const categories = [
+  // Default Categories with Strict Product ID Mapping
+  const STATIC_CATEGORIES = [
     { 
       key: 'all', 
       label: 'All Products', 
@@ -85,6 +85,23 @@ export const AllProductsPage = () => {
       productIds: ['product-18', 'product-22']
     }
   ];
+
+  // Merge default categories with any dynamic categories added by admin
+  const categories = useMemo(() => {
+    const baseList = [...STATIC_CATEGORIES];
+    if (Array.isArray(dynamicCategories)) {
+      dynamicCategories.forEach(cat => {
+        if (!baseList.some(c => c.key === cat.key)) {
+          baseList.push({
+            key: cat.key,
+            label: cat.name || cat.title || cat.key,
+            productIds: null
+          });
+        }
+      });
+    }
+    return baseList;
+  }, [dynamicCategories]);
 
   // Filter & Sort Products (Strict category isolation)
   const filteredProducts = useMemo(() => {

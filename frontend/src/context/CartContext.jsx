@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { allProducts } from '../data/products';
-import { getProducts, getCoupons, getOrders, getStoreSettings } from '../lib/cloudflareService';
+import { getProducts, getCoupons, getOrders, getStoreSettings, getCategories } from '../lib/cloudflareService';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [products, setProducts] = useState(allProducts);
   const [couponsList, setCouponsList] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(200);
   const [standardShippingFee, setStandardShippingFee] = useState(20);
 
@@ -52,16 +53,28 @@ export const CartProvider = ({ children }) => {
       } catch {}
     };
 
+    const refreshCategories = async () => {
+      try {
+        const cats = await getCategories();
+        if (isMounted && Array.isArray(cats) && cats.length > 0) {
+          setCategoriesList(cats);
+        }
+      } catch (err) {}
+    };
+
     refreshProducts();
     refreshCoupons();
     refreshSettings();
+    refreshCategories();
 
     window.addEventListener('vw_products_updated', refreshProducts);
     window.addEventListener('vw_coupons_updated', refreshCoupons);
     window.addEventListener('vw_shipping_updated', refreshSettings);
     window.addEventListener('vw_settings_updated', refreshSettings);
+    window.addEventListener('vw_categories_updated', refreshCategories);
     window.addEventListener('focus', refreshProducts);
     window.addEventListener('focus', refreshSettings);
+    window.addEventListener('focus', refreshCategories);
 
     return () => {
       isMounted = false;
@@ -69,8 +82,10 @@ export const CartProvider = ({ children }) => {
       window.removeEventListener('vw_coupons_updated', refreshCoupons);
       window.removeEventListener('vw_shipping_updated', refreshSettings);
       window.removeEventListener('vw_settings_updated', refreshSettings);
+      window.removeEventListener('vw_categories_updated', refreshCategories);
       window.removeEventListener('focus', refreshProducts);
       window.removeEventListener('focus', refreshSettings);
+      window.removeEventListener('focus', refreshCategories);
     };
   }, []);
 
@@ -573,7 +588,9 @@ export const CartProvider = ({ children }) => {
         clearCart,
         applyCouponCode,
         removeCoupon,
-        showToast
+        showToast,
+        categories: categoriesList,
+        refreshCategories
       }}
     >
       {children}

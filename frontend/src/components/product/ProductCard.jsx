@@ -9,7 +9,7 @@ export const ProductCard = ({ product }) => {
   const hoverIntervalRef = useRef(null);
 
   const imagesList = product.images && product.images.length > 0 ? product.images : [product.image];
-  const videosList = Array.isArray(product.videos) ? product.videos.filter(Boolean) : [];
+  const videosList = Array.isArray(product.videos) ? product.videos.filter(Boolean) : (product.video ? [product.video] : []);
   
   // Combine all images with video at the end
   const mediaList = [
@@ -171,18 +171,18 @@ export const ProductCard = ({ product }) => {
                 • ${product.price.toFixed(2)} USD
               </span>
             </div>
-          ) : product.isOnSale ? (
+          ) : (product.isOnSale || (product.regularPrice && Number(product.regularPrice) > Number(product.price)) || (product.regular_price && Number(product.regular_price) > Number(product.price))) ? (
             <div className="flex items-center justify-center gap-1.5">
               <span className="text-xs sm:text-[13px] font-bold text-[#ae2828]">
-                ${product.price.toFixed(2)} USD
+                ${Number(product.price).toFixed(2)} USD
               </span>
               <span className="text-[10.5px] text-neutral-400 line-through">
-                ${product.regularPrice.toFixed(2)}
+                ${Number(product.regularPrice || product.regular_price).toFixed(2)}
               </span>
             </div>
           ) : (
             <span className="text-xs sm:text-[13px] font-semibold text-neutral-900 tracking-wide">
-              ${product.price.toFixed(2)} USD
+              ${Number(product.price).toFixed(2)} USD
             </span>
           )}
         </div>
