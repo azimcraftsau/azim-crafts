@@ -27,15 +27,30 @@ export const isGibberish = (str) => {
 };
 
 export const validatePostalCode = (postalCode, country) => {
-  if (!postalCode || typeof postalCode !== 'string') {
+  const c = (country || 'Australia').toLowerCase().trim();
+  
+  // Countries that do not use mandatory postal codes
+  const noPostalCountries = [
+    'united arab emirates', 'uae', 'qatar', 'bahrain', 'kuwait', 'oman', 
+    'hong kong', 'fiji', 'yemen', 'uganda', 'seychelles', 'vanuatu', 
+    'tuvalu', 'suriname', 'sao tome and principe', 'panama'
+  ];
+  const isNoPostalCountry = noPostalCountries.some(npc => c.includes(npc));
+
+  if (!postalCode || typeof postalCode !== 'string' || !postalCode.trim()) {
+    if (isNoPostalCountry) return null; // Optional for countries without postal systems
     return 'Postal code is required.';
   }
   const clean = postalCode.trim().toUpperCase();
-  if (clean.length < 3) return 'Postal code is too short.';
-  if (clean.length > 12) return 'Postal code is too long.';
-  if (isGibberish(clean)) return 'Please enter a valid postal code.';
 
-  const c = (country || 'Australia').toLowerCase().trim();
+  // Allow common international placeholders for areas without postal codes
+  if (['00000', '0000', 'NA', 'N/A', 'NONE'].includes(clean)) {
+    return null;
+  }
+
+  if (clean.length < 2) return 'Postal code is too short.';
+  if (clean.length > 12) return 'Postal code is too long.';
+  if (isGibberish(clean) && !isNoPostalCountry) return 'Please enter a valid postal code.';
 
   // United States: 5 digits or 5+4 (e.g. 90210 or 90210-1234)
   if (c.includes('united states') || c === 'us' || c === 'usa') {
@@ -81,7 +96,7 @@ export const validatePostalCode = (postalCode, country) => {
   }
   // Generic worldwide format: letters, numbers, spaces, hyphens
   else {
-    if (!/^[A-Z0-9\s-]{3,10}$/i.test(clean)) {
+    if (!/^[A-Z0-9\s-]{2,10}$/i.test(clean)) {
       return 'Please enter a valid postal/ZIP code.';
     }
   }
@@ -136,7 +151,7 @@ export const validateCheckoutAddress = (data) => {
     errors.address = 'Street address is too short. Include house/flat number and street.';
   } else if (isGibberish(address)) {
     errors.address = 'Please enter a valid street address (e.g. 42 King Street).';
-  } else if (!/\d/.test(address) && !/(street|st|road|rd|avenue|ave|lane|ln|drive|dr|court|ct|way|boulevard|blvd|highway|hwy|apartment|apt|unit|suite|flat|house|block|building|floor|sector|phase|nagar|colony|mohalla|bypass)/i.test(address)) {
+  } else if (!/\d/.test(address) && !/(street|st|road|rd|avenue|ave|lane|ln|drive|dr|court|ct|way|boulevard|blvd|highway|hwy|apartment|apt|unit|suite|flat|house|block|building|floor|sector|phase|nagar|colony|mohalla|bypass|rue|via|calle|str|strasse|plaza|piazza|villa|plot|shop|tower|al)/i.test(address)) {
     errors.address = 'Please provide building/house number and street name (e.g. 42 King Street).';
   }
 

@@ -5,7 +5,7 @@ import {
   HelpCircle, CreditCard, ShoppingBag, Loader2, AlertCircle, Landmark, Copy, Check 
 } from 'lucide-react';
 import { createOrderInDB } from '../lib/cloudflareService';
-import { POPULAR_COUNTRIES, ALL_COUNTRIES } from '../data/countries';
+import { POPULAR_COUNTRIES, ALL_COUNTRIES, COUNTRY_TO_ISO } from '../data/countries';
 import { validateCheckoutAddress } from '../utils/checkoutValidation';
 
 const buildStructuredItems = (cartItems) => cartItems.map((i, idx) => {
@@ -54,6 +54,7 @@ export const CheckoutPage = () => {
   const [country, setCountry] = useState('Australia');
   const [phone, setPhone] = useState(user?.phone || '');
   const [textOffers, setTextOffers] = useState(false);
+  const [showMobileSummary, setShowMobileSummary] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -210,8 +211,8 @@ export const CheckoutPage = () => {
                   color: '#111827',
                   fontFamily: '"Work Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                   fontSmoothing: 'antialiased',
-                  fontSize: '15px',
-                  lineHeight: '26px',
+                  fontSize: '14px',
+                  lineHeight: '22px',
                   '::placeholder': {
                     color: '#9ca3af',
                   },
@@ -577,17 +578,8 @@ export const CheckoutPage = () => {
           throw new Error(piData.error || 'Failed to initialize secure card payment.');
         }
 
-        // Map country name to ISO 2-letter code for Stripe
-        const countryIsoMap = {
-          'United States': 'US',
-          'Australia': 'AU',
-          'United Kingdom': 'GB',
-          'Canada': 'CA',
-          'Germany': 'DE',
-          'France': 'FR',
-          'New Zealand': 'NZ',
-        };
-        const countryIso = countryIsoMap[country] || 'US';
+        // Map country name to ISO 2-letter code for Stripe (worldwide 217+ countries)
+        const countryIso = COUNTRY_TO_ISO[country] || 'US';
 
         // Step 2: Confirm card payment directly with Stripe Live
         const { paymentIntent, error } = await stripeInstance.confirmCardPayment(piData.clientSecret, {
@@ -917,6 +909,75 @@ export const CheckoutPage = () => {
         >
           <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
         </button>
+      </div>
+
+      {/* Mobile Order Summary Collapsible Banner (Shopify Style) */}
+      <div className="lg:hidden bg-neutral-50 border-b border-neutral-200">
+        <button
+          type="button"
+          onClick={() => setShowMobileSummary(!showMobileSummary)}
+          className="w-full py-3 px-4 flex items-center justify-between text-xs text-neutral-800"
+        >
+          <div className="flex items-center gap-2 text-[#0066cc] font-medium">
+            <ShoppingBag className="w-4 h-4" />
+            <span>{showMobileSummary ? 'Hide order summary' : 'Show order summary'}</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showMobileSummary ? 'rotate-180' : ''}`} />
+          </div>
+          <span className="font-bold text-sm text-neutral-900">${Number(finalTotal || 0).toFixed(2)} USD</span>
+        </button>
+        {showMobileSummary && (
+          <div className="px-4 pb-4 pt-2 border-t border-neutral-200/70 bg-white space-y-3">
+            <div className="space-y-2.5 divide-y divide-neutral-100 max-h-[35vh] overflow-y-auto pr-1">
+              {Array.isArray(cart) && cart.map((item, index) => {
+                if (!item) return null;
+                const product = item.product || item;
+                const prodId = product.id || `item-${index}`;
+                const prodTitle = product.title || 'Azim Crafts Item';
+                const prodImage = product.image || '/vintage-to-modern-logo.png';
+                const qty = Number(item.quantity) || 1;
+                const price = Number(product.price) || 0;
+                const selectedSize = item.selectedSize || null;
+                return (
+                  <div key={`mob-${prodId}-${index}`} className="pt-2 first:pt-0 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative w-11 h-11 rounded-md bg-neutral-50 border border-neutral-200 flex items-center justify-center p-1 shrink-0">
+                        <img src={prodImage} alt={prodTitle} className="w-full h-full object-contain" />
+                        <span className="absolute -top-1.5 -right-1.5 bg-neutral-700 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                          {qty}
+                        </span>
+                      </div>
+                      <div className="text-xs">
+                        <p className="font-semibold text-neutral-900 line-clamp-1">{prodTitle}</p>
+                        {selectedSize && <span className="text-[10px] text-amber-800">Size: {selectedSize}</span>}
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-neutral-900">${(price * qty).toFixed(2)}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="border-t border-neutral-100 pt-2 space-y-1 text-xs text-neutral-600">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span className="font-semibold text-neutral-900">${Number(subtotal || 0).toFixed(2)}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>Discount</span>
+                  <span>-${Number(discountAmount || 0).toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>Shipping</span>
+                <span className="font-semibold text-emerald-600">FREE</span>
+              </div>
+              <div className="flex justify-between font-bold text-neutral-900 pt-1 border-t border-neutral-100">
+                <span>Total</span>
+                <span>${Number(finalTotal || 0).toFixed(2)} USD</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main 2-Column Grid */}
@@ -1324,15 +1385,15 @@ export const CheckoutPage = () => {
 
             {/* 4. Payment Section */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-base font-bold text-neutral-900">Payment</h2>
-                  <p className="text-xs text-neutral-500">All transactions are encrypted with 256-bit SSL security.</p>
+                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-semibold whitespace-nowrap">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Stripe Verified Live</span>
+                  </span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span className="font-semibold">Stripe Verified Live</span>
-                </div>
+                <p className="text-[11px] sm:text-xs text-neutral-500">All transactions are encrypted with 256-bit SSL security.</p>
               </div>
 
               <div className="border border-neutral-300 rounded-lg overflow-hidden divide-y divide-neutral-200 bg-white shadow-sm">
@@ -1340,10 +1401,10 @@ export const CheckoutPage = () => {
                 {/* #1: Credit or Debit Card (Stripe Live) */}
                 <div className={`transition-colors ${paymentMethod === 'credit-card' ? 'bg-[#faf9f6]' : 'bg-white hover:bg-neutral-50'}`}>
                   <div 
-                    className="p-4 flex items-center justify-between cursor-pointer"
+                    className="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer gap-2"
                     onClick={() => setPaymentMethod('credit-card')}
                   >
-                    <label className="flex items-center gap-2.5 text-xs md:text-sm font-bold text-neutral-900 cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs md:text-sm font-bold text-neutral-900 cursor-pointer">
                       <input
                         type="radio"
                         name="payment"
@@ -1353,16 +1414,16 @@ export const CheckoutPage = () => {
                       />
                       <span>Credit or Debit Card</span>
                     </label>
-                    <div className="flex items-center gap-1.5">
-                      <span className="bg-white px-2 py-0.5 rounded border border-neutral-200 text-[10px] font-black text-blue-900 tracking-wider">VISA</span>
-                      <span className="bg-white px-2 py-0.5 rounded border border-neutral-200 text-[10px] font-black text-red-600 tracking-wider">MC</span>
-                      <span className="bg-white px-2 py-0.5 rounded border border-neutral-200 text-[10px] font-black text-blue-600 tracking-wider">AMEX</span>
-                      <span className="bg-white px-2 py-0.5 rounded border border-neutral-200 text-[10px] font-black text-amber-600 tracking-wider">DISCOVER</span>
+                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                      <span className="bg-white px-1.5 sm:px-2 py-0.5 rounded border border-neutral-200 text-[9px] sm:text-[10px] font-black text-blue-900 tracking-wider">VISA</span>
+                      <span className="bg-white px-1.5 sm:px-2 py-0.5 rounded border border-neutral-200 text-[9px] sm:text-[10px] font-black text-red-600 tracking-wider">MC</span>
+                      <span className="bg-white px-1.5 sm:px-2 py-0.5 rounded border border-neutral-200 text-[9px] sm:text-[10px] font-black text-blue-600 tracking-wider">AMEX</span>
+                      <span className="bg-white px-1.5 sm:px-2 py-0.5 rounded border border-neutral-200 text-[9px] sm:text-[10px] font-black text-amber-600 tracking-wider">DISCOVER</span>
                     </div>
                   </div>
 
                   {paymentMethod === 'credit-card' && (
-                    <div className="px-4 pb-4 pt-1 space-y-3 border-t border-neutral-200/60">
+                    <div className="px-3.5 sm:px-4 pb-4 pt-1 space-y-3 border-t border-neutral-200/60">
                       <p className="text-[11px] text-neutral-500">
                         Direct international checkout in <strong>USD ($)</strong> with zero currency markup.
                       </p>
@@ -1370,11 +1431,11 @@ export const CheckoutPage = () => {
                       {/* Stripe Card Element Box */}
                       <div className="space-y-1.5">
                         <label className="block text-[11px] font-semibold text-neutral-700">Card information</label>
-                        <div className="relative min-h-[46px]">
+                        <div className="relative">
                           <div
                             ref={stripeElementRef}
                             id="stripe-card-element"
-                            className="w-full px-3.5 py-3 text-sm border border-neutral-300 rounded-md bg-white focus-within:border-black focus-within:ring-1 focus-within:ring-black min-h-[46px]"
+                            className="w-full h-11 px-3.5 py-2.5 text-sm border border-neutral-300 rounded-md bg-white focus-within:border-black focus-within:ring-1 focus-within:ring-black"
                           />
                           {!isStripeReady && (
                             <div className="absolute inset-0 bg-white/95 rounded-md flex items-center px-3.5 gap-2 text-xs text-neutral-400 pointer-events-none z-10 border border-neutral-300">
@@ -1382,7 +1443,6 @@ export const CheckoutPage = () => {
                               <span>Loading secure card field...</span>
                             </div>
                           )}
-                          <Lock className="w-3.5 h-3.5 text-neutral-400 absolute right-3.5 top-3.5 pointer-events-none z-20" />
                         </div>
                         {cardError && (
                           <div className="flex items-center gap-1.5 text-xs text-red-600 pt-1">
@@ -1400,7 +1460,7 @@ export const CheckoutPage = () => {
                           placeholder="Cardholder Name"
                           value={cardName}
                           onChange={(e) => setCardName(e.target.value)}
-                          className="w-full px-3.5 py-2.5 text-xs md:text-sm border border-neutral-300 rounded-md bg-white focus:outline-none focus:border-black"
+                          className="w-full h-11 px-3.5 text-xs md:text-sm border border-neutral-300 rounded-md bg-white focus:outline-none focus:border-black"
                         />
                       </div>
 
