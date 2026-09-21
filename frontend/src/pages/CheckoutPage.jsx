@@ -174,6 +174,7 @@ export const CheckoutPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState('');
+  const [confirmedPaidTotal, setConfirmedPaidTotal] = useState(0);
   const [copiedKey, setCopiedKey] = useState(null);
 
   const handleCopy = (text, key) => {
@@ -431,10 +432,12 @@ export const CheckoutPage = () => {
               total: Number(currentData.finalTotal || 0),
               payment: `Paid (${walletBrand}: ${paymentIntent.id})`,
               status: 'Processing',
-              carrier: 'DHL Express'
+              carrier: 'DHL Express',
+              date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              createdAt: new Date().toISOString()
             });
 
-            finishOrderSuccess(`🎉 ${walletBrand} Payment Confirmed! Order #${orderId}`);
+            finishOrderSuccess(`🎉 ${walletBrand} Payment Confirmed! Order #${orderId}`, Number(currentData.finalTotal || 0));
           } catch (err) {
             console.error('Wallet payment error:', err);
             ev.complete('fail');
@@ -479,7 +482,9 @@ export const CheckoutPage = () => {
     applyCouponCode(discountCode);
   };
 
-  const finishOrderSuccess = (msg) => {
+  const finishOrderSuccess = (msg, explicitAmount) => {
+    const finalAmount = Number(explicitAmount !== undefined ? explicitAmount : (confirmedPaidTotal || finalTotal || 0));
+    setConfirmedPaidTotal(finalAmount);
     setTimeout(() => {
       setIsProcessing(false);
       setOrderComplete(true);
@@ -555,6 +560,8 @@ export const CheckoutPage = () => {
     const customerName = `${firstName} ${lastName}`.trim();
     const customerEmail = emailOrPhone && emailOrPhone.includes('@') ? emailOrPhone : (user?.email || 'collector@azimcrafts.com');
     const fullShippingAddress = `${address}${apartment ? ', ' + apartment : ''}, ${city}, ${state} ${postcode}, ${country}`;
+    const orderTotalAmount = Number(finalTotal || 0);
+    setConfirmedPaidTotal(orderTotalAmount);
 
     if (paymentMethod === 'credit-card') {
       if (!stripeInstance || !cardElement) {
@@ -571,7 +578,7 @@ export const CheckoutPage = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: Number(finalTotal || 0),
+            amount: orderTotalAmount,
             currency: 'usd',
             customerEmail: customerEmail,
             customerName: customerName,
@@ -630,13 +637,15 @@ export const CheckoutPage = () => {
             discountAmount: Number(discountAmount || 0),
             shippingFee: Number(shippingFee || 0),
             appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
-            total: Number(finalTotal || 0),
+            total: orderTotalAmount,
             payment: `Paid (Stripe Live: ${paymentIntent.id})`,
             status: 'Processing',
-            carrier: 'DHL Express'
+            carrier: 'DHL Express',
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            createdAt: new Date().toISOString()
           });
 
-          finishOrderSuccess(`🎉 Payment of $${Number(finalTotal || 0).toFixed(2)} USD Confirmed via Stripe!`);
+          finishOrderSuccess(`🎉 Payment of $${orderTotalAmount.toFixed(2)} USD Confirmed via Stripe!`, orderTotalAmount);
         } else {
           throw new Error(`Unexpected card status: ${paymentIntent?.status}`);
         }
@@ -665,13 +674,15 @@ export const CheckoutPage = () => {
         discountAmount: Number(discountAmount || 0),
         shippingFee: Number(shippingFee || 0),
         appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
-        total: Number(finalTotal || 0),
+        total: orderTotalAmount,
         payment: 'Pending (Bank / Wire Transfer)',
         status: 'Unfulfilled',
-        carrier: 'DHL Express'
+        carrier: 'DHL Express',
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        createdAt: new Date().toISOString()
       });
 
-      finishOrderSuccess('🎉 Order placed successfully! Direct bank wire transfer details are displayed below.');
+      finishOrderSuccess('🎉 Order placed successfully! Direct bank wire transfer details are displayed below.', orderTotalAmount);
       return;
     }
   };
@@ -703,7 +714,7 @@ export const CheckoutPage = () => {
             <div className="flex justify-between">
               <span className="text-neutral-500">Payment Status:</span>
               <span className={`font-semibold ${paymentMethod === 'bank' ? 'text-amber-700' : 'text-emerald-700'}`}>
-                {paymentMethod === 'bank' ? `Awaiting Wire Transfer ($${Number(finalTotal || 0).toFixed(2)} USD)` : `Paid ($${Number(finalTotal || 0).toFixed(2)} USD)`}
+                {paymentMethod === 'bank' ? `Awaiting Wire Transfer ($${Number(confirmedPaidTotal || finalTotal || 0).toFixed(2)} USD)` : `Paid ($${Number(confirmedPaidTotal || finalTotal || 0).toFixed(2)} USD)`}
               </span>
             </div>
             <div className="flex justify-between">
@@ -731,7 +742,7 @@ export const CheckoutPage = () => {
               </div>
 
               <p className="text-neutral-700 text-xs leading-relaxed">
-                Please transfer exactly <strong className="text-neutral-900 font-bold">${Number(finalTotal || 0).toFixed(2)} USD</strong> from your online banking or mobile app. Always enter your <strong>Transfer Reference</strong> in the payment description so our team can match and dispatch your order immediately.
+                Please transfer exactly <strong className="text-neutral-900 font-bold">${Number(confirmedPaidTotal || finalTotal || 0).toFixed(2)} USD</strong> from your online banking or mobile app. Always enter your <strong>Transfer Reference</strong> in the payment description so our team can match and dispatch your order immediately.
               </p>
 
               {/* Bank Details Table */}

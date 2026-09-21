@@ -21,11 +21,35 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
   else if (status === 'Shipped') activeStep = 2;
   else if (status === 'Delivered') activeStep = 4;
 
+  // Helper to parse order date safely
+  const parseOrderDate = () => {
+    if (order.created_at) {
+      const d = new Date(order.created_at);
+      if (!isNaN(d.getTime())) return d;
+    }
+    if (order.createdAt) {
+      const d = new Date(order.createdAt);
+      if (!isNaN(d.getTime())) return d;
+    }
+    if (order.date && order.date !== 'Today') {
+      const d = new Date(order.date);
+      if (!isNaN(d.getTime())) return d;
+    }
+    return new Date();
+  };
+
+  const baseDate = parseOrderDate();
+  const formatStepDate = (daysToAdd = 0) => {
+    const d = new Date(baseDate);
+    d.setDate(d.getDate() + daysToAdd);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   const steps = [
     {
       title: 'Order Confirmed & Payment Verified',
       subtitle: 'Payment received via Secure Gateway',
-      date: order.date || 'Aug 31, 2026',
+      date: formatStepDate(0),
       location: 'Azim Crafts',
       icon: CheckCircle2,
       done: activeStep >= 0,
@@ -34,7 +58,7 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
     {
       title: 'Artisan Crafted & Quality Inspection',
       subtitle: 'Hand-inspected & packaged with foam cushioning',
-      date: 'Aug 31, 2026',
+      date: activeStep >= 1 ? formatStepDate(0) : `Est. ${formatStepDate(1)}`,
       location: 'Roorkee Artisan Workshop, India',
       icon: Package,
       done: activeStep >= 1,
@@ -43,7 +67,7 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
     {
       title: 'Dispatched via DHL Express Worldwide',
       subtitle: isAssigned ? `Air Waybill: ${trackingCode}` : 'Booking scheduled with air courier',
-      date: activeStep >= 2 ? 'In Transit' : 'Expected Next',
+      date: activeStep >= 2 ? `In Transit (${formatStepDate(1)})` : `Expected ${formatStepDate(1)}`,
       location: 'Delhi International Airport Cargo Terminal (DEL)',
       icon: Plane,
       done: activeStep >= 2,
@@ -52,7 +76,7 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
     {
       title: 'International Customs & Port Clearance',
       subtitle: 'Priority customs clearance with express documentation',
-      date: activeStep >= 3 ? 'Cleared' : 'In Transit',
+      date: activeStep >= 3 ? `Cleared (${formatStepDate(2)})` : `Est. ${formatStepDate(2)}`,
       location: `${order.country || 'Australia'} International Gateway`,
       icon: Globe,
       done: activeStep >= 3,
@@ -61,7 +85,7 @@ export function CustomerOrderTrackingModal({ order, onClose }) {
     {
       title: 'Delivered to Your Doorstep',
       subtitle: 'Final delivery with signature & contactless option',
-      date: activeStep >= 4 ? 'Delivered' : 'Est: 3-5 Business Days',
+      date: activeStep >= 4 ? `Delivered (${formatStepDate(3)})` : `Est: ${formatStepDate(3)} – ${formatStepDate(5)}`,
       location: order.shippingAddress || `${order.country || 'Australia'}`,
       icon: MapPin,
       done: activeStep >= 4,

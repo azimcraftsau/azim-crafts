@@ -1,9 +1,25 @@
 // Cloudflare Pages Function: /api/orders (Cloudflare D1 SQL Handler)
 export async function onRequestGet(context) {
   try {
-    const { env } = context;
+    const { request, env } = context;
     if (!env.DB) {
       return new Response(JSON.stringify([]), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const url = new URL(request.url);
+    const orderId = url.searchParams.get('orderId') || url.searchParams.get('id');
+    const email = url.searchParams.get('email');
+
+    if (orderId && email) {
+      const cleanId = orderId.replace('#', '').trim();
+      const cleanEmail = email.toLowerCase().trim();
+      const { results } = await env.DB.prepare(
+        'SELECT * FROM orders WHERE (LOWER(REPLACE(id, "#", "")) = LOWER(?)) AND (LOWER(customer_email) = LOWER(?)) ORDER BY created_at DESC'
+      ).bind(cleanId, cleanEmail).all();
+
+      return new Response(JSON.stringify(results || []), {
         headers: { 'Content-Type': 'application/json' }
       });
     }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   MessageSquare, Minus, RotateCcw, Paperclip, Send, 
-  Package, Store, CheckCircle2, Truck, ArrowRight, ShieldCheck 
+  Package, Store, CheckCircle2, Truck, ArrowRight, ShieldCheck,
+  AlertCircle, Loader2
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { allProducts } from '../../data/products';
@@ -34,6 +35,7 @@ export const ChatWidget = () => {
   const [trackEmail, setTrackEmail] = useState('');
   const [trackingResult, setTrackingResult] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
+  const [trackErrors, setTrackErrors] = useState({ order: false, email: false, msg: '' });
 
   const visitorId = useRef(getVisitorId()).current;
   const messagesEndRef = useRef(null);
@@ -273,41 +275,69 @@ export const ChatWidget = () => {
 
   const handleTrackSubmit = async (e) => {
     e?.preventDefault();
-    if (!trackOrderNo && !trackEmail) {
-      showToast('Please enter your order number or email.', 'error');
+    const qOrder = (trackOrderNo || '').trim().toLowerCase().replace('#', '');
+    const qEmail = (trackEmail || '').trim().toLowerCase();
+
+    let hasErr = false;
+    const errors = { order: false, email: false, msg: '' };
+
+    if (!qOrder) {
+      errors.order = true;
+      hasErr = true;
+    }
+    if (!qEmail) {
+      errors.email = true;
+      hasErr = true;
+    }
+
+    if (hasErr) {
+      errors.msg = 'Please enter both your Order Number and Email address.';
+      setTrackErrors(errors);
+      return;
+    }
+
+    if (!qEmail.includes('@') || !qEmail.includes('.')) {
+      setTrackErrors({ order: false, email: true, msg: 'Please enter a valid email address.' });
       return;
     }
 
     setIsTracking(true);
+    setTrackErrors({ order: false, email: false, msg: '' });
 
     try {
       let allOrders = [];
       try {
-        const res = await fetch('/api/orders');
+        const res = await fetch(`/api/orders?id=${encodeURIComponent(qOrder)}&email=${encodeURIComponent(qEmail)}`);
         if (res.ok) {
           allOrders = await res.json();
         }
       } catch (err) {}
 
       if (!Array.isArray(allOrders) || allOrders.length === 0) {
+        try {
+          const res = await fetch('/api/orders');
+          if (res.ok) {
+            allOrders = await res.json();
+          }
+        } catch (err) {}
+      }
+
+      if (!Array.isArray(allOrders) || allOrders.length === 0) {
         const saved = localStorage.getItem('vw_admin_orders');
         if (saved) allOrders = JSON.parse(saved);
       }
 
-      const qOrder = (trackOrderNo || '').trim().toLowerCase().replace('#', '');
-      const qEmail = (trackEmail || '').trim().toLowerCase();
-
-      const found = allOrders.find(o => {
-        const oId = (o.id || '').toLowerCase().replace('#', '');
-        const oEmail = (o.customerEmail || '').toLowerCase();
-        if (qOrder && oId === qOrder) return true;
-        if (qEmail && oEmail === qEmail) return true;
-        return false;
-      });
+      // STRICT VALIDATION: BOTH Order ID AND Email MUST MATCH
+      const found = Array.isArray(allOrders) ? allOrders.find(o => {
+        const oId = (o.id || '').toLowerCase().replace('#', '').trim();
+        const oEmail = (o.customer_email || o.customerEmail || '').toLowerCase().trim();
+        return oId === qOrder && oEmail === qEmail;
+      }) : null;
 
       setIsTracking(false);
 
       if (found) {
+        setTrackErrors({ order: false, email: false, msg: '' });
         setTrackingResult({
           orderNumber: found.id,
           status: found.status || 'Processing',
@@ -318,14 +348,25 @@ export const ChatWidget = () => {
           date: found.date || 'Today',
           eta: found.status === 'Delivered' ? 'Delivered' : (found.status === 'Shipped' ? '2 - 3 Business Days' : '3 - 5 Business Days'),
           location: found.status === 'Shipped' ? 'In Transit (Air Cargo Terminal DEL)' : 'Roorkee Artisan Workshop, India',
-          destination: found.shippingAddress || found.country || 'Australia'
+          destination: found.shippingAddress || found.shipping_address || found.country || 'Australia'
         });
         showToast('Order found! Live tracking details updated.', 'success');
       } else {
-        showToast('No active order found for this Order ID/Email. Please check and try again.', 'error');
+        // Highlight inputs red and show error message
+        setTrackErrors({
+          order: true,
+          email: true,
+          msg: 'No order found matching this Order Number and Email. Please verify both fields.'
+        });
+        showToast('Order not found. Please verify Order Number & Email.', 'error');
       }
     } catch (err) {
       setIsTracking(false);
+      setTrackErrors({
+        order: true,
+        email: true,
+        msg: 'Error checking order status. Please try again.'
+      });
       showToast('Error checking order status. Please try again.', 'error');
     }
   };
@@ -588,27 +629,51 @@ export const ChatWidget = () => {
                               <div>
                                 <input
                                   type="text"
-                                  placeholder="Order number (e.g. #VW-849201)"
+                                  placeholder="Order number (e.g. #VTM-55305)"
                                   value={trackOrderNo}
-                                  onChange={(e) => setTrackOrderNo(e.target.value)}
-                                  className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black bg-white"
+                                  onChange={(e) => {
+                                    setTrackOrderNo(e.target.value);
+                                    if (trackErrors.order) setTrackErrors(prev => ({ ...prev, order: false, msg: '' }));
+                                  }}
+                                  className={`w-full px-3 py-2 text-xs border rounded-md focus:outline-none transition-all bg-white ${
+                                    trackErrors.order
+                                      ? 'border-red-500 ring-1 ring-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50/20 text-neutral-900'
+                                      : 'border-neutral-300 focus:ring-1 focus:ring-black focus:border-black text-neutral-900'
+                                  }`}
                                 />
                               </div>
 
                               <div>
                                 <input
                                   type="email"
-                                  placeholder="Email address"
+                                  placeholder="Email address (e.g. customer@example.com)"
                                   value={trackEmail}
-                                  onChange={(e) => setTrackEmail(e.target.value)}
-                                  className="w-full px-3 py-2 text-xs border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black bg-white"
+                                  onChange={(e) => {
+                                    setTrackEmail(e.target.value);
+                                    if (trackErrors.email) setTrackErrors(prev => ({ ...prev, email: false, msg: '' }));
+                                  }}
+                                  className={`w-full px-3 py-2 text-xs border rounded-md focus:outline-none transition-all bg-white ${
+                                    trackErrors.email
+                                      ? 'border-red-500 ring-1 ring-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50/20 text-neutral-900'
+                                      : 'border-neutral-300 focus:ring-1 focus:ring-black focus:border-black text-neutral-900'
+                                  }`}
                                 />
                               </div>
+
+                              {trackErrors.msg && (
+                                <div className="flex items-start gap-1.5 p-2 bg-red-50 border border-red-200 rounded-md text-[11px] text-red-700 font-medium animate-fade-in">
+                                  <AlertCircle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+                                  <span className="leading-snug">{trackErrors.msg}</span>
+                                </div>
+                              )}
 
                               <div className="grid grid-cols-2 gap-2 pt-1">
                                 <button
                                   type="button"
-                                  onClick={() => setChatView('home')}
+                                  onClick={() => {
+                                    setChatView('home');
+                                    setTrackErrors({ order: false, email: false, msg: '' });
+                                  }}
                                   className="py-2.5 border border-neutral-300 hover:bg-neutral-100 rounded-md text-xs font-semibold text-neutral-700 transition-colors cursor-pointer"
                                 >
                                   Cancel
@@ -616,9 +681,16 @@ export const ChatWidget = () => {
                                 <button
                                   type="submit"
                                   disabled={isTracking}
-                                  className="py-2.5 bg-black hover:bg-neutral-800 text-white rounded-md text-xs font-semibold transition-colors shadow-xs cursor-pointer"
+                                  className="py-2.5 bg-black hover:bg-neutral-800 disabled:bg-neutral-600 text-white rounded-md text-xs font-semibold transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
                                 >
-                                  {isTracking ? 'Searching...' : 'Track my order'}
+                                  {isTracking ? (
+                                    <>
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      <span>Searching...</span>
+                                    </>
+                                  ) : (
+                                    <span>Track my order</span>
+                                  )}
                                 </button>
                               </div>
                             </form>
