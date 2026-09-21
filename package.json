@@ -1,0 +1,17 @@
+{
+  "name": "azim-crafts",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend"
+  },
+  "dependencies": {
+    "isomorphic-git": "^1.42.2"
+  }
+}

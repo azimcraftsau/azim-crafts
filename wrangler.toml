@@ -1,0 +1,24 @@
+name = "vintage-to-modern"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-08-01"
+
+# ==========================================
+# 1. CLOUDFLARE D1 SQL DATABASE BINDING
+# ==========================================
+[[d1_databases]]
+binding = "DB"
+database_name = "azimcrafts-db"
+database_id = "a50e61cb-1c69-4eb6-a157-9a76d2d57f49"
+
+# ==========================================
+# 2. CLOUDFLARE R2 MEDIA STORAGE BINDING
+# ==========================================
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "vtm-media"
+
+# ==========================================
+# 3. ENVIRONMENT VARIABLES
+# ==========================================
+[vars]
+R2_PUBLIC_DOMAIN = "https://media.vintagetomoderncraft.com"

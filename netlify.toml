@@ -1,0 +1,43 @@
+﻿# Netlify Configuration for Azim Crafts (Vintage)
+
+[build]
+  base = ""
+  publish = "frontend/dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA Routing - sends all routes to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# High-Performance Caching for JavaScript & CSS Assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Video Streaming Range Headers for Hero / Banner Videos
+[[headers]]
+  for = "*.mp4"
+  [headers.values]
+    Accept-Ranges = "bytes"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.webm"
+  [headers.values]
+    Accept-Ranges = "bytes"
+    Cache-Control = "public, max-age=31536000, immutable"

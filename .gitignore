@@ -1,0 +1,17 @@
+.env
+.env.*
+**/.env
+**/.env.*
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.local_db/
+**/.local_db/
+*.bak
+.DS_Store
+Thumbs.db
+git_push*
+*.cjs
+test_*.js
+scratch/

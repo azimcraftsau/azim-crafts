@@ -1,0 +1,9 @@
+{
+  "name": "azim-crafts-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serverless edge backend and database schema for Azim Crafts",
+  "scripts": {
+    "d1:deploy": "npx wrangler d1 execute vtm-db --file=./database/schema.sql"
+  }
+}
