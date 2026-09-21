@@ -9,6 +9,46 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Multi-algorithm password verification (PBKDF2 with SHA-512 salt, SHA-256, and plaintext)
+async function verifyPassword(password, stored) {
+  if (!stored) return false;
+  if (stored.startsWith('pbkdf2:')) {
+    try {
+      const parts = stored.split(':');
+      if (parts.length === 3) {
+        const [, saltHex, targetHash] = parts;
+        const saltBytes = new TextEncoder().encode(saltHex);
+        const key = await crypto.subtle.importKey(
+          'raw',
+          new TextEncoder().encode(password),
+          { name: 'PBKDF2' },
+          false,
+          ['deriveBits']
+        );
+        const derivedBits = await crypto.subtle.deriveBits(
+          {
+            name: 'PBKDF2',
+            salt: saltBytes,
+            iterations: 100000,
+            hash: 'SHA-512'
+          },
+          key,
+          64 * 8
+        );
+        const derivedHex = Array.from(new Uint8Array(derivedBits))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+        return derivedHex === targetHash;
+      }
+    } catch (e) {
+      console.error('PBKDF2 verification error:', e.message);
+    }
+  }
+  if (password === stored) return true;
+  const sha256 = await hashPassword(password);
+  return sha256 === stored;
+}
+
 export async function onRequestPost(context) {
   try {
     const { request, env } = context;
@@ -105,14 +145,17 @@ export async function onRequestPost(context) {
         });
       }
 
-      if (user.password === password) {
-        // Transparently upgrade legacy plaintext password to SHA-256 hash
-        await env.DB.prepare('UPDATE users SET password = ? WHERE id = ?').bind(hashedPw, user.id).run().catch(() => null);
-      } else if (user.password !== hashedPw) {
+      const isValid = await verifyPassword(password, user.password);
+      if (!isValid) {
         return new Response(JSON.stringify({ error: 'Incorrect password. Please try again.' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' }
         });
+      }
+
+      if (user.password === password) {
+        // Transparently upgrade legacy plaintext password to SHA-256 hash
+        await env.DB.prepare('UPDATE users SET password = ? WHERE id = ?').bind(hashedPw, user.id).run().catch(() => null);
       }
 
       const token = `adm_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
