@@ -14,12 +14,12 @@ export const AboutUsSection = () => {
           <div className="lg:col-span-5">
             <div className="relative rounded-xl overflow-hidden shadow-xl bg-neutral-100 border border-neutral-200 group">
               <img
-                src="/about/about'.jpg_2K_202608280338.jpeg"
+                src="/about/about-hero.jpeg"
                 alt="About Azim Crafts"
                 className="w-full h-auto object-cover group-hover:scale-103 transition-transform duration-700 max-h-[560px]"
                 loading="lazy"
                 onError={(e) => {
-                  e.target.src = "/about/" + encodeURIComponent("about'.jpg_2K_202608280338.jpeg");
+                  e.target.src = "/about/about-us-img.jpg";
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

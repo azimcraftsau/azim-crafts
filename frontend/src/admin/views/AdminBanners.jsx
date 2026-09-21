@@ -259,6 +259,7 @@ function SlideModal({ slide, isNew, onSave, onClose }) {
               value={form.targetProductId}
               onChange={(e) => setForm({ ...form, targetProductId: e.target.value })}
             >
+              <option value="all-products">🌟 All Products (Catalog Page)</option>
               {allProducts.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.title} (${p.price} USD)

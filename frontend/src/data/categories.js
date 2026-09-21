@@ -59,7 +59,7 @@ export const featuredCategories = [
     id: 'diving-helmets',
     title: 'Vintage Diving Helmets',
     handle: 'diving-helmets',
-    image: '/All categories/Vintage Diving Helmets/product 20/DH102-Replica-Diving-Helmet-Copper-Mark-V-879361.jpg',
+    image: '/All categories/Vintage Diving Helmets/product 20/1.jpg',
     itemCount: '5 items',
     href: '/collections/diving-helmets'
   },

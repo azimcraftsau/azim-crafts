@@ -11,11 +11,11 @@ const DEFAULT_HERO_SLIDES = [
     desktopPoster: '/desktop banner/poster1.webp',
     mobileVideo: '/mobile banner/video1.mp4',
     mobilePoster: '/mobile banner/poster1.webp',
-    badgeText: 'HANDCRAFTED HISTORICAL HERITAGE',
-    title: 'Discover Our Vintage\nCollection',
-    subtitle: 'Authentic Nautical Antiques, Battle-Ready Medieval Armour & Fine Goods',
-    btnText: 'Shop Now',
-    targetProductId: 'product-1',
+    badgeText: 'MUSEUM REPRODUCTION ARMOUR',
+    title: 'Handcrafted Medieval Knight\nFull Armour Suits',
+    subtitle: '18-gauge battle-ready steel plate armour, wearable warrior costumes & forged display sets',
+    btnText: 'Explore Armour Suits',
+    targetProductId: 'product-3',
     btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
   },
   {
@@ -24,11 +24,11 @@ const DEFAULT_HERO_SLIDES = [
     desktopPoster: '/desktop banner/poster2.webp',
     mobileVideo: '/mobile banner/video2.mp4',
     mobilePoster: '/mobile banner/poster2.webp',
-    badgeText: '18-GAUGE STEEL & SOLID WOOD',
-    title: 'Battle-Ready Viking\nRound Shields & Swords',
-    subtitle: 'Hand-painted Norse dragon knotwork with heavy metal rim & center umbo',
-    btnText: 'Explore Viking Shields',
-    targetProductId: 'product-1',
+    badgeText: 'HAND-CARVED SOLID HARDWOOD',
+    title: 'Battle-Ready Viking\nWooden Round Shields',
+    subtitle: 'Authentic Norse Celtic knotwork, heavy steel rims & hand-forged center umbo bosses',
+    btnText: 'Explore Wooden Shields',
+    targetProductId: 'product-47',
     btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
   },
   {
@@ -37,11 +37,11 @@ const DEFAULT_HERO_SLIDES = [
     desktopPoster: '/desktop banner/poster3.webp',
     mobileVideo: '/mobile banner/video3.mp4',
     mobilePoster: '/mobile banner/poster3.webp',
-    badgeText: 'LEGENDARY MEDIEVAL REENACTMENT',
-    title: 'Forged Knight Armour\n& Centurion Helmets',
-    subtitle: 'Authentic wearable historical reproductions for cosplay, collectors & decor',
-    btnText: 'View Warriors Collection',
-    targetProductId: 'product-3',
+    badgeText: 'HAND-FORGED WROUGHT IRON',
+    title: 'Vintage Medieval Chandeliers\n& Artisan Iron Pendants',
+    subtitle: 'Gothic ring frames, candle-style lighting & rustic farmhouse iron ceiling lamps',
+    btnText: 'Explore Chandeliers',
+    targetProductId: 'product-66',
     btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
   },
   {
@@ -61,32 +61,32 @@ const DEFAULT_HERO_SLIDES = [
     id: 5,
     desktopVideo: '/desktop banner/video5.mp4',
     desktopPoster: '/desktop banner/poster5.webp',
-    mobileVideo: '/mobile banner/video5.mp4',
-    mobilePoster: '/mobile banner/poster5.webp',
-    badgeText: 'AUTHENTIC MARITIME & LEATHER',
-    title: 'Solid Brass Compasses\n& Handcrafted Journals',
-    subtitle: 'Navigational sextants, diving helmets and 100% genuine buffalo leather crafts',
-    btnText: 'Discover Artisan Goods',
-    targetProductId: 'product-11',
+    mobileVideo: '',
+    mobilePoster: '',
+    badgeText: 'ARTICULATED 18-GAUGE STEEL',
+    title: 'Handcrafted Steel Pauldrons\n& Articulated Armour',
+    subtitle: '18-gauge solid carbon steel pauldrons, articulated knight armor plates & battle-ready protection',
+    btnText: 'Explore Pauldrons',
+    targetProductId: 'product-33',
     btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
   },
   {
     id: 6,
     desktopVideo: '/desktop banner/video6.mp4',
     desktopPoster: '/desktop banner/poster6.webp',
-    mobileVideo: '',
-    mobilePoster: '',
-    badgeText: 'ORIGINAL ARTISAN ATELIER',
-    title: 'Master Artisans &\nHandcrafted Heritage',
-    subtitle: 'Generational craftsmen shaping bespoke leather journals, heraldic shields, armour & artisan chandeliers',
-    btnText: 'Explore Workshop Creations',
-    targetProductId: 'product-14',
+    mobileVideo: '/mobile banner/video5.mp4',
+    mobilePoster: '/mobile banner/poster5.webp',
+    badgeText: 'BESPOKE ARTISAN WORKSHOP',
+    title: 'Bespoke Custom Creations\n& Historical Artisanship',
+    subtitle: 'We craft custom armour, heraldic shields, weapons & nautical antiquities tailored to your vision',
+    btnText: 'Explore All Products',
+    targetProductId: 'all-products',
     btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
   }
 ];
 
 export const HeroSlider = () => {
-  const { setQuickViewProduct } = useCart();
+  const { setQuickViewProduct, openCategory, products } = useCart();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState(DEFAULT_HERO_SLIDES);
 
@@ -195,9 +195,18 @@ export const HeroSlider = () => {
   const btnColor = activeSlideData?.btnColor || 'bg-[#c8924b] hover:bg-[#b57f38]';
 
   const handleHeroAction = (productId) => {
-    const targetProduct = allProducts.find(p => p.id === productId) || allProducts[0];
+    if (!productId || productId === 'all-products' || productId === 'all' || productId === 'catalog') {
+      if (openCategory) {
+        openCategory('all');
+        return;
+      }
+    }
+    const productCatalog = (products && products.length > 0 ? products : allProducts);
+    const targetProduct = productCatalog.find(p => p.id === productId);
     if (targetProduct && setQuickViewProduct) {
       setQuickViewProduct(targetProduct);
+    } else if (openCategory) {
+      openCategory('all');
     }
   };
 

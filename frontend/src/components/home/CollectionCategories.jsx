@@ -83,7 +83,7 @@ export const CollectionCategories = () => {
       id: 'diving-helmets',
       title: 'Vintage Diving Helmets',
       subtitle: 'Solid brass & copper US Navy Mark V deep-sea master replica helmets',
-      image: '/All categories/Vintage Diving Helmets/product 20/DH102-Replica-Diving-Helmet-Copper-Mark-V-879361.jpg',
+      image: '/All categories/Vintage Diving Helmets/product 20/1.jpg',
       itemCount: '5 items',
       products: getCategoryProducts('diving-helmets')
     },

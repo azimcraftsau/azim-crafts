@@ -31,9 +31,12 @@ export const BrandStoryModal = ({ isOpen, onClose }) => {
           {/* Hero Banner Header */}
           <div className="relative h-48 sm:h-56 bg-neutral-900 overflow-hidden">
             <img
-              src="https://vintageworld.com.au/cdn/shop/files/about-us-img.jpg?v=1613560706"
+              src="/about/about-hero.jpeg"
               alt="Azim Crafts Heritage"
-              className="w-full h-full object-cover opacity-60"
+              className="w-full h-full object-cover opacity-75"
+              onError={(e) => {
+                e.target.src = '/logo.png';
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
             
