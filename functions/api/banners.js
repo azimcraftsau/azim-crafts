@@ -1,3 +1,12 @@
+function getPosterForVideo(videoUrl, isMobile = false) {
+  if (!videoUrl) return '';
+  const m = String(videoUrl).match(/video(\d+)\.mp4/i);
+  if (m) {
+    return isMobile ? `/mobile banner/poster${m[1]}.webp` : `/desktop banner/poster${m[1]}.webp`;
+  }
+  return '';
+}
+
 // Cloudflare Pages Function: /api/banners (Cloudflare D1 SQL Handler)
 export async function onRequestGet(context) {
   try {
@@ -20,8 +29,10 @@ export async function onRequestGet(context) {
       btnText: b.btn_text,
       targetProductId: b.target_product_id,
       desktopVideo: b.desktop_video,
+      desktopPoster: b.desktop_poster || getPosterForVideo(b.desktop_video, false),
       mobileVideo: b.mobile_video,
-      active: Boolean(b.active),
+      mobilePoster: b.mobile_poster || getPosterForVideo(b.mobile_video, true),
+      active: b.active !== undefined ? (b.active === 1 || b.active === true || b.active === '1') : true,
       slide_order: b.slide_order
     }));
 

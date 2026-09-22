@@ -417,6 +417,12 @@ export async function getHeroSlides() {
       const list = unwrapData(data);
       if (list && Array.isArray(list) && list.length > 0) {
         _cachedHeroSlides = list;
+        try {
+          const activeOnly = list.filter(s => s.active !== false && s.active !== 0 && s.active !== '0');
+          if (activeOnly.length > 0) {
+            localStorage.setItem('vw_active_hero_slides', JSON.stringify(activeOnly));
+          }
+        } catch {}
         return list;
       }
     }
@@ -428,12 +434,18 @@ export async function getHeroSlides() {
 
 export async function saveHeroSlidesToDB(slides) {
   try {
+    _cachedHeroSlides = slides;
+    try {
+      const activeOnly = slides.filter(s => s.active !== false && s.active !== 0 && s.active !== '0');
+      localStorage.setItem('vw_active_hero_slides', JSON.stringify(activeOnly));
+    } catch {}
+    notifySync('vw_slides_updated');
+
     const res = await fetch('/api/banners', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(slides)
     });
-    notifySync('vw_slides_updated');
     if (res.ok) return await res.json();
   } catch (err) {
     console.error('Error saving banners to DB:', err);

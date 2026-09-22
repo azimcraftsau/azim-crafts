@@ -348,6 +348,10 @@ export function AdminBanners() {
 
   const saveSlides = async (newSlides) => {
     setSlides(newSlides);
+    try {
+      const activeOnly = newSlides.filter(s => s.active !== false && s.active !== 0 && s.active !== '0');
+      localStorage.setItem('vw_active_hero_slides', JSON.stringify(activeOnly));
+    } catch {}
     await saveHeroSlidesToDB(newSlides);
   };
 

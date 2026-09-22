@@ -85,10 +85,42 @@ const DEFAULT_HERO_SLIDES = [
   }
 ];
 
+const getSlidePoster = (slide, isMobile = false) => {
+  if (!slide) return '';
+  if (isMobile) {
+    if (slide.mobilePoster) return slide.mobilePoster;
+    if (slide.mobileVideo) {
+      const m = String(slide.mobileVideo).match(/video(\d+)\.mp4/i);
+      if (m) return `/mobile banner/poster${m[1]}.webp`;
+    }
+    return '';
+  } else {
+    if (slide.desktopPoster) return slide.desktopPoster;
+    if (slide.desktopVideo) {
+      const m = String(slide.desktopVideo).match(/video(\d+)\.mp4/i);
+      if (m) return `/desktop banner/poster${m[1]}.webp`;
+    }
+    return '';
+  }
+};
+
 export const HeroSlider = () => {
   const { setQuickViewProduct, openCategory, products } = useCart();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState(DEFAULT_HERO_SLIDES);
+  const [slides, setSlides] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('vw_active_hero_slides');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch {}
+    }
+    return DEFAULT_HERO_SLIDES;
+  });
 
   const desktopVideoRef = useRef(null);
   const mobileVideoRef = useRef(null);
@@ -101,12 +133,15 @@ export const HeroSlider = () => {
     try {
       const data = await getHeroSlides();
       if (Array.isArray(data) && data.length > 0) {
-        const activeOnly = data.filter(s => s.active !== false);
-        setSlides(activeOnly.length > 0 ? activeOnly : DEFAULT_HERO_SLIDES);
+        const activeOnly = data.filter(s => s.active !== false && s.active !== 0 && s.active !== '0');
+        const finalSlides = activeOnly.length > 0 ? activeOnly : DEFAULT_HERO_SLIDES;
+        setSlides(finalSlides);
+        try {
+          localStorage.setItem('vw_active_hero_slides', JSON.stringify(finalSlides));
+        } catch {}
         return;
       }
     } catch {}
-    setSlides(DEFAULT_HERO_SLIDES);
   };
 
   useEffect(() => {
@@ -219,10 +254,10 @@ export const HeroSlider = () => {
         <div className="absolute inset-0 w-full h-full overflow-hidden bg-black flex items-center justify-center">
           {!isMobile && (
             <video
-              key={`desktop-video-${safeSlideIndex}`}
+              key={`desktop-video-${activeSlideData.id || safeSlideIndex}-${activeSlideData.desktopVideo}`}
               ref={desktopVideoRef}
               src={activeSlideData.desktopVideo}
-              poster={activeSlideData.desktopPoster || '/desktop banner/poster1.webp'}
+              poster={getSlidePoster(activeSlideData, false)}
               autoPlay
               muted
               playsInline
@@ -312,10 +347,10 @@ export const HeroSlider = () => {
         <div className="relative w-full h-[76vh] min-h-[520px] max-h-[700px] aspect-[9/16] bg-black overflow-hidden select-none">
           {isMobile && (
             <video
-              key={`mobile-video-${safeSlideIndex}`}
+              key={`mobile-video-${activeSlideData.id || safeSlideIndex}-${activeSlideData.mobileVideo}`}
               ref={mobileVideoRef}
               src={activeSlideData.mobileVideo}
-              poster={activeSlideData.mobilePoster || '/mobile banner/poster1.webp'}
+              poster={getSlidePoster(activeSlideData, true)}
               autoPlay
               muted
               playsInline
