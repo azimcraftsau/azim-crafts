@@ -43,9 +43,13 @@ let _cachedCategories = null;
 let _cachedHeroSlides = null;
 let _cachedStoreSettings = null;
 
+let _cachedCustomers = null;
+
 export const getCachedProducts = () => _cachedProducts;
 export const getCachedOrders = () => _cachedOrders;
 export const getCachedUsers = () => _cachedUsers;
+export const getCachedCustomers = () => _cachedCustomers;
+export const setCachedCustomers = (data) => { _cachedCustomers = data; };
 export const getCachedCategories = () => _cachedCategories;
 export const getCachedHeroSlides = () => _cachedHeroSlides;
 export const getCachedStoreSettings = () => _cachedStoreSettings;

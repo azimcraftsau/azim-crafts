@@ -3,17 +3,17 @@ import {
   Users, UserCheck, ShoppingCart, DollarSign, Search, 
   Mail, Phone, MapPin, Calendar, ArrowRight, X, ExternalLink, ShieldCheck, Clock, Loader2
 } from 'lucide-react';
-import { getOrders, getUsersList, getCachedOrders, getCachedUsers } from '../../lib/cloudflareService';
+import { getOrders, getUsersList, getCachedOrders, getCachedCustomers, setCachedCustomers } from '../../lib/cloudflareService';
 
 export function AdminUsers() {
-  const [users, setUsers] = useState(() => getCachedUsers() || []);
+  const [users, setUsers] = useState(() => getCachedCustomers() || []);
   const [orders, setOrders] = useState(() => getCachedOrders() || []);
-  const [loading, setLoading] = useState(() => !getCachedUsers());
+  const [loading, setLoading] = useState(() => !(getCachedCustomers() && getCachedCustomers().length > 0));
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
 
   const loadData = async (silent = false) => {
-    if (!silent && !getCachedUsers()) setLoading(true);
+    if (!silent && !getCachedCustomers()) setLoading(true);
     let allOrders = [];
     try {
       allOrders = await getOrders();
@@ -83,6 +83,7 @@ export function AdminUsers() {
 
     setOrders(Array.isArray(allOrders) ? allOrders : []);
     setUsers(combined);
+    setCachedCustomers(combined);
     setLoading(false);
   };
 
@@ -109,8 +110,8 @@ export function AdminUsers() {
   });
 
   const totalCustomers = users.length;
-  const activeBuyers = users.filter(u => u.orderCount > 0).length;
-  const totalCustomerRevenue = users.reduce((sum, u) => sum + u.totalSpent, 0);
+  const activeBuyers = users.filter(u => (Number(u?.orderCount) || 0) > 0).length;
+  const totalCustomerRevenue = users.reduce((sum, u) => sum + (Number(u?.totalSpent) || 0), 0);
 
   return (
     <div className="p-6 space-y-6 max-w-7xl font-menu">
@@ -156,7 +157,7 @@ export function AdminUsers() {
           </div>
           <div>
             <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Customer Revenue</p>
-            <p className="text-2xl font-bold text-gray-900 mt-0.5">${totalCustomerRevenue.toFixed(2)} USD</p>
+            <p className="text-2xl font-bold text-gray-900 mt-0.5">${(Number(totalCustomerRevenue) || 0).toFixed(2)} USD</p>
           </div>
         </div>
       </div>
@@ -232,15 +233,15 @@ export function AdminUsers() {
                       </td>
                       <td className="px-5 py-4">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                          u.orderCount > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-500'
+                          (Number(u?.orderCount) || 0) > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-500'
                         }`}>
                           <ShoppingCart size={11} />
-                          <span>{u.orderCount} {u.orderCount === 1 ? 'order' : 'orders'}</span>
+                          <span>{Number(u?.orderCount) || 0} {(Number(u?.orderCount) || 0) === 1 ? 'order' : 'orders'}</span>
                         </span>
                       </td>
                       <td className="px-5 py-4">
                         <span className="font-bold text-gray-900">
-                          ${u.totalSpent.toFixed(2)} USD
+                          ${(Number(u?.totalSpent) || 0).toFixed(2)} USD
                         </span>
                       </td>
                       <td className="px-5 py-4 text-right">
@@ -305,7 +306,7 @@ export function AdminUsers() {
                 </div>
                 <div>
                   <span className="text-gray-400 block uppercase tracking-wider text-[10px]">Total LTV</span>
-                  <span className="font-bold text-emerald-700 text-sm">${selectedUser.totalSpent.toFixed(2)} USD</span>
+                  <span className="font-bold text-emerald-700 text-sm">${(Number(selectedUser?.totalSpent) || 0).toFixed(2)} USD</span>
                 </div>
               </div>
 
@@ -313,16 +314,16 @@ export function AdminUsers() {
               <div>
                 <h4 className="font-heading text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <ShoppingCart size={15} className="text-[#c8924b]" />
-                  <span>Orders Placed ({selectedUser.orders.length})</span>
+                  <span>Orders Placed ({selectedUser?.orders?.length || 0})</span>
                 </h4>
 
-                {selectedUser.orders.length === 0 ? (
+                {(!selectedUser?.orders || selectedUser.orders.length === 0) ? (
                   <div className="p-6 bg-gray-50 rounded-xl text-center text-xs text-gray-500 border border-gray-100">
                     No orders placed yet by this user.
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {selectedUser.orders.map((ord) => (
+                    {(selectedUser?.orders || []).map((ord) => (
                       <div key={ord.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-2xs space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2">
@@ -331,7 +332,7 @@ export function AdminUsers() {
                               {ord.status || 'Processing'}
                             </span>
                           </div>
-                          <span className="font-bold text-gray-900">${Number(ord.total).toFixed(2)} USD</span>
+                          <span className="font-bold text-gray-900">${(Number(ord?.total) || 0).toFixed(2)} USD</span>
                         </div>
                         <p className="text-xs text-gray-600">{ord.items}</p>
                         <div className="flex items-center justify-between text-[11px] text-gray-400 pt-1 border-t border-gray-100">
