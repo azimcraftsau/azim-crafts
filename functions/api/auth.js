@@ -186,7 +186,8 @@ export async function onRequestPost(context) {
         await env.DB.prepare('UPDATE users SET password = ? WHERE id = ?').bind(hashedPw, user.id).run().catch(() => null);
       }
 
-      const token = `adm_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
+      // Token format: adm__<userId>__<timestamp>__<random>
+      const token = `adm__${user.id}__${Date.now()}__${Math.random().toString(36).substring(2, 12)}`;
 
       const adminRoles = ['admin', 'superadmin', 'subadmin', 'manager', 'staff'];
       if (env.DB && adminRoles.includes(user.role)) {
@@ -265,9 +266,21 @@ export async function onRequestPost(context) {
         });
       }
 
-      // If token is not active, check if another session exists for this user (Concurrent Login)
-      const tokenParts = tokenToCheck.split('_');
-      const userIdFromToken = (tokenParts.length >= 2 && tokenParts[0] === 'adm') ? tokenParts[1] : null;
+      // If token is not active, extract user_id from token to check if another session exists (Concurrent Login)
+      let userIdFromToken = null;
+      if (tokenToCheck.startsWith('adm__')) {
+        const parts = tokenToCheck.split('__');
+        userIdFromToken = parts[1] || null;
+      } else if (tokenToCheck.startsWith('adm_')) {
+        const after = tokenToCheck.slice(4);
+        const last = after.lastIndexOf('_');
+        if (last !== -1) {
+          const secondLast = after.lastIndexOf('_', last - 1);
+          userIdFromToken = secondLast !== -1 ? after.slice(0, secondLast) : after.slice(0, last);
+        } else {
+          userIdFromToken = after;
+        }
+      }
 
       let isConcurrent = false;
       if (userIdFromToken) {
@@ -551,19 +564,6 @@ export async function onRequestPost(context) {
       });
     }
 
-    // 7. VERIFY TOKEN ACTION
-    if (action === 'verify_token') {
-      const authHeader = request.headers.get('Authorization') || '';
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        return new Response(JSON.stringify({ success: true }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
 
     // 8. LIST USERS ACTION (For Admin CRM)
     if (action === 'list_users') {
