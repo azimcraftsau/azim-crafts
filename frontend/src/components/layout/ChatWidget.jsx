@@ -71,11 +71,14 @@ export const ChatWidget = () => {
     }
   ];
 
-  // Load chat history for this visitor session
+  // Load chat history directly from Cloudflare D1 database (100% Database Powered - Zero LocalStorage)
   const loadChatThread = async () => {
-    // 1. Primary: Cloudflare D1 Backend Sync for cross-device live persistence
     try {
-      const res = await fetch(`/api/chat?id=${encodeURIComponent(visitorId)}`);
+      const queryParam = user?.email
+        ? `email=${encodeURIComponent(user.email.toLowerCase().trim())}`
+        : `id=${encodeURIComponent(visitorId)}`;
+
+      const res = await fetch(`/api/chat?${queryParam}`);
       if (res.ok) {
         const remoteThread = await res.json();
         if (remoteThread && remoteThread.id) {
@@ -88,62 +91,30 @@ export const ChatWidget = () => {
             return prev;
           });
 
-          const resolvedState = Boolean(remoteThread.isResolved);
-          setIsResolved(resolvedState);
+          setIsResolved(Boolean(remoteThread.isResolved));
 
           if (remoteMsgs.length > 0 && chatView === 'home') {
             setChatView('conversation');
           }
-
-          // Crucial: Synchronize remote state into localStorage so subsequent reads never revert to false!
-          try {
-            const savedThreads = localStorage.getItem('vw_live_chat_threads');
-            const threads = savedThreads ? JSON.parse(savedThreads) : [];
-            const otherThreads = threads.filter(t => t.id !== visitorId);
-            const updated = {
-              ...(threads.find(t => t.id === visitorId) || {}),
-              ...remoteThread,
-              messages: remoteMsgs,
-              isResolved: resolvedState
-            };
-            localStorage.setItem('vw_live_chat_threads', JSON.stringify([updated, ...otherThreads]));
-          } catch (e) {}
-
-          return; // Remote fetch was successful
-        }
-      }
-    } catch (e) {}
-
-    // 2. Fallback: Only read localStorage if remote fetch was unavailable
-    try {
-      const savedThreads = localStorage.getItem('vw_live_chat_threads');
-      if (savedThreads) {
-        const threads = JSON.parse(savedThreads);
-        const myThread = threads.find(t => t.id === visitorId);
-        if (myThread) {
-          if (Array.isArray(myThread.messages) && myThread.messages.length > 0) {
-            setMessages(prev => (prev.length === 0 ? myThread.messages : prev));
-            if (chatView === 'home') setChatView('conversation');
-          }
-          setIsResolved(Boolean(myThread.isResolved));
         }
       }
     } catch (e) {}
   };
 
   useEffect(() => {
-    loadChatThread();
-    window.addEventListener('vw_live_chat_updated', loadChatThread);
-    window.addEventListener('storage', loadChatThread);
+    // Purge legacy chat localStorage keys from device
+    try {
+      localStorage.removeItem('vw_live_chat_threads');
+      localStorage.removeItem('vw_admin_messages');
+    } catch (e) {}
 
+    loadChatThread();
     const pollInterval = setInterval(loadChatThread, 3500);
 
     return () => {
-      window.removeEventListener('vw_live_chat_updated', loadChatThread);
-      window.removeEventListener('storage', loadChatThread);
       clearInterval(pollInterval);
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (chatView === 'conversation') {
@@ -151,19 +122,15 @@ export const ChatWidget = () => {
     }
   }, [messages, chatView]);
 
-  // Sync to shared threads & Admin CRM
+  // Sync directly to Cloudflare D1 Backend (Zero Local Storage Dependency)
   const syncMessageToStore = (newMsgList, lastText, keepResolved = false) => {
     try {
-      const savedThreads = localStorage.getItem('vw_live_chat_threads');
-      const threads = savedThreads ? JSON.parse(savedThreads) : [];
-      const myExisting = threads.find(t => t.id === visitorId);
-      
       const isUserSignedIn = Boolean(user && (user.email || user.id));
       const customerEmail = isUserSignedIn ? (user.email || '').toLowerCase().trim() : '';
       const customerName = isUserSignedIn ? (user.name || user.email) : `Guest User #${visitorId}`;
       const customerId = isUserSignedIn ? (user.id || user.email) : `guest_${visitorId}`;
 
-      const nextResolved = keepResolved ? Boolean(myExisting?.isResolved ?? isResolved) : false;
+      const nextResolved = keepResolved ? isResolved : false;
 
       const threadObj = {
         id: visitorId,
@@ -178,7 +145,7 @@ export const ChatWidget = () => {
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         read: false,
         replied: false,
-        isResolved: nextResolved, // sending a new message reopens, session refresh keeps status
+        isResolved: nextResolved,
         priority: 'high',
         isLiveChat: true,
         messages: newMsgList
@@ -186,45 +153,12 @@ export const ChatWidget = () => {
 
       setIsResolved(nextResolved);
 
-      const otherThreads = threads.filter(t => t.id !== visitorId);
-      const updatedThreads = [threadObj, ...otherThreads];
-      localStorage.setItem('vw_live_chat_threads', JSON.stringify(updatedThreads));
-
-      // Also sync to vw_admin_messages so it appears seamlessly in CRM
-      const savedAdminMsgs = localStorage.getItem('vw_admin_messages');
-      const adminMsgs = savedAdminMsgs ? JSON.parse(savedAdminMsgs) : [];
-      const otherAdminMsgs = adminMsgs.filter(m => m.id !== visitorId);
-      const updatedAdminMsgs = [
-        {
-          id: visitorId,
-          name: isUserSignedIn ? customerName : `Guest User #${visitorId}`,
-          email: isUserSignedIn ? customerEmail : `Guest User (${visitorId})`,
-          isGuest: !isUserSignedIn,
-          userEmail: customerEmail,
-          userId: customerId,
-          subject: `Live Chat: "${lastText.slice(0, 35)}..."`,
-          message: lastText,
-          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          read: false,
-          replied: false,
-          isResolved: nextResolved,
-          priority: 'high',
-          isLiveChat: true,
-          chatThreadId: visitorId
-        },
-        ...otherAdminMsgs
-      ];
-      localStorage.setItem('vw_admin_messages', JSON.stringify(updatedAdminMsgs));
-
-      // Asynchronously push to Cloudflare D1 database so Admin sees it live across devices
+      // Directly persist to Cloudflare D1 database
       fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(threadObj)
       }).catch(err => console.warn('Chat server sync notice:', err));
-
-      window.dispatchEvent(new Event('vw_live_chat_updated'));
-      window.dispatchEvent(new Event('vw_messages_updated'));
     } catch (e) {}
   };
 

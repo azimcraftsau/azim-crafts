@@ -10,11 +10,22 @@ export async function onRequestGet(context) {
 
     const url = new URL(request.url);
     const threadId = url.searchParams.get('id');
+    const userEmail = url.searchParams.get('email');
 
-    if (threadId) {
-      const { results } = await env.DB.prepare(
-        'SELECT * FROM chat_threads WHERE id = ?'
-      ).bind(threadId).all();
+    if (threadId || userEmail) {
+      let results;
+      if (threadId) {
+        const q = await env.DB.prepare(
+          'SELECT * FROM chat_threads WHERE id = ?'
+        ).bind(threadId).all();
+        results = q.results;
+      } else {
+        const cleanEmail = userEmail.trim().toLowerCase();
+        const q = await env.DB.prepare(
+          'SELECT * FROM chat_threads WHERE LOWER(user_email) = ? OR LOWER(email) = ? ORDER BY last_updated DESC LIMIT 1'
+        ).bind(cleanEmail, cleanEmail).all();
+        results = q.results;
+      }
 
       const item = results && results[0];
       if (!item) {
