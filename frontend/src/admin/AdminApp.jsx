@@ -64,38 +64,7 @@ const VIEW_COMPONENTS = {
   settings: AdminSettings,
 };
 
-function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobileClose }) {
-  const [trashCount, setTrashCount] = useState(0);
-  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
-
-  const updateCounts = async () => {
-    try {
-      const [trash, msgs, chats] = await Promise.all([
-        getTrashProducts().catch(() => []),
-        getMessages().catch(() => []),
-        fetch('/api/chat').then(r => r.json()).catch(() => [])
-      ]);
-      setTrashCount(Array.isArray(trash) ? trash.length : 0);
-      const unreadMsgs = Array.isArray(msgs) ? msgs.filter(m => m.status === 'Unread' || !m.read).length : 0;
-      const unreadChats = Array.isArray(chats) ? chats.filter(c => !c.read && !c.isResolved).length : 0;
-      setUnreadMessagesCount(unreadMsgs + unreadChats);
-    } catch {
-      setTrashCount(0);
-      setUnreadMessagesCount(0);
-    }
-  };
-
-  useEffect(() => {
-    updateCounts();
-    window.addEventListener('vw_trash_updated', updateCounts);
-    window.addEventListener('vw_messages_updated', updateCounts);
-    window.addEventListener('storage', updateCounts);
-    return () => {
-      window.removeEventListener('vw_trash_updated', updateCounts);
-      window.removeEventListener('vw_messages_updated', updateCounts);
-      window.removeEventListener('storage', updateCounts);
-    };
-  }, []);
+function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobileClose, trashCount = 0, unreadMessagesCount = 0 }) {
 
   return (
     <>
@@ -204,6 +173,37 @@ export function AdminApp() {
   const [activeView, setActiveView] = useState('dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [trashCount, setTrashCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+  const updateCounts = async () => {
+    try {
+      const [trash, msgs, chats] = await Promise.all([
+        getTrashProducts().catch(() => []),
+        getMessages().catch(() => []),
+        fetch('/api/chat').then(r => r.json()).catch(() => [])
+      ]);
+      setTrashCount(Array.isArray(trash) ? trash.length : 0);
+      const unreadMsgs = Array.isArray(msgs) ? msgs.filter(m => m.status === 'Unread' || !m.read).length : 0;
+      const unreadChats = Array.isArray(chats) ? chats.filter(c => !c.read && !c.isResolved).length : 0;
+      setUnreadMessagesCount(unreadMsgs + unreadChats);
+    } catch {
+      setTrashCount(0);
+      setUnreadMessagesCount(0);
+    }
+  };
+
+  useEffect(() => {
+    updateCounts();
+    window.addEventListener('vw_trash_updated', updateCounts);
+    window.addEventListener('vw_messages_updated', updateCounts);
+    window.addEventListener('storage', updateCounts);
+    return () => {
+      window.removeEventListener('vw_trash_updated', updateCounts);
+      window.removeEventListener('vw_messages_updated', updateCounts);
+      window.removeEventListener('storage', updateCounts);
+    };
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem('vw_admin_session');
@@ -274,6 +274,8 @@ export function AdminApp() {
         session={session}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
+        trashCount={trashCount}
+        unreadMessagesCount={unreadMessagesCount}
       />
 
       {/* Main content */}

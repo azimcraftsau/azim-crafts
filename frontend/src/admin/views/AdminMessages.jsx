@@ -8,47 +8,7 @@ import {
 import { allProducts } from '../../data/products';
 import { getMessages, updateMessageStatusInDB, deleteMessageFromDB, getProducts } from '../../lib/cloudflareService';
 
-export const DEFAULT_MESSAGES = [
-  { 
-    id: 'inq-1', 
-    name: 'Robert Chen', 
-    email: 'rchen@gmail.com', 
-    subject: 'Custom Bespoke Armour Order', 
-    message: 'I would like to commission a full set of medieval plate armour for my reenactment group of 5 members. Budget is $3000 USD. Please advise on timeline and customizations available.', 
-    date: 'Aug 28, 2026', 
-    read: false, 
-    replied: false, 
-    priority: 'high',
-    isLiveChat: false,
-    replyText: ''
-  },
-  { 
-    id: 'inq-2', 
-    name: 'Sarah Williams', 
-    email: 'sarah.w@yahoo.com', 
-    subject: 'Shipping Timeline to Melbourne', 
-    message: 'Hi, I ordered the Viking Round Shield (Order VTM-10038). Can you please confirm the shipping timeline to Melbourne, Australia via DHL Express? When can I expect delivery?', 
-    date: 'Aug 27, 2026', 
-    read: true, 
-    replied: false, 
-    priority: 'medium',
-    isLiveChat: false,
-    replyText: ''
-  },
-  { 
-    id: 'inq-3', 
-    name: 'Michael Thompson', 
-    email: 'mthompson@outlook.com', 
-    subject: 'Wholesale Inquiry - Museum Gift Shop', 
-    message: 'We are the gift shop manager for the Australian War Memorial Museum in Canberra. We are interested in wholesale pricing for 20+ units of your diving helmets and compasses for our shop.', 
-    date: 'Aug 26, 2026', 
-    read: true, 
-    replied: true, 
-    priority: 'high',
-    isLiveChat: false,
-    replyText: 'Hi Michael, thanks for reaching out! We would be thrilled to supply your museum shop. I have attached our wholesale catalog with volume tier pricing (30% off for 20+ units).'
-  }
-];
+export const DEFAULT_MESSAGES = [];
 
 const PRIORITY_COLORS = {
   high: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', label: 'High Priority' },
@@ -271,12 +231,24 @@ export function AdminMessages() {
       const dbMsgs = await getMessages();
       if (Array.isArray(dbMsgs) && dbMsgs.length > 0) {
         crm = dbMsgs;
-      } else {
-        crm = DEFAULT_MESSAGES;
       }
     } catch (e) {
-      crm = DEFAULT_MESSAGES;
+      crm = [];
     }
+
+    // Clean up any legacy demo queries from local storage
+    try {
+      const savedAdminMsgs = localStorage.getItem('vw_admin_messages');
+      if (savedAdminMsgs) {
+        const parsed = JSON.parse(savedAdminMsgs);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(m => !m.id || (!m.id.startsWith('inq-') && m.email !== 'rchen@gmail.com' && m.email !== 'sarah.w@yahoo.com' && m.email !== 'mthompson@outlook.com'));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem('vw_admin_messages', JSON.stringify(cleaned));
+          }
+        }
+      }
+    } catch (e) {}
 
     const threadMapped = threads.map(t => {
       const isGuest = t.isGuest !== undefined 
