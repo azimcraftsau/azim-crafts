@@ -203,6 +203,7 @@ export function AdminApp() {
   const [session, setSession] = useState(null);
   const [activeView, setActiveView] = useState('dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('vw_admin_session');
@@ -295,11 +296,128 @@ export function AdminApp() {
               <p className="text-xs text-gray-400 hidden sm:block">Azim Crafts – Admin Control Panel</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors">
+          <div className="flex items-center gap-2 sm:gap-3 relative">
+            <button 
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors cursor-pointer"
+              title="Notifications & Alerts"
+            >
               <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#c8924b] rounded-full" />
+              {unreadMessagesCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#c8924b] rounded-full animate-pulse" />
+              )}
             </button>
+
+            {/* Interactive Notifications Dropdown */}
+            {notificationsOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setNotificationsOpen(false)} 
+                />
+                <div className="absolute right-0 top-12 w-80 sm:w-88 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-fade-in font-menu">
+                  <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-neutral-50/80">
+                    <div className="flex items-center gap-2">
+                      <Bell size={16} className="text-[#c8924b]" />
+                      <h4 className="font-bold text-gray-900 text-sm">Store Alerts &amp; Activity</h4>
+                    </div>
+                    {unreadMessagesCount > 0 && (
+                      <span className="bg-amber-100 text-[#c8924b] text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                        {unreadMessagesCount} unread
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-2 space-y-1 max-h-80 overflow-y-auto divide-y divide-gray-50">
+                    {/* Live Chats & Inquiries */}
+                    <button
+                      onClick={() => {
+                        setActiveView('messages');
+                        setNotificationsOpen(false);
+                      }}
+                      className="w-full text-left p-3 hover:bg-amber-50/60 rounded-xl transition-colors flex items-start gap-3 cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-amber-100 text-[#c8924b] flex items-center justify-center shrink-0 mt-0.5">
+                        <MessageSquare size={16} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-gray-900 group-hover:text-[#c8924b]">
+                            Customer Inquiries &amp; Live Chat
+                          </p>
+                          <ChevronRight size={14} className="text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          {unreadMessagesCount > 0 
+                            ? `You have ${unreadMessagesCount} active conversations awaiting reply`
+                            : 'All customer chats & inquiries are up to date'}
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Orders Notification */}
+                    <button
+                      onClick={() => {
+                        setActiveView('orders');
+                        setNotificationsOpen(false);
+                      }}
+                      className="w-full text-left p-3 hover:bg-blue-50/60 rounded-xl transition-colors flex items-start gap-3 cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <ShoppingCart size={16} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-gray-900 group-hover:text-blue-600">
+                            Orders &amp; Dispatches
+                          </p>
+                          <ChevronRight size={14} className="text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          View international customer orders &amp; tracking
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Catalog Status */}
+                    <button
+                      onClick={() => {
+                        setActiveView('products');
+                        setNotificationsOpen(false);
+                      }}
+                      className="w-full text-left p-3 hover:bg-emerald-50/60 rounded-xl transition-colors flex items-start gap-3 cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <Package size={16} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-gray-900 group-hover:text-emerald-600">
+                            Inventory &amp; Catalog
+                          </p>
+                          <ChevronRight size={14} className="text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          Manage 74 handcrafted products, prices &amp; stock
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="p-2.5 bg-neutral-50 border-t border-gray-100 text-center">
+                    <button
+                      onClick={() => {
+                        setActiveView('messages');
+                        setNotificationsOpen(false);
+                      }}
+                      className="text-[11px] font-bold text-[#c8924b] hover:underline cursor-pointer"
+                    >
+                      View All in Messages CRM &rarr;
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
             <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-gray-200">
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: '#c8924b' }}>
                 {(session?.name || 'A').charAt(0)}
