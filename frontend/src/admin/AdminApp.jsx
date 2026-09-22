@@ -255,7 +255,9 @@ export function AdminApp() {
           }
         } else {
           // Token is no longer active in Cloudflare D1 (e.g. another device logged in)
-          const reasonMsg = data.error || 'Aapka account dusre device par login ho chuka hai. Ek time me sirf ek hi jagah login reh sakta hai.';
+          const reasonMsg = data.reason === 'concurrent_login'
+            ? 'Your account has been logged in on another device.'
+            : (data.error || 'Your session has expired. Please log in again.');
           handleForceLogout(reasonMsg);
         }
       } catch (err) {

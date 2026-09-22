@@ -217,11 +217,12 @@ export function AdminLogin({ onLogin, logoutReason }) {
 
           {/* Concurrent Session / Logout Alert */}
           {logoutReason && (
-            <div className="mb-4 flex items-start gap-2.5 bg-amber-500/15 border border-amber-500/40 rounded-xl p-3.5 text-amber-300 text-xs animate-fade-in shadow-lg">
-              <Shield size={16} className="text-amber-400 shrink-0 mt-0.5" />
-              <div className="flex-1 space-y-0.5">
-                <p className="font-bold text-amber-200">Security: Single Active Session</p>
-                <p className="text-[11px] text-amber-300/90 leading-relaxed">{logoutReason}</p>
+            <div className="mb-4 flex items-center gap-2.5 bg-amber-500/15 border border-amber-500/40 rounded-xl p-3.5 text-amber-300 text-xs animate-fade-in shadow-lg">
+              <Shield size={16} className="text-amber-400 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-amber-200 font-medium leading-relaxed">
+                  <strong className="font-bold text-amber-100">Security Alert:</strong> {logoutReason.replace(/^Security Alert:\s*/i, '')}
+                </p>
               </div>
             </div>
           )}

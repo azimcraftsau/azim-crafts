@@ -297,7 +297,7 @@ export async function onRequestPost(context) {
         valid: false,
         reason: isConcurrent ? 'concurrent_login' : 'session_invalid',
         error: isConcurrent 
-          ? 'Aapka account dusre device par login ho chuka hai. Ek time me sirf ek hi jagah login reh sakta hai.'
+          ? 'Your account has been logged in on another device.'
           : 'Your session has expired. Please log in again.'
       }), {
         headers: { 'Content-Type': 'application/json' }
