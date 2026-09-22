@@ -405,7 +405,7 @@ export function AdminMessages() {
           const adminReplyObj = {
             id: Date.now(),
             sender: 'admin',
-            senderName: 'Azim Crafts Admin',
+            senderName: 'Azim Crafts Support',
             text: replyText,
             time: currentTime,
             timestamp: Date.now()
@@ -463,7 +463,7 @@ export function AdminMessages() {
             messages: selected.isLiveChat ? [...prevMsgs, {
               id: Date.now(),
               sender: 'admin',
-              senderName: 'Azim Crafts Admin',
+              senderName: 'Azim Crafts Support',
               text: replyText,
               time: currentTime
             }] : prevMsgs
@@ -492,7 +492,7 @@ export function AdminMessages() {
     const adminProductMsg = {
       id: Date.now(),
       sender: 'admin',
-      senderName: 'Azim Crafts Admin',
+      senderName: 'Azim Crafts Support',
       text: productMsgText,
       type: 'product_recommendation',
       time: currentTime,

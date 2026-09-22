@@ -73,6 +73,48 @@ export const ChatWidget = () => {
 
   // Load chat history for this visitor session
   const loadChatThread = async () => {
+    // 1. Primary: Cloudflare D1 Backend Sync for cross-device live persistence
+    try {
+      const res = await fetch(`/api/chat?id=${encodeURIComponent(visitorId)}`);
+      if (res.ok) {
+        const remoteThread = await res.json();
+        if (remoteThread && remoteThread.id) {
+          const remoteMsgs = Array.isArray(remoteThread.messages) ? remoteThread.messages : [];
+          
+          setMessages(prev => {
+            if (remoteMsgs.length >= prev.length) {
+              return remoteMsgs;
+            }
+            return prev;
+          });
+
+          const resolvedState = Boolean(remoteThread.isResolved);
+          setIsResolved(resolvedState);
+
+          if (remoteMsgs.length > 0 && chatView === 'home') {
+            setChatView('conversation');
+          }
+
+          // Crucial: Synchronize remote state into localStorage so subsequent reads never revert to false!
+          try {
+            const savedThreads = localStorage.getItem('vw_live_chat_threads');
+            const threads = savedThreads ? JSON.parse(savedThreads) : [];
+            const otherThreads = threads.filter(t => t.id !== visitorId);
+            const updated = {
+              ...(threads.find(t => t.id === visitorId) || {}),
+              ...remoteThread,
+              messages: remoteMsgs,
+              isResolved: resolvedState
+            };
+            localStorage.setItem('vw_live_chat_threads', JSON.stringify([updated, ...otherThreads]));
+          } catch (e) {}
+
+          return; // Remote fetch was successful
+        }
+      }
+    } catch (e) {}
+
+    // 2. Fallback: Only read localStorage if remote fetch was unavailable
     try {
       const savedThreads = localStorage.getItem('vw_live_chat_threads');
       if (savedThreads) {
@@ -80,27 +122,10 @@ export const ChatWidget = () => {
         const myThread = threads.find(t => t.id === visitorId);
         if (myThread) {
           if (Array.isArray(myThread.messages) && myThread.messages.length > 0) {
-            setMessages(myThread.messages);
+            setMessages(prev => (prev.length === 0 ? myThread.messages : prev));
             if (chatView === 'home') setChatView('conversation');
           }
           setIsResolved(Boolean(myThread.isResolved));
-        }
-      }
-    } catch (e) {}
-
-    // Cloudflare D1 Backend Sync for cross-device persistence
-    try {
-      const res = await fetch(`/api/chat?id=${encodeURIComponent(visitorId)}`);
-      if (res.ok) {
-        const remoteThread = await res.json();
-        if (remoteThread && Array.isArray(remoteThread.messages) && remoteThread.messages.length > 0) {
-          setMessages(prev => {
-            if (remoteThread.messages.length >= prev.length) {
-              return remoteThread.messages;
-            }
-            return prev;
-          });
-          setIsResolved(Boolean(remoteThread.isResolved));
         }
       }
     } catch (e) {}
@@ -111,7 +136,7 @@ export const ChatWidget = () => {
     window.addEventListener('vw_live_chat_updated', loadChatThread);
     window.addEventListener('storage', loadChatThread);
 
-    const pollInterval = setInterval(loadChatThread, 4000);
+    const pollInterval = setInterval(loadChatThread, 3500);
 
     return () => {
       window.removeEventListener('vw_live_chat_updated', loadChatThread);
@@ -127,15 +152,18 @@ export const ChatWidget = () => {
   }, [messages, chatView]);
 
   // Sync to shared threads & Admin CRM
-  const syncMessageToStore = (newMsgList, lastText) => {
+  const syncMessageToStore = (newMsgList, lastText, keepResolved = false) => {
     try {
       const savedThreads = localStorage.getItem('vw_live_chat_threads');
       const threads = savedThreads ? JSON.parse(savedThreads) : [];
+      const myExisting = threads.find(t => t.id === visitorId);
       
       const isUserSignedIn = Boolean(user && (user.email || user.id));
       const customerEmail = isUserSignedIn ? (user.email || '').toLowerCase().trim() : '';
       const customerName = isUserSignedIn ? (user.name || user.email) : `Guest User #${visitorId}`;
       const customerId = isUserSignedIn ? (user.id || user.email) : `guest_${visitorId}`;
+
+      const nextResolved = keepResolved ? Boolean(myExisting?.isResolved ?? isResolved) : false;
 
       const threadObj = {
         id: visitorId,
@@ -150,13 +178,13 @@ export const ChatWidget = () => {
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         read: false,
         replied: false,
-        isResolved: false, // sending a new message reopens/keeps conversation active
+        isResolved: nextResolved, // sending a new message reopens, session refresh keeps status
         priority: 'high',
         isLiveChat: true,
         messages: newMsgList
       };
 
-      setIsResolved(false);
+      setIsResolved(nextResolved);
 
       const otherThreads = threads.filter(t => t.id !== visitorId);
       const updatedThreads = [threadObj, ...otherThreads];
@@ -179,7 +207,7 @@ export const ChatWidget = () => {
           date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
           read: false,
           replied: false,
-          isResolved: false,
+          isResolved: nextResolved,
           priority: 'high',
           isLiveChat: true,
           chatThreadId: visitorId
@@ -200,11 +228,11 @@ export const ChatWidget = () => {
     } catch (e) {}
   };
 
-  // Re-sync identity if user signs in or out during session
+  // Re-sync identity if user signs in or out during session without reopening resolved thread
   useEffect(() => {
     if (messages.length > 0) {
       const lastMsg = messages[messages.length - 1]?.text || 'Live Chat';
-      syncMessageToStore(messages, lastMsg);
+      syncMessageToStore(messages, lastMsg, true);
     }
   }, [user]);
 
@@ -286,8 +314,8 @@ export const ChatWidget = () => {
         const botAck = {
           id: Date.now() + 2,
           sender: 'bot',
-          senderName: 'Artisan Support',
-          text: 'Thanks for reaching out! Our Roorkee artisan team has received your message and an admin is reviewing your live inquiry right now.',
+          senderName: 'Azim Crafts Support',
+          text: 'Thanks for reaching out! Our Roorkee artisan team has received your message and our Support team is reviewing your live inquiry right now.',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages(prev => {
@@ -542,7 +570,7 @@ export const ChatWidget = () => {
           {chatView === 'conversation' && (
             <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs bg-neutral-50/50">
               {isResolved && (
-                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-xl text-center text-[11px] font-medium flex items-center justify-center gap-1.5 shadow-2xs animate-fade-in">
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-xl text-center text-[11px] font-medium flex items-center justify-center gap-1.5 shadow-2xs">
                   <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
                   <span>This chat has been marked as resolved. Send a message anytime if you need more help!</span>
                 </div>
@@ -561,11 +589,11 @@ export const ChatWidget = () => {
                       </span>
                     </div>
                   ) : m.sender === 'admin' ? (
-                    /* Real Live Admin Reply Bubble */
-                    <div className="flex flex-col items-start space-y-1 max-w-[92%] animate-fade-in">
+                    /* Real Live Support Reply Bubble */
+                    <div className="flex flex-col items-start space-y-1 max-w-[92%]">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#c8924b] pl-1">
                         <ShieldCheck size={12} />
-                        <span>Azim Crafts Admin</span>
+                        <span>{(m.senderName === 'Azim Crafts Admin' || m.senderName === 'Admin' || !m.senderName) ? 'Azim Crafts Support' : m.senderName}</span>
                       </div>
 
                       {m.product ? (

@@ -133,37 +133,42 @@ export async function onRequestPost(context) {
 export async function onRequestPut(context) {
   try {
     const { request, env } = context;
-    const { id, isResolved, read, replied, lastMessage, messages } = await request.json();
+    const body = await request.json();
+    const { id, isResolved, read, replied, lastMessage, messages } = body;
 
     if (env.DB && id) {
+      const updates = [];
+      const values = [];
+
       if (messages !== undefined) {
         const messagesStr = typeof messages === 'string' ? messages : JSON.stringify(messages || []);
-        await env.DB.prepare(`
-          UPDATE chat_threads 
-          SET messages = ?, 
-              last_message = COALESCE(?, last_message), 
-              last_updated = ?, 
-              is_replied = CASE WHEN ? IS NOT NULL THEN ? ELSE is_replied END,
-              is_read = CASE WHEN ? IS NOT NULL THEN ? ELSE is_read END,
-              is_resolved = CASE WHEN ? IS NOT NULL THEN ? ELSE is_resolved END
-          WHERE id = ?
-        `).bind(
-          messagesStr,
-          lastMessage || null,
-          Date.now(),
-          replied !== undefined ? (replied ? 1 : 0) : null,
-          replied !== undefined ? (replied ? 1 : 0) : null,
-          read !== undefined ? (read ? 1 : 0) : null,
-          read !== undefined ? (read ? 1 : 0) : null,
-          isResolved !== undefined ? (isResolved ? 1 : 0) : null,
-          isResolved !== undefined ? (isResolved ? 1 : 0) : null,
-          id
-        ).run();
-      } else if (isResolved !== undefined) {
-        await env.DB.prepare(`
-          UPDATE chat_threads SET is_resolved = ? WHERE id = ?
-        `).bind(isResolved ? 1 : 0, id).run();
+        updates.push('messages = ?');
+        values.push(messagesStr);
       }
+      if (lastMessage !== undefined) {
+        updates.push('last_message = ?');
+        values.push(lastMessage);
+      }
+      if (isResolved !== undefined) {
+        updates.push('is_resolved = ?');
+        values.push(isResolved ? 1 : 0);
+      }
+      if (read !== undefined) {
+        updates.push('is_read = ?');
+        values.push(read ? 1 : 0);
+      }
+      if (replied !== undefined) {
+        updates.push('is_replied = ?');
+        values.push(replied ? 1 : 0);
+      }
+
+      updates.push('last_updated = ?');
+      values.push(Date.now());
+
+      values.push(id);
+
+      const sql = `UPDATE chat_threads SET ${updates.join(', ')} WHERE id = ?`;
+      await env.DB.prepare(sql).bind(...values).run();
     }
 
     return new Response(JSON.stringify({ success: true }), {
