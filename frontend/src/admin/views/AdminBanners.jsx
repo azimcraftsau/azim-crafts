@@ -311,9 +311,12 @@ export function AdminBanners() {
   const [toast, setToast] = useState('');
   const [editingSlide, setEditingSlide] = useState(null);
   const [isNewSlide, setIsNewSlide] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [activeSubTab, setActiveSubTab] = useState('banners');
 
   const loadData = async () => {
     try {
+      setLoading(true);
       const [slidesData, settings] = await Promise.all([
         getHeroSlides(),
         getStoreSettings()
@@ -328,6 +331,8 @@ export function AdminBanners() {
       }
     } catch {
       setSlides(DEFAULT_HERO_SLIDES);
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -3,17 +3,17 @@ import {
   Users, UserCheck, ShoppingCart, DollarSign, Search, 
   Mail, Phone, MapPin, Calendar, ArrowRight, X, ExternalLink, ShieldCheck, Clock, Loader2
 } from 'lucide-react';
-import { getOrders, getUsersList } from '../../lib/cloudflareService';
+import { getOrders, getUsersList, getCachedOrders, getCachedUsers } from '../../lib/cloudflareService';
 
 export function AdminUsers() {
-  const [users, setUsers] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState(() => getCachedUsers() || []);
+  const [orders, setOrders] = useState(() => getCachedOrders() || []);
+  const [loading, setLoading] = useState(() => !getCachedUsers());
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
 
   const loadData = async (silent = false) => {
-    if (!silent) setLoading(true);
+    if (!silent && !getCachedUsers()) setLoading(true);
     let allOrders = [];
     try {
       allOrders = await getOrders();

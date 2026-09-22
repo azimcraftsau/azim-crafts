@@ -248,8 +248,15 @@ export function AdminMessages() {
           const map = new Map();
           threads.forEach(t => map.set(t.id, t));
           localThreads.forEach(t => {
-            if (!map.has(t.id) || (t.lastUpdated || 0) > (map.get(t.id).lastUpdated || 0)) {
+            const existing = map.get(t.id);
+            if (!existing || (t.lastUpdated || 0) > (existing.lastUpdated || 0)) {
               map.set(t.id, t);
+              // Auto-sync thread to Cloudflare D1 so all other devices (laptop, mobile) see it live!
+              fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(t)
+              }).catch(() => {});
             }
           });
           threads = Array.from(map.values());

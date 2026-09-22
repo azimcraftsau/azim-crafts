@@ -35,6 +35,21 @@ function unwrapData(data) {
   return null;
 }
 
+// ==================== IN-MEMORY HIGH-SPEED CACHE (0ms TAB SWITCHING) ====================
+let _cachedProducts = null;
+let _cachedOrders = null;
+let _cachedUsers = null;
+let _cachedCategories = null;
+let _cachedHeroSlides = null;
+let _cachedStoreSettings = null;
+
+export const getCachedProducts = () => _cachedProducts;
+export const getCachedOrders = () => _cachedOrders;
+export const getCachedUsers = () => _cachedUsers;
+export const getCachedCategories = () => _cachedCategories;
+export const getCachedHeroSlides = () => _cachedHeroSlides;
+export const getCachedStoreSettings = () => _cachedStoreSettings;
+
 // ==================== IMAGE / MEDIA UPLOAD ====================
 export async function uploadProductImage(file) {
   try {
@@ -141,17 +156,26 @@ export async function getProducts() {
       const data = await res.json();
       const list = unwrapData(data);
       if (list && Array.isArray(list) && list.length > 0) {
+        _cachedProducts = list;
         return list;
       }
     }
   } catch (err) {
     console.warn('Failed to fetch products from backend DB API:', err.message);
   }
-  return allProducts;
+  _cachedProducts = _cachedProducts || allProducts;
+  return _cachedProducts;
 }
 
 export async function saveProductToDB(product, isNew = false) {
   try {
+    if (_cachedProducts && Array.isArray(_cachedProducts)) {
+      if (isNew) {
+        _cachedProducts = [product, ..._cachedProducts];
+      } else {
+        _cachedProducts = _cachedProducts.map(p => p.id === product.id ? product : p);
+      }
+    }
     const res = await fetch('/api/products', {
       method: isNew ? 'POST' : 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -199,13 +223,14 @@ export async function getOrders(email = '') {
       const data = await res.json();
       const list = unwrapData(data);
       if (list && Array.isArray(list)) {
+        if (!email) _cachedOrders = list;
         return list;
       }
     }
   } catch (err) {
     console.warn('Failed to fetch orders from DB API:', err.message);
   }
-  return [];
+  return !email && _cachedOrders ? _cachedOrders : [];
 }
 
 export async function saveOrderToDB(orderData) {
@@ -333,17 +358,25 @@ export async function getCategories() {
       const data = await res.json();
       const list = unwrapData(data);
       if (list && Array.isArray(list) && list.length > 0) {
+        _cachedCategories = list;
         return list;
       }
     }
   } catch (err) {
     console.warn('Failed to fetch categories from DB API:', err.message);
   }
-  return [];
+  return _cachedCategories || [];
 }
 
 export async function saveCategoryToDB(category, isNew = false) {
   try {
+    if (_cachedCategories && Array.isArray(_cachedCategories)) {
+      if (isNew) {
+        _cachedCategories = [..._cachedCategories, category];
+      } else {
+        _cachedCategories = _cachedCategories.map(c => c.key === category.key ? category : c);
+      }
+    }
     const res = await fetch('/api/categories', {
       method: isNew ? 'POST' : 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -358,6 +391,9 @@ export async function saveCategoryToDB(category, isNew = false) {
 
 export async function deleteCategoryFromDB(key) {
   try {
+    if (_cachedCategories && Array.isArray(_cachedCategories)) {
+      _cachedCategories = _cachedCategories.filter(c => c.key !== key);
+    }
     const res = await fetch(`/api/categories?key=${encodeURIComponent(key)}`, {
       method: 'DELETE'
     });
@@ -376,13 +412,14 @@ export async function getHeroSlides() {
       const data = await res.json();
       const list = unwrapData(data);
       if (list && Array.isArray(list) && list.length > 0) {
+        _cachedHeroSlides = list;
         return list;
       }
     }
   } catch (err) {
     console.warn('Failed to fetch banners from DB API:', err.message);
   }
-  return [];
+  return _cachedHeroSlides || [];
 }
 
 export async function saveHeroSlidesToDB(slides) {
@@ -602,7 +639,10 @@ export async function getUsersList() {
     const res = await fetch('/api/users');
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) return data;
+      if (Array.isArray(data)) {
+        _cachedUsers = data;
+        return data;
+      }
     }
   } catch (err) {}
 
@@ -614,12 +654,15 @@ export async function getUsersList() {
     });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data.users)) return data.users;
+      if (Array.isArray(data.users)) {
+        _cachedUsers = data.users;
+        return data.users;
+      }
     }
   } catch (err) {
     console.warn('Failed to fetch users list:', err.message);
   }
-  return [];
+  return _cachedUsers || [];
 }
 
 export async function signUpUser(name, email, password, phone = '', country = 'Australia') {

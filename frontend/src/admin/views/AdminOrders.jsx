@@ -4,7 +4,7 @@ import {
   TrendingUp, ShoppingBag, Truck, CheckCircle2, Clock, 
   Filter, ArrowRight, ShieldCheck, DollarSign, CalendarDays, Trash2, RefreshCw, Printer, Package, Eye
 , Loader2} from 'lucide-react';
-import { getOrders, updateOrderStatusInDB, deleteOrderFromDB, clearAllOrdersFromDB } from '../../lib/cloudflareService';
+import { getOrders, getCachedOrders, updateOrderStatusInDB, deleteOrderFromDB, clearAllOrdersFromDB } from '../../lib/cloudflareService';
 import { AdminShippingSlipModal } from '../components/AdminShippingSlipModal';
 import { AdminOrderDetailsModal } from '../components/AdminOrderDetailsModal';
 
@@ -229,8 +229,8 @@ function StatusModal({ order, onSave, onClose }) {
 }
 
 export function AdminOrders() {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState(() => getCachedOrders() || []);
+  const [loading, setLoading] = useState(() => getCachedOrders() === null);
   const [dateFilter, setDateFilter] = useState('all'); // 'all' | 'today' | 'yesterday' | 'this_month' | 'custom'
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'Unfulfilled' | 'Processing' | 'Shipped' | 'Delivered'
   const [search, setSearch] = useState('');
@@ -247,7 +247,7 @@ export function AdminOrders() {
   const DUMMY_IDS = ['VTM-10045','VTM-10044','VTM-10043','VTM-10042','VTM-10041','VTM-10040','VTM-10039','VTM-10038','VTM-10037','VTM-10036','VTM-10035'];
 
   const loadData = async (silent = false) => {
-    if (!silent) setLoading(true);
+    if (!silent && !getCachedOrders()) setLoading(true);
     try {
       const remote = await getOrders();
       if (Array.isArray(remote)) {

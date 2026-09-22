@@ -15,7 +15,9 @@ import {
   getCategories,
   saveCategoryToDB,
   getTrashProducts,
-  moveToTrashDB
+  moveToTrashDB,
+  getCachedProducts,
+  getCachedCategories
 } from '../../lib/cloudflareService';
 
 export const DEFAULT_CATEGORIES = [
@@ -1233,9 +1235,9 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
 
 // ================= MAIN COMPONENT: ADMIN PRODUCTS =================
 export function AdminProducts({ onNavigate }) {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState(getMergedCategories());
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(() => getCachedProducts() || allProducts);
+  const [categories, setCategories] = useState(() => getCachedCategories() || getMergedCategories());
+  const [loading, setLoading] = useState(() => !getCachedProducts() && (!allProducts || allProducts.length === 0));
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all'); // 'all' | category.key
   const [stockFilter, setStockFilter] = useState('all');
@@ -1265,15 +1267,15 @@ export function AdminProducts({ onNavigate }) {
     setCategories(DEFAULT_CATEGORIES);
   };
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent && !getCachedProducts()) setLoading(true);
     try {
       const [data, cats, trash] = await Promise.all([
         getProducts(),
         getCategories(),
         getTrashProducts()
       ]);
-      setProducts(Array.isArray(data) && data.length > 0 ? data : []);
+      setProducts(Array.isArray(data) && data.length > 0 ? data : (allProducts || []));
       if (Array.isArray(cats) && cats.length > 0) setCategories(cats);
       setTrashCount(Array.isArray(trash) ? trash.length : 0);
     } catch (e) {

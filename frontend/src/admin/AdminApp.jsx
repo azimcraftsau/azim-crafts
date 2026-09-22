@@ -28,7 +28,15 @@ import { AdminTeam } from './views/AdminTeam';
 import { AdminCoupons } from './views/AdminCoupons';
 import { AdminMessages } from './views/AdminMessages';
 import { AdminSettings } from './views/AdminSettings';
-import { getTrashProducts, getMessages } from '../lib/cloudflareService';
+import { 
+  getTrashProducts, 
+  getMessages, 
+  getProducts, 
+  getOrders, 
+  getCategories, 
+  getUsersList, 
+  getHeroSlides 
+} from '../lib/cloudflareService';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -62,12 +70,15 @@ function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobi
 
   const updateCounts = async () => {
     try {
-      const [trash, msgs] = await Promise.all([
+      const [trash, msgs, chats] = await Promise.all([
         getTrashProducts().catch(() => []),
-        getMessages().catch(() => [])
+        getMessages().catch(() => []),
+        fetch('/api/chat').then(r => r.json()).catch(() => [])
       ]);
       setTrashCount(Array.isArray(trash) ? trash.length : 0);
-      setUnreadMessagesCount(Array.isArray(msgs) ? msgs.filter(m => m.status === 'Unread' || !m.read).length : 0);
+      const unreadMsgs = Array.isArray(msgs) ? msgs.filter(m => m.status === 'Unread' || !m.read).length : 0;
+      const unreadChats = Array.isArray(chats) ? chats.filter(c => !c.read && !c.isResolved).length : 0;
+      setUnreadMessagesCount(unreadMsgs + unreadChats);
     } catch {
       setTrashCount(0);
       setUnreadMessagesCount(0);
@@ -221,6 +232,17 @@ export function AdminApp() {
       }
     }
   }, []);
+
+  // Pre-warm memory cache so tab switching between Products, Orders, Customers is 0ms instant!
+  useEffect(() => {
+    if (session) {
+      getProducts().catch(() => {});
+      getOrders().catch(() => {});
+      getCategories().catch(() => {});
+      getUsersList().catch(() => {});
+      getHeroSlides().catch(() => {});
+    }
+  }, [session]);
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('vw_admin_token');
