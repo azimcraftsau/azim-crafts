@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Shield, Lock, ArrowLeft, CheckCircle2, Mail, KeyRound } from 'lucide-react';
 
-export function AdminLogin({ onLogin }) {
+export function AdminLogin({ onLogin, logoutReason }) {
   const [mode, setMode] = useState('login'); // 'login' | 'forgot' | 'reset'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -214,6 +214,17 @@ export function AdminLogin({ onLogin }) {
               </span>
             </div>
           </div>
+
+          {/* Concurrent Session / Logout Alert */}
+          {logoutReason && (
+            <div className="mb-4 flex items-start gap-2.5 bg-amber-500/15 border border-amber-500/40 rounded-xl p-3.5 text-amber-300 text-xs animate-fade-in shadow-lg">
+              <Shield size={16} className="text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-0.5">
+                <p className="font-bold text-amber-200">Security: Single Active Session</p>
+                <p className="text-[11px] text-amber-300/90 leading-relaxed">{logoutReason}</p>
+              </div>
+            </div>
+          )}
 
           {/* Success Banner */}
           {successMsg && (

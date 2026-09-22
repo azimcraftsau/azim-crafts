@@ -186,7 +186,31 @@ export async function onRequestPost(context) {
         await env.DB.prepare('UPDATE users SET password = ? WHERE id = ?').bind(hashedPw, user.id).run().catch(() => null);
       }
 
-      const token = `adm_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+      const token = `adm_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
+
+      const adminRoles = ['admin', 'superadmin', 'subadmin', 'manager', 'staff'];
+      if (env.DB && adminRoles.includes(user.role)) {
+        // Enforce single active session per admin: Overwrite existing session so previous device is immediately invalidated
+        try {
+          await env.DB.prepare(`
+            INSERT INTO admin_active_sessions (user_id, email, token, device_info, last_active)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+              token = excluded.token,
+              device_info = excluded.device_info,
+              last_active = excluded.last_active
+          `).bind(
+            user.id,
+            user.email.toLowerCase().trim(),
+            token,
+            request.headers.get('user-agent') || 'Browser Session',
+            Date.now()
+          ).run();
+        } catch (sessErr) {
+          console.warn('Session save notice:', sessErr.message);
+        }
+      }
+
       return new Response(JSON.stringify({
         success: true,
         token: token,
@@ -199,6 +223,86 @@ export async function onRequestPost(context) {
           role: user.role
         }
       }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // VERIFY ADMIN ACTIVE SESSION (Enforces Single Device Login & Force Logout on Prior Devices)
+    if (action === 'verify_admin_session' || action === 'verify_token') {
+      const authHeader = request.headers.get('Authorization') || '';
+      const tokenFromHeader = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+      const tokenToCheck = body.token || tokenFromHeader;
+
+      if (!tokenToCheck) {
+        return new Response(JSON.stringify({ success: false, valid: false, reason: 'missing_token', error: 'No token provided' }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (!env.DB) {
+        return new Response(JSON.stringify({ success: true, valid: true }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Check if this token is currently the ACTIVE session in Cloudflare D1
+      const activeSession = await env.DB.prepare(
+        'SELECT user_id, email, token, last_active FROM admin_active_sessions WHERE token = ?'
+      ).bind(tokenToCheck).first();
+
+      if (activeSession) {
+        // Token is valid and matches the active session!
+        await env.DB.prepare('UPDATE admin_active_sessions SET last_active = ? WHERE token = ?')
+          .bind(Date.now(), tokenToCheck).run().catch(() => null);
+
+        return new Response(JSON.stringify({
+          success: true,
+          valid: true,
+          userId: activeSession.user_id,
+          email: activeSession.email
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      // If token is not active, check if another session exists for this user (Concurrent Login)
+      const tokenParts = tokenToCheck.split('_');
+      const userIdFromToken = (tokenParts.length >= 2 && tokenParts[0] === 'adm') ? tokenParts[1] : null;
+
+      let isConcurrent = false;
+      if (userIdFromToken) {
+        const otherActive = await env.DB.prepare(
+          'SELECT user_id, email FROM admin_active_sessions WHERE user_id = ?'
+        ).bind(userIdFromToken).first().catch(() => null);
+        if (otherActive) {
+          isConcurrent = true;
+        }
+      }
+
+      return new Response(JSON.stringify({
+        success: false,
+        valid: false,
+        reason: isConcurrent ? 'concurrent_login' : 'session_invalid',
+        error: isConcurrent 
+          ? 'Aapka account dusre device par login ho chuka hai. Ek time me sirf ek hi jagah login reh sakta hai.'
+          : 'Your session has expired. Please log in again.'
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // ADMIN LOGOUT ACTION (Revoke active session token)
+    if (action === 'admin_logout') {
+      const authHeader = request.headers.get('Authorization') || '';
+      const tokenFromHeader = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+      const tokenToRevoke = body.token || tokenFromHeader;
+
+      if (env.DB && tokenToRevoke) {
+        await env.DB.prepare('DELETE FROM admin_active_sessions WHERE token = ?')
+          .bind(tokenToRevoke).run().catch(() => null);
+      }
+
+      return new Response(JSON.stringify({ success: true, message: 'Logged out successfully' }), {
         headers: { 'Content-Type': 'application/json' }
       });
     }

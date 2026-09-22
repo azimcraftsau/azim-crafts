@@ -170,6 +170,7 @@ function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobi
 
 export function AdminApp() {
   const [session, setSession] = useState(null);
+  const [logoutReason, setLogoutReason] = useState('');
   const [activeView, setActiveView] = useState('dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -197,42 +198,92 @@ export function AdminApp() {
     updateCounts();
     window.addEventListener('vw_trash_updated', updateCounts);
     window.addEventListener('vw_messages_updated', updateCounts);
-    window.addEventListener('storage', updateCounts);
     return () => {
       window.removeEventListener('vw_trash_updated', updateCounts);
       window.removeEventListener('vw_messages_updated', updateCounts);
-      window.removeEventListener('storage', updateCounts);
     };
   }, []);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('vw_admin_session');
+  const handleForceLogout = (reason = '') => {
+    localStorage.removeItem('vw_admin_session');
+    localStorage.removeItem('vw_admin_token');
+    setSession(null);
+    if (reason) setLogoutReason(reason);
+  };
+
+  const handleLogout = () => {
     const token = localStorage.getItem('vw_admin_token');
-    if (stored && token) {
+    if (token) {
+      fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action: 'admin_logout', token })
+      }).catch(() => {});
+    }
+    localStorage.removeItem('vw_admin_session');
+    localStorage.removeItem('vw_admin_token');
+    setSession(null);
+    setLogoutReason('');
+  };
+
+  // Single Active Session Verification: Checks D1 every 2.5s and logs out immediately if another device logs in
+  useEffect(() => {
+    let isCancelled = false;
+
+    const checkSessionValidity = async () => {
+      const stored = localStorage.getItem('vw_admin_session');
+      const token = localStorage.getItem('vw_admin_token');
+      if (!token || !stored) {
+        if (session) handleForceLogout();
+        return;
+      }
+
       try {
-        const parsed = JSON.parse(stored);
-        // Verify token with backend
-        fetch('/api/auth', {
+        const res = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ action: 'verify_token' })
-        }).then(res => res.json()).then(data => {
-          if (data.success) {
-            setSession(parsed);
-          } else {
-            localStorage.removeItem('vw_admin_session');
-            localStorage.removeItem('vw_admin_token');
-          }
-        }).catch(() => {
-          // If backend is down, still allow cached session
-          setSession(parsed);
+          body: JSON.stringify({ action: 'verify_admin_session', token })
         });
-      } catch { 
-        localStorage.removeItem('vw_admin_session');
-        localStorage.removeItem('vw_admin_token');
+        const data = await res.json();
+        if (isCancelled) return;
+
+        if (data.success && data.valid) {
+          if (!session) {
+            try {
+              setSession(JSON.parse(stored));
+            } catch {}
+          }
+        } else {
+          // Token is no longer active in Cloudflare D1 (e.g. another device logged in)
+          const reasonMsg = data.error || 'Aapka account dusre device par login ho chuka hai. Ek time me sirf ek hi jagah login reh sakta hai.';
+          handleForceLogout(reasonMsg);
+        }
+      } catch (err) {
+        // Network timeout / offline fallback
       }
-    }
-  }, []);
+    };
+
+    // Run immediately
+    checkSessionValidity();
+
+    // Heartbeat every 2.5s to detect concurrent login from another device
+    const heartbeat = setInterval(checkSessionValidity, 2500);
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkSessionValidity();
+      }
+    };
+    window.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', checkSessionValidity);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(heartbeat);
+      window.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', checkSessionValidity);
+    };
+  }, [session]);
 
   // Pre-warm memory cache so tab switching between Products, Orders, Customers is 0ms instant!
   useEffect(() => {
@@ -253,14 +304,14 @@ export function AdminApp() {
     };
   };
 
-  const handleLogin = (s) => setSession(s);
-  const handleLogout = () => {
-    localStorage.removeItem('vw_admin_session');
-    localStorage.removeItem('vw_admin_token');
-    setSession(null);
+  const handleLogin = (s) => {
+    setLogoutReason('');
+    setSession(s);
   };
 
-  if (!session) return <AdminLogin onLogin={handleLogin} />;
+  if (!session) {
+    return <AdminLogin onLogin={handleLogin} logoutReason={logoutReason} />;
+  }
 
   const ActiveView = VIEW_COMPONENTS[activeView] || AdminDashboard;
   const activeLabel = NAV_ITEMS.find((n) => n.id === activeView)?.label || 'Dashboard';
