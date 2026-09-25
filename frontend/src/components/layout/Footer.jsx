@@ -137,7 +137,7 @@ export const Footer = () => {
                 </p>
                 <p className="pl-5 flex items-center gap-1.5 text-neutral-400">
                   <Phone className="w-3 h-3 text-[#f7eddb] shrink-0" />
-                  <span>Call / Text: <strong className="text-neutral-200">0426285439</strong> (+61 426 285 439)</span>
+                  <span>Call / Text: <strong className="text-neutral-200">0483172489</strong> (+61 483 172 489)</span>
                 </p>
               </div>
 

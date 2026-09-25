@@ -37,7 +37,7 @@ export function AdminSettings() {
   const [storeInfo, setStoreInfo] = useState({
     name: 'Azim Crafts',
     email: 'contact@azimcrafts.com',
-    whatsapp: '0426285439 (+61 426 285 439)',
+    whatsapp: '0483172489 (+61 483 172 489)',
     address: 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK',
   });
 

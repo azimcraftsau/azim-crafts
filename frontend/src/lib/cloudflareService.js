@@ -471,7 +471,7 @@ export async function getStoreSettings() {
           freeShippingThreshold: !isNaN(threshold) ? threshold : 200,
           standardShippingFee: !isNaN(standardFee) ? standardFee : 20,
           storeEmail: data.storeEmail || 'contact@azimcrafts.com',
-          whatsappNumber: data.whatsappNumber || '0426285439 (+61 426 285 439)',
+          whatsappNumber: data.whatsappNumber || '0483172489 (+61 483 172 489)',
           storeAddress: data.storeAddress || data.address || 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
         };
       }
@@ -484,7 +484,7 @@ export async function getStoreSettings() {
     freeShippingThreshold: 200,
     standardShippingFee: 20,
     storeEmail: 'contact@azimcrafts.com',
-    whatsappNumber: '0426285439 (+61 426 285 439)',
+    whatsappNumber: '0483172489 (+61 483 172 489)',
     storeAddress: 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
   };
 }

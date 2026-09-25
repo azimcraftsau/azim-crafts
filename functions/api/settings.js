@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
         freeShippingThreshold: 200,
         standardShippingFee: 20,
         storeEmail: 'contact@azimcrafts.com',
-        whatsappNumber: '+61 426 285 439',
+        whatsappNumber: '+61 483 172 489',
         storeAddress: 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
       }), {
         headers: { 'Content-Type': 'application/json' }
@@ -25,7 +25,7 @@ export async function onRequestGet(context) {
         freeShippingThreshold: 200,
         standardShippingFee: 20,
         storeEmail: 'contact@azimcrafts.com',
-        whatsappNumber: '+61 426 285 439',
+        whatsappNumber: '+61 483 172 489',
         storeAddress: 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
       }), {
         headers: { 'Content-Type': 'application/json' }
@@ -37,7 +37,7 @@ export async function onRequestGet(context) {
       freeShippingThreshold: result.free_shipping_threshold != null ? Number(result.free_shipping_threshold) : 200,
       standardShippingFee: result.standard_shipping_fee != null ? Number(result.standard_shipping_fee) : 20,
       storeEmail: result.store_email || 'contact@azimcrafts.com',
-      whatsappNumber: result.whatsapp_number || '+61 426 285 439',
+      whatsappNumber: result.whatsapp_number || '+61 483 172 489',
       storeAddress: result.store_address || 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK'
     }), {
       headers: { 'Content-Type': 'application/json' }
@@ -66,7 +66,7 @@ export async function onRequestPost(context) {
           200,
           20,
           "contact@azimcrafts.com",
-          "+61 426 285 439",
+          "+61 483 172 489",
           "Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK"
         )
       `).run();
