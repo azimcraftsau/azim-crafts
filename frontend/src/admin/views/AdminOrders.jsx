@@ -23,12 +23,30 @@ function StatusModal({ order, onSave, onClose }) {
   const [status, setStatus] = useState(order.status);
   const [tracking, setTracking] = useState(order.tracking || '');
   const [carrier, setCarrier] = useState(order.carrier || 'DHL Express');
+  const [showDeliveredConfirm, setShowDeliveredConfirm] = useState(false);
   const inputCls = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-[#c8924b] focus:border-transparent outline-none transition-all bg-white';
   const labelCls = 'block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5';
 
+  const handleStatusChange = (newStatus) => {
+    if (newStatus === 'Delivered' && order.status !== 'Delivered') {
+      setShowDeliveredConfirm(true);
+    } else {
+      setStatus(newStatus);
+    }
+  };
+
+  const confirmDelivered = () => {
+    setStatus('Delivered');
+    setShowDeliveredConfirm(false);
+  };
+
+  const cancelDelivered = () => {
+    setShowDeliveredConfirm(false);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 p-4 font-menu">
-      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200 animate-fade-in">
+      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200 animate-fade-in relative">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-neutral-50/90">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-gray-900">Update Order Fulfillment</h3>
@@ -41,7 +59,7 @@ function StatusModal({ order, onSave, onClose }) {
         <div className="p-6 space-y-4">
           <div>
             <label className={labelCls}>Order Status *</label>
-            <select className={inputCls} value={status} onChange={(e) => setStatus(e.target.value)}>
+            <select className={inputCls} value={status} onChange={(e) => handleStatusChange(e.target.value)}>
               {STATUS_ORDER.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
@@ -79,6 +97,39 @@ function StatusModal({ order, onSave, onClose }) {
             </button>
           </div>
         </div>
+
+        {/* Delivered Confirmation Modal Popup */}
+        {showDeliveredConfirm && (
+          <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-60 p-4 font-menu animate-fade-in">
+            <div className="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-neutral-200">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200">
+                <CheckCircle2 size={32} />
+              </div>
+              <h4 className="text-base font-bold text-gray-900 mb-1.5">
+                Mark Order as Delivered?
+              </h4>
+              <p className="text-xs text-gray-600 leading-relaxed mb-6">
+                Are you sure you want to mark order <strong className="font-mono text-gray-900">{order.id}</strong> as <strong className="text-emerald-700 font-bold">Delivered</strong>? Please ensure courier tracking or customer delivery receipt has been verified.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={cancelDelivered}
+                  className="w-1/2 py-2.5 px-4 rounded-xl border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDelivered}
+                  className="w-1/2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                >
+                  Yes, Delivered
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -578,10 +629,15 @@ export function AdminOrders() {
 
                       {/* Status Badge */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${sc.bg} ${sc.text} ${sc.border}`}>
+                        <button
+                          type="button"
+                          onClick={() => setEditModal(o)}
+                          title="Click to update order status or tracking"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${sc.bg} ${sc.text} ${sc.border} hover:opacity-85 transition-opacity cursor-pointer`}
+                        >
                           <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
                           <span>{o.status}</span>
-                        </span>
+                        </button>
                       </td>
 
                       {/* Date */}
