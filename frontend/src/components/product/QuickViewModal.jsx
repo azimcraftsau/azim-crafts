@@ -175,22 +175,27 @@ export const QuickViewModal = () => {
     }, 1200);
   };
 
-  const specs = product.specifications || {
-    brand: 'Azim Crafts',
-    productName: product.title,
-    model: `VTM-${product.productNumber || 100}`,
-    packContents: '1x Handcrafted Masterpiece Item',
-    colour: 'Natural Handcrafted Artisan Tones',
-    keyAttributes: '100% Handcrafted, Decorative, Museum Quality'
+  const rawSpecs = product.specifications && typeof product.specifications === 'object' ? product.specifications : {};
+  const specs = {
+    brand: rawSpecs.brand || 'Azim Crafts',
+    productName: rawSpecs.productName || product.title,
+    model: rawSpecs.model || `VTM-${product.productNumber || product.product_number || 100}`,
+    packContents: rawSpecs.packContents || '1x Handcrafted Masterpiece Item',
+    colour: rawSpecs.colour || 'Natural Handcrafted Artisan Tones',
+    keyAttributes: rawSpecs.keyAttributes || '100% Handcrafted, Decorative, Museum Quality'
   };
 
-  const perfectForList = product.perfectFor || [
-    'Home & office décor',
-    'Historical display pieces & collector cabinets',
-    'Gifts for history, nautical & art lovers',
-    'Souvenir and heirloom collectible item',
-    'Art and craft enthusiasts'
-  ];
+  const perfectForList = (Array.isArray(product.perfectFor) && product.perfectFor.length > 0)
+    ? product.perfectFor
+    : (Array.isArray(product.perfect_for) && product.perfect_for.length > 0)
+      ? product.perfect_for
+      : [
+          'Home & office décor',
+          'Historical display pieces & collector cabinets',
+          'Gifts for history, nautical & art lovers',
+          'Souvenir and heirloom collectible item',
+          'Art and craft enthusiasts'
+        ];
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto font-menu select-none">
@@ -774,10 +779,16 @@ export const QuickViewModal = () => {
 
                   {openAccordions.shipping && (
                     <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-neutral-700 animate-fade-in border-t border-neutral-100">
-                      <div className="p-3 bg-neutral-50 rounded-xl space-y-2 leading-relaxed">
-                        <div><strong className="text-neutral-900">Manufacturing Unit & Workshop:</strong> 155 / 1A Imli Road, Near Pinewood School, Roorkee Haridwar 247667.</div>
-                        <div><strong className="text-neutral-900">Shipping Provider:</strong> DHL Express, FedEx, UPS & All Major International Courier services.</div>
-                        <div><strong className="text-neutral-900">Additional Delivery Information:</strong> Order Processing 2 – 5 Business Days. Handcrafted by master artisans with export-grade protective packaging. For custom bulk inquiries or express shipping, please contact our support team.</div>
+                      <div className="p-3 bg-neutral-50 rounded-xl space-y-2 leading-relaxed whitespace-pre-line">
+                        {product.shippingInfo || product.shipping_info ? (
+                          <div>{product.shippingInfo || product.shipping_info}</div>
+                        ) : (
+                          <>
+                            <div><strong className="text-neutral-900">Manufacturing Unit & Workshop:</strong> 155 / 1A Imli Road, Near Pinewood School, Roorkee Haridwar 247667.</div>
+                            <div><strong className="text-neutral-900">Shipping Provider:</strong> DHL Express, FedEx, UPS & All Major International Courier services.</div>
+                            <div><strong className="text-neutral-900">Additional Delivery Information:</strong> Order Processing 2 – 5 Business Days. Handcrafted by master artisans with export-grade protective packaging. For custom bulk inquiries or express shipping, please contact our support team.</div>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
