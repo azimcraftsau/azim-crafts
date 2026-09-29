@@ -982,3 +982,91 @@ export async function adminResetPassword({ email, token, newPassword }) {
   return { success: false, error: 'Failed to reset password.' };
 }
 
+// ========================
+// Reviews Management
+// ========================
+
+let _cachedReviews = null;
+
+export async function getApprovedReviews() {
+  try {
+    const res = await fetch('/api/reviews');
+    if (res.ok) {
+      const data = await res.json();
+      _cachedReviews = Array.isArray(data) ? data : [];
+      return _cachedReviews;
+    }
+  } catch (err) {
+    console.error('Error fetching approved reviews:', err);
+  }
+  return _cachedReviews || [];
+}
+
+export async function getAllReviews() {
+  try {
+    const res = await fetch('/api/reviews?all=true');
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    }
+  } catch (err) {
+    console.error('Error fetching all reviews:', err);
+  }
+  return [];
+}
+
+export async function getPendingReviewsCount() {
+  try {
+    const res = await fetch('/api/reviews?pending=true');
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) ? data.length : 0;
+    }
+  } catch (err) {
+    console.error('Error fetching pending reviews count:', err);
+  }
+  return 0;
+}
+
+export async function submitReviewToDB(reviewData) {
+  try {
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reviewData)
+    });
+    notifySync('vw_reviews_updated');
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.error('Error submitting review:', err);
+  }
+  return null;
+}
+
+export async function updateReviewStatusInDB(id, status) {
+  try {
+    const res = await fetch('/api/reviews', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status })
+    });
+    notifySync('vw_reviews_updated');
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.error('Error updating review status:', err);
+  }
+  return null;
+}
+
+export async function deleteReviewFromDB(id) {
+  try {
+    const res = await fetch(`/api/reviews?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+    notifySync('vw_reviews_updated');
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.error('Error deleting review:', err);
+  }
+  return null;
+}

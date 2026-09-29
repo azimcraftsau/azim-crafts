@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { X, Star, CheckCircle, Sparkles } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { submitReviewToDB } from '../../lib/cloudflareService';
 
-export const WriteReviewModal = ({ isOpen, onClose, onReviewSubmitted }) => {
+export const WriteReviewModal = ({ isOpen, onClose, onReviewSubmitted, initialName = '', initialEmail = '', orderId = '' }) => {
   const { showToast } = useCart();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(initialName);
+  const [email, setEmail] = useState(initialEmail);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Update fields when pre-filled props change
+  useEffect(() => {
+    if (initialName) setName(initialName);
+    if (initialEmail) setEmail(initialEmail);
+  }, [initialName, initialEmail]);
 
   // Background Scroll Lock (zero scroll jump)
   useEffect(() => {
@@ -29,7 +36,7 @@ export const WriteReviewModal = ({ isOpen, onClose, onReviewSubmitted }) => {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !comment.trim()) {
       showToast('Please fill in your name and review comment.', 'error');
@@ -37,23 +44,51 @@ export const WriteReviewModal = ({ isOpen, onClose, onReviewSubmitted }) => {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      const newReview = {
-        id: Date.now(),
-        name: name.trim(),
+
+    try {
+      const reviewData = {
+        customer_name: name.trim(),
+        customer_email: email.trim(),
         rating,
         title: title.trim() || 'Exceptional craftsmanship & authentic detail!',
         comment: comment.trim(),
+        order_id: orderId || '',
+        location: 'Verified Buyer'
+      };
+
+      const result = await submitReviewToDB(reviewData);
+
+      const newReview = {
+        id: result?.review?.id || Date.now(),
+        name: name.trim(),
+        customer_name: name.trim(),
+        rating,
+        title: reviewData.title,
+        comment: comment.trim(),
         date: 'Just now',
         location: 'Verified Buyer',
+        status: 'pending'
       };
+
       if (onReviewSubmitted) {
         onReviewSubmitted(newReview);
       }
-      showToast('🎉 Thank you! Your review was submitted successfully and is now live.');
+
+      showToast('🎉 Thank you! Your review has been submitted for verification and will appear on the storefront shortly.');
+
+      // Reset form
+      setRating(5);
+      setTitle('');
+      setComment('');
+      if (!initialName) setName('');
+      if (!initialEmail) setEmail('');
+
       onClose();
-    }, 700);
+    } catch (err) {
+      showToast('Something went wrong. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -175,6 +210,11 @@ export const WriteReviewModal = ({ isOpen, onClose, onReviewSubmitted }) => {
                   className="w-full px-3.5 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:border-black bg-neutral-50/50"
                 />
               </div>
+            </div>
+
+            {/* Pending notice */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5 text-amber-800">
+              <strong>Note:</strong> Your review will be submitted for verification and will appear on the storefront after approval by our team.
             </div>
 
             {/* Submit Buttons */}

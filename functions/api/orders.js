@@ -289,6 +289,122 @@ export async function onRequestPut(context) {
       `).bind(status, tracking || '', carrier || 'DHL Express', id).run();
     }
 
+    // Send delivery confirmation email with review link when marked Delivered
+    if (status === 'Delivered' && env.DB && env.RESEND_API_KEY) {
+      try {
+        const { results } = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(id).all();
+        const order = results && results[0];
+        if (order) {
+          const customerEmail = (order.customer_email || '').toLowerCase().trim();
+          const customerName = order.customer || 'Valued Customer';
+          const orderTotal = Number(order.total || 0).toFixed(2);
+          const orderItems = order.items || 'Handcrafted Artisan Collectible';
+          const orderCarrier = carrier || order.carrier || 'DHL Express';
+          const orderTracking = tracking || order.tracking || '';
+
+          const reviewUrl = `https://azimcrafts.com/?write_review=true&order_id=${encodeURIComponent(id)}&name=${encodeURIComponent(customerName)}&email=${encodeURIComponent(customerEmail)}#reviews-section`;
+
+          if (customerEmail) {
+            const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin: 0; padding: 0; background-color: #f7f5f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1b1a1a;">
+  <div style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border: 1px solid #e7dfd5; border-radius: 8px; overflow: hidden;">
+    <div style="background-color: #1b1a1a; padding: 26px 20px; text-align: center;">
+      <h1 style="margin: 0; color: #ffffff; font-size: 20px; letter-spacing: 3px; text-transform: uppercase;">AZIM CRAFTS</h1>
+      <p style="margin: 4px 0 0; color: #d4a359; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;">Order Delivered Successfully</p>
+    </div>
+    <div style="padding: 30px 28px;">
+      <div style="text-align: center; margin-bottom: 25px;">
+        <div style="width: 70px; height: 70px; background: #ecfdf5; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; border: 2px solid #a7f3d0;">
+          <span style="font-size: 32px;">✅</span>
+        </div>
+        <h2 style="margin: 0 0 5px; font-size: 22px; color: #1b1a1a; font-weight: 700;">Your Order Has Been Delivered!</h2>
+        <p style="margin: 0; font-size: 13px; color: #666;">We hope you love your handcrafted pieces.</p>
+      </div>
+
+      <table style="width: 100%; border-bottom: 2px solid #1b1a1a; padding-bottom: 12px; margin-bottom: 18px;">
+        <tr>
+          <td>
+            <span style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block;">Order #</span>
+            <strong style="font-size: 17px; color: #1b1a1a;">${id}</strong>
+          </td>
+          <td style="text-align: right;">
+            <span style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block;">Status</span>
+            <strong style="font-size: 13px; color: #059669;">✅ Delivered</strong>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #4a4a4a;">
+        Dear <strong>${customerName}</strong>,<br/>
+        Great news! Your order from Azim Crafts has been successfully delivered. We hope the craftsmanship and quality of your handcrafted pieces exceeded your expectations.
+      </p>
+
+      <div style="background-color: #faf8f5; border: 1px solid #ede7df; border-radius: 6px; padding: 16px 20px; margin: 20px 0;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="vertical-align: top; width: 50%; padding-right: 12px;">
+              <span style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;">Order Summary</span>
+              <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #1b1a1a;">
+                <strong>Items:</strong> ${orderItems}<br/>
+                <strong>Total:</strong> $${orderTotal} USD
+              </p>
+            </td>
+            <td style="vertical-align: top; width: 50%; padding-left: 12px; border-left: 1px solid #ede7df;">
+              <span style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;">Shipping Details</span>
+              <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #1b1a1a;">
+                <strong>Carrier:</strong> ${orderCarrier}<br/>
+                ${orderTracking ? `<strong>Tracking:</strong> ${orderTracking}` : '<strong>Status:</strong> Delivered'}
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Review CTA -->
+      <div style="text-align: center; margin: 30px 0 20px;">
+        <p style="font-size: 14px; color: #4a4a4a; margin: 0 0 15px; line-height: 1.5;">
+          Your feedback means the world to us and helps fellow collectors discover authentic handcrafted treasures.
+        </p>
+        <a href="${reviewUrl}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #c8924b, #e8b06a); color: #0f1117; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 10px; letter-spacing: 0.5px; box-shadow: 0 4px 14px rgba(200,146,75,0.35);">
+          ⭐ Write a Customer Review
+        </a>
+        <p style="font-size: 11px; color: #999; margin: 12px 0 0;">It only takes 30 seconds and makes a huge difference!</p>
+      </div>
+
+      <p style="margin: 20px 0 0; padding-top: 18px; border-top: 1px solid #ede7df; font-size: 12px; line-height: 1.6; color: #777;">
+        Need help or have questions? Contact us at <a href="mailto:contact@azimcrafts.com" style="color: #1b1a1a; font-weight: 600; text-decoration: underline;">contact@azimcrafts.com</a>.
+      </p>
+    </div>
+    <div style="background-color: #faf8f5; padding: 16px 28px; text-align: center; border-top: 1px solid #ede7df;">
+      <p style="margin: 0; font-size: 11px; color: #999;">Azim Crafts &bull; Master Artisans &bull; Sydney, Australia &bull; Worldwide Delivery</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                from: 'Azim Crafts <contact@azimcrafts.com>',
+                to: [customerEmail],
+                subject: `Delivered: Your Azim Crafts Order ${id} Has Arrived! 🌟`,
+                html: emailHtml
+              })
+            });
+          }
+        }
+      } catch (emailErr) {
+        console.error('Failed to send delivery email:', emailErr.message);
+      }
+    }
+
     return new Response(JSON.stringify({ success: true, id, status, tracking, carrier }), {
       headers: { 'Content-Type': 'application/json' }
     });

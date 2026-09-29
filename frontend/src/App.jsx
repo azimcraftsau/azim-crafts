@@ -28,6 +28,29 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 function AppContent() {
   const { currentPage } = useCart();
 
+  // Detect write_review=true URL param from delivery email
+  const [reviewParams, setReviewParams] = React.useState({ autoOpen: false, name: '', email: '', orderId: '' });
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('write_review') === 'true') {
+      setReviewParams({
+        autoOpen: true,
+        name: params.get('name') || '',
+        email: params.get('email') || '',
+        orderId: params.get('order_id') || ''
+      });
+      // Scroll to reviews section after a short delay
+      setTimeout(() => {
+        const el = document.getElementById('reviews-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 500);
+      // Clean URL without reload
+      const cleanUrl = window.location.origin + window.location.pathname + (window.location.hash || '');
+      window.history.replaceState({}, '', cleanUrl);
+    }
+  }, []);
+
   // Distraction-Free Dedicated Checkout Page matching screenshot
   if (currentPage === 'checkout') {
     return (
@@ -207,7 +230,12 @@ function AppContent() {
           <AwardsSection />
 
           {/* 13. Customer Reviews Carousel */}
-          <ReviewsCarousel />
+          <ReviewsCarousel
+            autoOpenReview={reviewParams.autoOpen}
+            reviewInitialName={reviewParams.name}
+            reviewInitialEmail={reviewParams.email}
+            reviewOrderId={reviewParams.orderId}
+          />
 
           {/* 14. About Us Dual Column Story */}
           <AboutUsSection />

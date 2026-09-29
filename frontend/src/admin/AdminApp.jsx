@@ -15,7 +15,8 @@ import {
   X,
   Trash2,
   LayoutTemplate,
-  ShieldCheck
+  ShieldCheck,
+  Star
 } from 'lucide-react';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './views/AdminDashboard';
@@ -28,6 +29,7 @@ import { AdminTeam } from './views/AdminTeam';
 import { AdminCoupons } from './views/AdminCoupons';
 import { AdminMessages } from './views/AdminMessages';
 import { AdminSettings } from './views/AdminSettings';
+import { AdminReviews } from './views/AdminReviews';
 import { 
   getTrashProducts, 
   getMessages, 
@@ -35,13 +37,15 @@ import {
   getOrders, 
   getCategories, 
   getUsersList, 
-  getHeroSlides 
+  getHeroSlides,
+  getPendingReviewsCount
 } from '../lib/cloudflareService';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'products', label: 'Products', icon: Package },
   { id: 'orders', label: 'Orders', icon: ShoppingCart },
+  { id: 'reviews', label: 'Customer Reviews', icon: Star },
   { id: 'customers', label: 'Customers', icon: Users },
   { id: 'team', label: 'Admins & Staff', icon: ShieldCheck },
   { id: 'trash', label: 'Trash Bin', icon: Trash2 },
@@ -55,6 +59,7 @@ const VIEW_COMPONENTS = {
   dashboard: AdminDashboard,
   products: AdminProducts,
   orders: AdminOrders,
+  reviews: AdminReviews,
   customers: AdminUsers,
   team: AdminTeam,
   trash: AdminTrash,
@@ -64,7 +69,7 @@ const VIEW_COMPONENTS = {
   settings: AdminSettings,
 };
 
-function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobileClose, trashCount = 0, unreadMessagesCount = 0 }) {
+function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobileClose, trashCount = 0, unreadMessagesCount = 0, pendingReviewsCount = 0 }) {
 
   return (
     <>
@@ -138,6 +143,11 @@ function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobi
                     {unreadMessagesCount}
                   </span>
                 )}
+                {id === 'reviews' && pendingReviewsCount > 0 && (
+                  <span className="bg-amber-500/20 text-[#c8924b] text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
+                    {pendingReviewsCount}
+                  </span>
+                )}
                 {isActive && <ChevronRight size={13} className="opacity-60" />}
               </button>
             );
@@ -176,21 +186,25 @@ export function AdminApp() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [trashCount, setTrashCount] = useState(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
 
   const updateCounts = async () => {
     try {
-      const [trash, msgs, chats] = await Promise.all([
+      const [trash, msgs, chats, pendingRev] = await Promise.all([
         getTrashProducts().catch(() => []),
         getMessages().catch(() => []),
-        fetch('/api/chat').then(r => r.json()).catch(() => [])
+        fetch('/api/chat').then(r => r.json()).catch(() => []),
+        getPendingReviewsCount().catch(() => 0)
       ]);
       setTrashCount(Array.isArray(trash) ? trash.length : 0);
       const unreadMsgs = Array.isArray(msgs) ? msgs.filter(m => m.status === 'Unread' || !m.read).length : 0;
       const unreadChats = Array.isArray(chats) ? chats.filter(c => !c.read && !c.isResolved).length : 0;
       setUnreadMessagesCount(unreadMsgs + unreadChats);
+      setPendingReviewsCount(typeof pendingRev === 'number' ? pendingRev : 0);
     } catch {
       setTrashCount(0);
       setUnreadMessagesCount(0);
+      setPendingReviewsCount(0);
     }
   };
 
@@ -198,9 +212,11 @@ export function AdminApp() {
     updateCounts();
     window.addEventListener('vw_trash_updated', updateCounts);
     window.addEventListener('vw_messages_updated', updateCounts);
+    window.addEventListener('vw_reviews_updated', updateCounts);
     return () => {
       window.removeEventListener('vw_trash_updated', updateCounts);
       window.removeEventListener('vw_messages_updated', updateCounts);
+      window.removeEventListener('vw_reviews_updated', updateCounts);
     };
   }, []);
 
@@ -329,6 +345,7 @@ export function AdminApp() {
         onMobileClose={() => setMobileOpen(false)}
         trashCount={trashCount}
         unreadMessagesCount={unreadMessagesCount}
+        pendingReviewsCount={pendingReviewsCount}
       />
 
       {/* Main content */}
