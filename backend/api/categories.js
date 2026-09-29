@@ -13,7 +13,10 @@ export async function onRequestGet(context) {
     ).all();
 
     return new Response(JSON.stringify({ success: true, data: results || [] }), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+      }
     });
   } catch (err) {
     return new Response(JSON.stringify({ success: false, error: err.message }), {

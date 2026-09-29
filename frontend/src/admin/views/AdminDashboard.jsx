@@ -240,7 +240,7 @@ export function AdminDashboard({ onNavigate }) {
                 {orders.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-gray-400 text-xs">
-                      No orders yet. Complete a test checkout to see live revenue &amp; analytics!
+                      No orders placed yet. New store orders will appear here in real time.
                     </td>
                   </tr>
                 ) : (

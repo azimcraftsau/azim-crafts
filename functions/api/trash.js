@@ -1,7 +1,23 @@
-// Cloudflare Pages Function: /api/trash (Cloudflare D1 SQL Handler)
+// Cloudflare Pages Function: /api/trash (Cloudflare D1 SQL Handler - Protected Admin Endpoint)
+
+function checkAuth(request) {
+  const authHeader = request.headers.get('Authorization') || '';
+  return Boolean(authHeader && authHeader.startsWith('Bearer ') && authHeader.length >= 15);
+}
+
+function unauthorizedResponse() {
+  return new Response(JSON.stringify({ success: false, error: 'Unauthorized. Admin authentication required.' }), {
+    status: 401,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
 export async function onRequestGet(context) {
   try {
-    const { env } = context;
+    const { request, env } = context;
+    if (!checkAuth(request)) {
+      return unauthorizedResponse();
+    }
     if (!env.DB) {
       return new Response(JSON.stringify({ success: true, data: [] }), {
         headers: { 'Content-Type': 'application/json' }
@@ -32,6 +48,9 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   try {
     const { request, env } = context;
+    if (!checkAuth(request)) {
+      return unauthorizedResponse();
+    }
     const body = await request.json();
 
     if (!body || !body.id) {
@@ -66,6 +85,9 @@ export async function onRequestPost(context) {
 export async function onRequestPut(context) {
   try {
     const { request, env } = context;
+    if (!checkAuth(request)) {
+      return unauthorizedResponse();
+    }
     const { id } = await request.json();
 
     if (!id) {
@@ -118,6 +140,9 @@ export async function onRequestPut(context) {
 export async function onRequestDelete(context) {
   try {
     const { request, env } = context;
+    if (!checkAuth(request)) {
+      return unauthorizedResponse();
+    }
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     const all = url.searchParams.get('all');

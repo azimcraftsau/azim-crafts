@@ -16,152 +16,8 @@ const STATUS_COLORS = {
   Delivered: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
 };
 
-// Generate realistic default sample orders spanning Today, Yesterday, This Month
-export const generateDefaultOrders = () => {
-  const now = new Date();
-  
-  const today1 = new Date(now);
-  today1.setHours(today1.getHours() - 2);
-
-  const today2 = new Date(now);
-  today2.setHours(today2.getHours() - 5);
-
-  const yesterday1 = new Date(now);
-  yesterday1.setDate(now.getDate() - 1);
-  yesterday1.setHours(14, 30);
-
-  const yesterday2 = new Date(now);
-  yesterday2.setDate(now.getDate() - 1);
-  yesterday2.setHours(18, 15);
-
-  const threeDaysAgo = new Date(now);
-  threeDaysAgo.setDate(now.getDate() - 3);
-
-  const fiveDaysAgo = new Date(now);
-  fiveDaysAgo.setDate(now.getDate() - 5);
-
-  const tenDaysAgo = new Date(now);
-  tenDaysAgo.setDate(now.getDate() - 10);
-
-  const lastMonth = new Date(now);
-  lastMonth.setMonth(now.getMonth() - 1);
-  lastMonth.setDate(15);
-
-  return [
-    {
-      id: 'VTM-10045',
-      customer: 'David Harrison',
-      customerEmail: 'david.h@gmail.com',
-      country: 'United States',
-      items: 'Handmade Viking Wooden Round Shield (x1)',
-      total: 185.00,
-      status: 'Processing',
-      payment: 'Paid',
-      tracking: '',
-      carrier: 'DHL Express',
-      createdAt: today1.toISOString(),
-      date: today1.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    },
-    {
-      id: 'VTM-10044',
-      customer: 'Sarah Jenkins',
-      customerEmail: 's.jenkins@outlook.com',
-      country: 'Australia',
-      items: 'Thor Mjolnir War Hammer (x1), Compass (x1)',
-      total: 260.00,
-      status: 'Unfulfilled',
-      payment: 'Paid',
-      tracking: '',
-      carrier: 'FedEx',
-      createdAt: today2.toISOString(),
-      date: today2.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    },
-    {
-      id: 'VTM-10043',
-      customer: 'James Mitchell',
-      customerEmail: 'james.m@yahoo.com',
-      country: 'United Kingdom',
-      items: 'Vintage Diving Helmet US Navy Mark V (x1)',
-      total: 320.00,
-      status: 'Processing',
-      payment: 'Paid',
-      tracking: 'DHL987123456',
-      carrier: 'DHL Express',
-      createdAt: yesterday1.toISOString(),
-      date: yesterday1.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    },
-    {
-      id: 'VTM-10042',
-      customer: 'Elena Rostova',
-      customerEmail: 'elena.rostova@gmail.com',
-      country: 'Germany',
-      items: 'Handmade Embossed Leather Journal (x2)',
-      total: 148.00,
-      status: 'Shipped',
-      payment: 'Paid',
-      tracking: 'FDX445566778',
-      carrier: 'FedEx',
-      createdAt: yesterday2.toISOString(),
-      date: yesterday2.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    },
-    {
-      id: 'VTM-10041',
-      customer: 'Liam Nguyen',
-      customerEmail: 'liam.ng@hotmail.com',
-      country: 'Canada',
-      items: 'Full Knight Armour Set with Gauntlets (x1)',
-      total: 490.00,
-      status: 'Shipped',
-      payment: 'Paid',
-      tracking: 'UPS889900112',
-      carrier: 'UPS',
-      createdAt: threeDaysAgo.toISOString(),
-      date: threeDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    },
-    {
-      id: 'VTM-10040',
-      customer: 'Aria Patel',
-      customerEmail: 'aria.patel@craftlore.in',
-      country: 'India',
-      items: 'Solid Brass Nautical Sextant in Hardwood Box (x1)',
-      total: 165.00,
-      status: 'Delivered',
-      payment: 'Paid',
-      tracking: 'DHL556677889',
-      carrier: 'DHL Express',
-      createdAt: fiveDaysAgo.toISOString(),
-      date: fiveDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    },
-    {
-      id: 'VTM-10039',
-      customer: 'Marcus Williams',
-      customerEmail: 'marcus.w@gmail.com',
-      country: 'Australia',
-      items: 'Medieval Knight Crusader Helmet (x1), Round Shield (x1)',
-      total: 345.00,
-      status: 'Delivered',
-      payment: 'Paid',
-      tracking: 'DHL112233445',
-      carrier: 'DHL Express',
-      createdAt: tenDaysAgo.toISOString(),
-      date: tenDaysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    },
-    {
-      id: 'VTM-10038',
-      customer: 'Jean-Luc Dubois',
-      customerEmail: 'jldubois@paris.fr',
-      country: 'France',
-      items: 'Antique Brass Sundial Compass with Leather Case (x1)',
-      total: 95.00,
-      status: 'Delivered',
-      payment: 'Paid',
-      tracking: 'FDX998877665',
-      carrier: 'FedEx',
-      createdAt: lastMonth.toISOString(),
-      date: lastMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    }
-  ];
-};
+// Default orders
+export const generateDefaultOrders = () => [];
 
 function StatusModal({ order, onSave, onClose }) {
   const [status, setStatus] = useState(order.status);
@@ -244,15 +100,12 @@ export function AdminOrders() {
   const [printModal, setPrintModal] = useState(null);
   const [viewOrderModal, setViewOrderModal] = useState(null);
 
-  const DUMMY_IDS = ['VTM-10045','VTM-10044','VTM-10043','VTM-10042','VTM-10041','VTM-10040','VTM-10039','VTM-10038','VTM-10037','VTM-10036','VTM-10035'];
-
   const loadData = async (silent = false) => {
     if (!silent && !getCachedOrders()) setLoading(true);
     try {
       const remote = await getOrders();
       if (Array.isArray(remote)) {
-        const realOnly = remote.filter(o => !DUMMY_IDS.includes(o.id));
-        setOrders(realOnly);
+        setOrders(remote);
         setLoading(false);
         return;
       }
@@ -291,7 +144,7 @@ export function AdminOrders() {
   };
 
   const handleClearAllOrders = async () => {
-    if (!window.confirm('⚠️ Are you sure you want to WIPE ALL ORDERS? This will clear all test orders for a fresh start.')) return;
+    if (!window.confirm('⚠️ Are you sure you want to delete all orders? This action cannot be undone.')) return;
     setOrders([]);
     await clearAllOrdersFromDB();
   };

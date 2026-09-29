@@ -38,7 +38,6 @@ export const AccountPage = () => {
   // Forgot Password State
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
-  const [generatedResetUrl, setGeneratedResetUrl] = useState('');
 
   // Reset Password State (New Password & Confirm Password)
   const [resetToken, setResetToken] = useState('');
@@ -188,7 +187,6 @@ export const AccountPage = () => {
     setIsLoading(false);
     if (res.success) {
       setForgotSent(true);
-      if (res.resetUrl) setGeneratedResetUrl(res.resetUrl);
       showToast(res.message || `Password reset link sent to ${forgotEmail}`);
     } else {
       showToast(res.error || 'No account found with this email address.', 'error');
@@ -869,20 +867,6 @@ export const AccountPage = () => {
                   <p className="text-neutral-500 text-[10.5px] pt-1">Tip: If you do not see the email in your inbox within a couple of minutes, please check your Spam or Promotions folder.</p>
                 </div>
 
-                {generatedResetUrl && (
-                  <div className="p-3 bg-white border border-dashed border-neutral-300 rounded-lg space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] text-neutral-500 font-medium">
-                      <span>🔗 Direct Reset Link (Quick Access):</span>
-                    </div>
-                    <a
-                      href={generatedResetUrl}
-                      className="w-full bg-[#1b1a1a] hover:bg-[#333333] text-white py-2.5 px-4 rounded-md font-semibold text-xs tracking-wider transition-colors flex items-center justify-center gap-1.5 text-center block"
-                    >
-                      <KeyRound className="w-3.5 h-3.5 text-[#f7eddb]" />
-                      <span>Click to Set New Password Now &rarr;</span>
-                    </a>
-                  </div>
-                )}
 
                 <div className="pt-2 flex items-center justify-between border-t border-neutral-200/80 text-xs">
                   <button

@@ -462,8 +462,7 @@ export async function onRequestPost(context) {
 
       return new Response(JSON.stringify({
         success: true,
-        message: `Password reset link has been sent to ${cleanEmail}. Please check your inbox.`,
-        resetUrl
+        message: `Password reset link has been sent to ${cleanEmail}. Please check your inbox.`
       }), {
         headers: { 'Content-Type': 'application/json' }
       });
@@ -810,8 +809,7 @@ export async function onRequestPost(context) {
 
       return new Response(JSON.stringify({
         success: true,
-        message: `Password reset link has been sent to ${cleanEmail}. Please check your inbox.`,
-        resetUrl
+        message: `Password reset link has been sent to ${cleanEmail}. Please check your inbox.`
       }), {
         headers: { 'Content-Type': 'application/json' }
       });

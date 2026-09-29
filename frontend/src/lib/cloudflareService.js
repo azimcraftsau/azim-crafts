@@ -35,6 +35,15 @@ function unwrapData(data) {
   return null;
 }
 
+export function getAdminAuthHeaders() {
+  try {
+    const token = localStorage.getItem('vw_admin_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
 // ==================== IN-MEMORY HIGH-SPEED CACHE (0ms TAB SWITCHING) ====================
 let _cachedProducts = null;
 let _cachedOrders = null;
@@ -517,7 +526,10 @@ export async function moveToTrashDB(product) {
   try {
     const res = await fetch('/api/trash', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminAuthHeaders()
+      },
       body: JSON.stringify(product)
     });
     notifySync('vw_products_updated');
@@ -530,7 +542,12 @@ export async function moveToTrashDB(product) {
 
 export async function getTrashProducts() {
   try {
-    const res = await fetch('/api/trash');
+    const res = await fetch('/api/trash', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminAuthHeaders()
+      }
+    });
     if (res.ok) {
       const data = await res.json();
       const list = unwrapData(data);
@@ -548,7 +565,10 @@ export async function restoreProductFromTrash(productId) {
   try {
     const res = await fetch('/api/trash', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminAuthHeaders()
+      },
       body: JSON.stringify({ id: productId })
     });
     notifySync('vw_products_updated');
@@ -562,7 +582,10 @@ export async function restoreProductFromTrash(productId) {
 export async function permanentlyDeleteFromTrash(productId) {
   try {
     const res = await fetch(`/api/trash?id=${encodeURIComponent(productId)}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: {
+        ...getAdminAuthHeaders()
+      }
     });
     notifySync('vw_trash_updated');
     if (res.ok) return await res.json();
@@ -574,7 +597,10 @@ export async function permanentlyDeleteFromTrash(productId) {
 export async function emptyTrash() {
   try {
     const res = await fetch('/api/trash?all=true', {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: {
+        ...getAdminAuthHeaders()
+      }
     });
     notifySync('vw_trash_updated');
     if (res.ok) return await res.json();
@@ -652,7 +678,12 @@ export async function deleteMessageFromDB(id) {
 // ==================== USERS & AUTHENTICATION ====================
 export async function getUsersList() {
   try {
-    const res = await fetch('/api/users');
+    const res = await fetch('/api/users', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminAuthHeaders()
+      }
+    });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -665,7 +696,10 @@ export async function getUsersList() {
   try {
     const res = await fetch('/api/auth', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminAuthHeaders()
+      },
       body: JSON.stringify({ action: 'list_users' })
     });
     if (res.ok) {
@@ -771,7 +805,7 @@ export async function requestPasswordReset(email) {
     const data = await res.json().catch(() => null);
     if (data) {
       if (data.success) {
-        return { success: true, message: data.message, resetUrl: data.resetUrl };
+        return { success: true, message: data.message };
       }
       if (data.error) {
         return { success: false, error: data.error };
@@ -784,8 +818,7 @@ export async function requestPasswordReset(email) {
 
   return { 
     success: true, 
-    message: `Password reset link has been generated for ${cleanEmail}. Please check your inbox.`,
-    resetUrl: `/#reset?token=demo_token_${Date.now()}&email=${encodeURIComponent(cleanEmail)}`
+    message: `Password reset link has been dispatched to ${cleanEmail}. Please check your inbox.`
   };
 }
 
@@ -914,7 +947,7 @@ export async function adminForgotPassword(email) {
     const data = await res.json().catch(() => null);
     if (data) {
       if (data.success) {
-        return { success: true, message: data.message, resetUrl: data.resetUrl };
+        return { success: true, message: data.message };
       }
       return { success: false, error: data.error || 'Failed to send reset link.' };
     }

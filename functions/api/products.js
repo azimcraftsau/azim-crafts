@@ -49,7 +49,10 @@ export async function onRequestGet(context) {
     });
 
     return new Response(JSON.stringify(mapped), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=30, s-maxage=120, stale-while-revalidate=300'
+      }
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
