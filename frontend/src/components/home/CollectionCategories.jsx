@@ -167,7 +167,7 @@ export const CollectionCategories = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => openCategory('all')}
-              className="text-xs md:text-sm font-semibold text-neutral-700 hover:text-[#ae2828] underline underline-offset-4 transition-colors cursor-pointer mr-1"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-800 hover:text-black bg-neutral-100 hover:bg-neutral-200 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer mr-1 border border-neutral-200"
             >
               Explore All Collections
             </button>

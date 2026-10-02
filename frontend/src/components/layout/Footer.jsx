@@ -192,7 +192,7 @@ export const Footer = () => {
             {['Visa', 'Mastercard', 'Amex', 'Discover', 'Apple Pay', 'Google Pay', 'Bank Transfer'].map((pay, pIdx) => (
               <span
                 key={pIdx}
-                className="bg-white text-[#131313] font-bold text-[10px] px-2.5 py-1 rounded shadow-2xs border border-neutral-300"
+                className="bg-white text-[#131313] font-bold text-xs px-2.5 py-1 rounded shadow-2xs border border-neutral-300"
               >
                 {pay}
               </span>
@@ -201,8 +201,8 @@ export const Footer = () => {
         </div>
 
         {/* Copyright */}
-        <div className="mt-8 text-center text-[11px] text-neutral-500 border-t border-neutral-900 pt-6">
-          <p>© 2026, <a href="/" className="hover:underline text-neutral-400">Azim Crafts</a>. Handcrafted with authenticity.</p>
+        <div className="mt-8 text-center text-xs text-neutral-400 border-t border-neutral-900 pt-6">
+          <p>© 2026, <a href="/" className="hover:underline text-neutral-300">Azim Crafts</a>. Handcrafted with authenticity.</p>
         </div>
       </div>
     </footer>

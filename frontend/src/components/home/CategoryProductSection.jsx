@@ -72,7 +72,7 @@ export const CategoryProductSection = ({
         <div className="mt-8 md:mt-10 text-center">
           <button
             onClick={handleViewAll}
-            className="inline-flex items-center gap-2 border border-neutral-900 hover:bg-neutral-900 hover:text-white text-neutral-900 font-semibold text-xs py-3 px-8 rounded-md transition-all shadow-2xs cursor-pointer active:scale-98 tracking-wider uppercase group"
+            className="inline-flex items-center gap-2 bg-[#1b1a1a] hover:bg-[#333333] text-white font-semibold text-xs py-3 px-8 rounded-md transition-all shadow-sm hover:shadow-md cursor-pointer active:scale-98 tracking-wider uppercase group"
           >
             <span>View all</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />

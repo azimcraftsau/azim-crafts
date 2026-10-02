@@ -24,7 +24,7 @@ export const AboutUsSection = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               <div className="absolute bottom-4 left-4 right-4 text-white">
-                <span className="text-[11px] uppercase tracking-[0.2em] font-semibold text-[#f7eddb]">
+                <span className="text-xs uppercase tracking-[0.2em] font-semibold text-[#f7eddb]">
                   Master Artisans Workshop
                 </span>
                 <p className="font-heading text-lg font-bold">100% Handcrafted Heritage & Fine Goods</p>
