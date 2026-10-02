@@ -134,7 +134,7 @@ export const SearchModal = () => {
                         </h4>
                         <div className="mt-1 flex items-center justify-between">
                           <span className="text-xs font-bold text-neutral-900">
-                            ${product.price.toFixed(2)} USD
+                            ${Number(product.price) % 1 === 0 ? Math.round(product.price) : Number(product.price).toFixed(2)} USD
                           </span>
                           {product.isSoldOut ? (
                             <span className="text-[10px] bg-neutral-200 text-neutral-600 px-1.5 py-0.5 rounded font-medium">

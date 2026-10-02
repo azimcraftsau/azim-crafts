@@ -89,19 +89,19 @@ export const mainNavLinks = [
 
 export const footerQuickLinks = [
   { title: 'About Us', href: '#about-section' },
+  { title: 'Our Heritage & Story', href: '#about-section' },
   { title: 'All Products', href: '#categories-section', catKey: 'all' },
   { title: 'Vintage Armour & Suits', href: '#vintage-armour', catKey: 'vintage-armour' },
   { title: 'Wooden Shields', href: '#wooden-shields', catKey: 'wooden-shields' },
   { title: 'Vintage Chandeliers', href: '#vintage-chandeliers', catKey: 'vintage-chandeliers' },
   { title: 'Vintage Wall Lights', href: '#vintage-wall-lights', catKey: 'vintage-wall-lights' },
-  { title: 'Cinematic Antiques & Lore', href: '#cinematic-antiques', catKey: 'cinematic-antiques' },
-  { title: 'Fantasy & Gothic Armour Suit', href: '#fantasy-gothic-armour', catKey: 'fantasy-gothic-armour' },
-  { title: 'Vintage Medieval Helmets', href: '#medieval-helmets', catKey: 'medieval-helmets' },
+  { title: 'Cinematic Antiques', href: '#cinematic-antiques', catKey: 'cinematic-antiques' },
+  { title: 'Fantasy Gothic Armour', href: '#fantasy-gothic-armour', catKey: 'fantasy-gothic-armour' },
+  { title: 'Medieval Helmets', href: '#medieval-helmets', catKey: 'medieval-helmets' },
   { title: 'Vintage Gauntlets', href: '#vintage-gauntlets', catKey: 'vintage-gauntlets' },
   { title: 'Vintage Diving Helmets', href: '#vintage-diving-helmets', catKey: 'diving-helmets' },
   { title: 'Vintage Compasses', href: '#vintage-compasses', catKey: 'vintage-compasses' },
-  { title: 'Handmade Leather Journals', href: '#leather-journals', catKey: 'leather-journals' },
-  { title: 'Our Heritage & Story', href: '#about-section' }
+  { title: 'Leather Journals', href: '#leather-journals', catKey: 'leather-journals' }
 ];
 
 export const shopByMenu = [

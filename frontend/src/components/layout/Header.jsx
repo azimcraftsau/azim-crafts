@@ -430,7 +430,7 @@ export const Header = () => {
                       {p.title}
                     </h5>
                     <span className="text-xs font-bold text-neutral-900">
-                      ${p.price.toFixed(2)} USD
+                      ${Number(p.price) % 1 === 0 ? Math.round(p.price) : Number(p.price).toFixed(2)} USD
                     </span>
                   </div>
                 ))}

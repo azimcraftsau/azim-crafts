@@ -7,6 +7,12 @@ import {
 import { useCart } from '../../context/CartContext';
 import { allProducts } from '../../data/products';
 
+const formatPrice = (val) => {
+  const n = Number(val);
+  if (isNaN(n)) return val;
+  return n % 1 === 0 ? Math.round(n).toString() : n.toFixed(2);
+};
+
 export const QuickViewModal = () => {
   const { quickViewProduct, setQuickViewProduct, addToCart, activeCategoryCollection, navigateTo, requireAuth, products } = useCart();
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
@@ -358,12 +364,12 @@ export const QuickViewModal = () => {
                 <div className="flex items-center gap-3">
                   <div className="inline-block border border-neutral-300 rounded-xl px-4 py-1.5 bg-neutral-50 shadow-2xs">
                     <span className="text-xl font-black text-neutral-900">
-                      ${product.price.toFixed(2)} USD
+                      ${formatPrice(product.price)} USD
                     </span>
                   </div>
                   {(product.regularPrice > product.price || product.regular_price > product.price) && (
                     <span className="text-sm font-semibold text-neutral-400 line-through">
-                      ${Number(product.regularPrice || product.regular_price).toFixed(2)} USD
+                      ${formatPrice(product.regularPrice || product.regular_price)} USD
                     </span>
                   )}
                 </div>
@@ -513,7 +519,7 @@ export const QuickViewModal = () => {
                           </span>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <span className="font-bold text-neutral-900">
-                              ${Number(addon.price).toFixed(2)} <span className="text-[10px] font-normal text-neutral-500">USD</span>
+                              ${formatPrice(addon.price)} <span className="text-[10px] font-normal text-neutral-500">USD</span>
                             </span>
                           </div>
                         </div>
@@ -611,7 +617,7 @@ export const QuickViewModal = () => {
                                 {part.name}
                               </h5>
                               <div className="text-xs font-black text-[#c8924b]">
-                                ${Number(part.price).toFixed(2)} <span className="text-[9.5px] font-normal text-neutral-500">USD</span>
+                                ${formatPrice(part.price)} <span className="text-[9.5px] font-normal text-neutral-500">USD</span>
                               </div>
                             </div>
 

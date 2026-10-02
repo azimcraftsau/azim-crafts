@@ -2,6 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 
+export const formatPrice = (val) => {
+  const n = Number(val);
+  if (isNaN(n)) return val;
+  return n % 1 === 0 ? Math.round(n).toString() : n.toFixed(2);
+};
+
 export const ProductCard = ({ product }) => {
   const { setQuickViewProduct } = useCart();
   const [isHovered, setIsHovered] = useState(false);
@@ -160,29 +166,29 @@ export const ProductCard = ({ product }) => {
           ) : null}
         </div>
 
-        {/* Polished Price Button Box */}
-        <div className="w-full border border-neutral-300 group-hover:border-neutral-800 rounded-md py-2 px-3 text-center bg-white group-hover:bg-neutral-50/80 transition-all shadow-2xs">
+        {/* Clean Luxury Price Display */}
+        <div className="pt-1 flex items-baseline gap-2">
           {isSoldOut ? (
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center gap-1.5">
               <span className="text-xs sm:text-sm font-semibold text-neutral-400 uppercase tracking-wide">
                 Sold Out
               </span>
               <span className="text-xs text-neutral-400">
-                • ${product.price.toFixed(2)} USD
+                • ${formatPrice(product.price)} USD
               </span>
             </div>
           ) : (product.isOnSale || (product.regularPrice && Number(product.regularPrice) > Number(product.price)) || (product.regular_price && Number(product.regular_price) > Number(product.price))) ? (
-            <div className="flex items-center justify-center gap-1.5">
-              <span className="text-xs sm:text-sm font-bold text-[#ae2828]">
-                ${Number(product.price).toFixed(2)} USD
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm sm:text-base font-bold text-[#ae2828]">
+                ${formatPrice(product.price)} USD
               </span>
               <span className="text-xs text-neutral-400 line-through">
-                ${Number(product.regularPrice || product.regular_price).toFixed(2)}
+                ${formatPrice(product.regularPrice || product.regular_price)}
               </span>
             </div>
           ) : (
-            <span className="text-xs sm:text-sm font-semibold text-neutral-900 tracking-wide">
-              ${Number(product.price).toFixed(2)} USD
+            <span className="text-sm sm:text-base font-semibold text-neutral-900 tracking-tight">
+              ${formatPrice(product.price)} <span className="text-xs font-normal text-neutral-500">USD</span>
             </span>
           )}
         </div>

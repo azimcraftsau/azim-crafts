@@ -67,7 +67,7 @@ export const Footer = () => {
                 <span className="font-heading text-lg font-bold text-white tracking-wider block">
                   AZIM CRAFTS
                 </span>
-                <span className="text-[10.5px] tracking-[0.25em] text-[#f7eddb] uppercase block">
+                <span className="text-xs font-semibold tracking-[0.22em] text-[#f7eddb] uppercase block mt-0.5">
                   HANDCRAFTED HERITAGE
                 </span>
               </div>
