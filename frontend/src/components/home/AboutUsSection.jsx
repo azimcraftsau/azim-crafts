@@ -35,7 +35,7 @@ export const AboutUsSection = () => {
           {/* Right Column: Copy & Links */}
           <div className="lg:col-span-7 space-y-6">
             <div>
-              <span className="text-[11px] font-bold text-[#ae2828] uppercase tracking-[0.2em] block mb-1">
+              <span className="text-xs font-bold text-[#ae2828] uppercase tracking-[0.2em] block mb-1">
                 Our Story & Heritage
               </span>
               <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-normal text-neutral-900 tracking-wide leading-tight">
@@ -55,25 +55,25 @@ export const AboutUsSection = () => {
 
             {/* Feature Highlights Matrix */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200/80 text-center">
-                <Compass className="w-5 h-5 mx-auto text-[#ae2828] mb-1.5" />
+              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200/80 text-left">
+                <Compass className="w-5 h-5 text-[#ae2828] mb-1.5" />
                 <span className="text-xs font-bold text-neutral-900 block">Nautical</span>
-                <span className="text-[10px] text-neutral-500">Instruments</span>
+                <span className="text-[11px] text-neutral-500">Instruments</span>
               </div>
-              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200/80 text-center">
-                <Shield className="w-5 h-5 mx-auto text-[#ae2828] mb-1.5" />
+              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200/80 text-left">
+                <Shield className="w-5 h-5 text-[#ae2828] mb-1.5" />
                 <span className="text-xs font-bold text-neutral-900 block">Medieval</span>
-                <span className="text-[10px] text-neutral-500">Armor & Shields</span>
+                <span className="text-[11px] text-neutral-500">Armor & Shields</span>
               </div>
-              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200/80 text-center">
-                <Clock className="w-5 h-5 mx-auto text-[#ae2828] mb-1.5" />
+              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200/80 text-left">
+                <Clock className="w-5 h-5 text-[#ae2828] mb-1.5" />
                 <span className="text-xs font-bold text-neutral-900 block">Antique</span>
-                <span className="text-[10px] text-neutral-500">Clocks & Decor</span>
+                <span className="text-[11px] text-neutral-500">Clocks & Decor</span>
               </div>
-              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200/80 text-center">
-                <Anchor className="w-5 h-5 mx-auto text-[#ae2828] mb-1.5" />
+              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200/80 text-left">
+                <Anchor className="w-5 h-5 text-[#ae2828] mb-1.5" />
                 <span className="text-xs font-bold text-neutral-900 block">Fast Dispatch</span>
-                <span className="text-[10px] text-neutral-500">Worldwide Express</span>
+                <span className="text-[11px] text-neutral-500">Worldwide Express</span>
               </div>
             </div>
 

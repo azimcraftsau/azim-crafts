@@ -63,7 +63,7 @@ export const NewsletterSection = () => {
             </button>
           </form>
 
-          <p className="text-[11px] text-neutral-500">
+          <p className="text-xs text-neutral-500">
             We respect your privacy. Unsubscribe at any time.
           </p>
         </div>

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { allProducts } from '../../data/products';
 import { useCart } from '../../context/CartContext';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const CollectionCategories = () => {
   const { products, openCategory, openCategoryCollection } = useCart();
@@ -139,23 +139,57 @@ export const CollectionCategories = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const handleScrollPrev = () => {
+    if (!scrollRef.current) return;
+    const cardWidth = scrollRef.current.firstChild?.offsetWidth || 280;
+    const gap = 16;
+    scrollRef.current.scrollBy({ left: -(cardWidth + gap), behavior: 'smooth' });
+  };
+
+  const handleScrollNext = () => {
+    if (!scrollRef.current) return;
+    const cardWidth = scrollRef.current.firstChild?.offsetWidth || 280;
+    const gap = 16;
+    scrollRef.current.scrollBy({ left: cardWidth + gap, behavior: 'smooth' });
+  };
+
   return (
     <section id="categories-section" className="py-10 md:py-16 bg-white border-b border-neutral-100 font-menu select-none">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
         
-        {/* Section Heading */}
+        {/* Section Heading with Scroll Arrows */}
         <div className="flex items-center justify-between mb-6 pb-3 border-b border-neutral-200">
           <div>
             <h2 className="font-heading text-2xl md:text-3xl lg:text-4xl font-normal text-neutral-900 tracking-wide">
               Vintage Collection
             </h2>
           </div>
-          <button
-            onClick={() => openCategory('all')}
-            className="text-xs md:text-sm font-semibold text-neutral-700 hover:text-[#ae2828] underline underline-offset-4 transition-colors cursor-pointer"
-          >
-            Explore All Collections
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => openCategory('all')}
+              className="text-xs md:text-sm font-semibold text-neutral-700 hover:text-[#ae2828] underline underline-offset-4 transition-colors cursor-pointer mr-1"
+            >
+              Explore All Collections
+            </button>
+            <div className="hidden sm:flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleScrollPrev}
+                aria-label="Previous categories"
+                className="w-8 h-8 rounded-full border border-neutral-300 hover:border-neutral-900 bg-white hover:bg-neutral-100 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-colors shadow-2xs cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleScrollNext}
+                aria-label="Next categories"
+                className="w-8 h-8 rounded-full border border-neutral-300 hover:border-neutral-900 bg-white hover:bg-neutral-100 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-colors shadow-2xs cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Horizontal Slider (Right-to-Left Natural Sliding Carousel) */}

@@ -66,7 +66,7 @@ export const ReviewsCarousel = ({ autoOpenReview = false, reviewInitialName = ''
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 mb-8 text-center">
         
         {/* Section Title & Verified Overall Score */}
-        <span className="text-[11px] font-bold text-[#ae2828] uppercase tracking-[0.2em] block mb-1">
+        <span className="text-xs font-bold text-[#ae2828] uppercase tracking-[0.2em] block mb-1">
           Verified Testimonials
         </span>
         <h2 className="font-heading text-2xl md:text-3xl lg:text-4xl font-normal text-neutral-900 tracking-wide mb-3">
@@ -104,13 +104,13 @@ export const ReviewsCarousel = ({ autoOpenReview = false, reviewInitialName = ''
                       <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
                     ))}
                   </div>
-                  <span className="text-[10.5px] text-neutral-400">{review.date}</span>
+                  <span className="text-xs text-neutral-400">{review.date}</span>
                 </div>
 
-                {/* Title */}
-                <h4 className="font-heading text-sm font-bold text-neutral-900 leading-snug mb-2">
+                {/* Title (Semantic H3) */}
+                <h3 className="font-heading text-sm font-bold text-neutral-900 leading-snug mb-2">
                   "{review.title}"
-                </h4>
+                </h3>
 
                 {/* Comment */}
                 <p className="text-xs text-neutral-600 leading-relaxed italic line-clamp-3">
@@ -122,9 +122,9 @@ export const ReviewsCarousel = ({ autoOpenReview = false, reviewInitialName = ''
               <div className="mt-5 pt-3 border-t border-neutral-100 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-neutral-900 block">{review.name}</span>
-                  <span className="text-[10px] text-neutral-400">{review.location}</span>
+                  <span className="text-[11px] text-neutral-400">{review.location}</span>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                   <span>Verified Buyer</span>
                 </div>
@@ -134,19 +134,21 @@ export const ReviewsCarousel = ({ autoOpenReview = false, reviewInitialName = ''
         </div>
       </div>
 
-      {/* Write a review link (Interactive Modal Trigger) */}
-      <div className="mt-8 text-center pt-2 text-xs">
-        <span className="text-neutral-500 mr-2">
-          Have you purchased from us? We'd love to hear your feedback!
-        </span>
-        <button
-          type="button"
-          onClick={() => setIsWriteModalOpen(true)}
-          className="inline-flex items-center gap-1.5 font-bold text-neutral-900 hover:text-[#ae2828] underline underline-offset-4 transition-colors cursor-pointer"
-        >
-          <MessageSquarePlus className="w-3.5 h-3.5" />
-          <span>Write a Review</span>
-        </button>
+      {/* Write a review CTA (Prominent Discoverable Button) */}
+      <div className="mt-10 text-center pt-2">
+        <div className="inline-flex flex-col sm:flex-row items-center gap-3 bg-white p-3 sm:px-6 sm:py-3 rounded-2xl sm:rounded-full border border-neutral-200 shadow-2xs">
+          <span className="text-xs text-neutral-600 font-medium">
+            Have you purchased from us? We'd love to hear your feedback!
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsWriteModalOpen(true)}
+            className="inline-flex items-center gap-2 bg-[#1b1a1a] hover:bg-[#ae2828] text-white px-5 py-2 rounded-full text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer"
+          >
+            <MessageSquarePlus className="w-3.5 h-3.5" />
+            <span>Write a Customer Review</span>
+          </button>
+        </div>
       </div>
 
       {/* Write Review Modal */}

@@ -102,8 +102,8 @@ export const Footer = () => {
 
           {/* Column 2: Quick Links (4 cols) */}
           <div className="lg:col-span-4 space-y-3">
-            <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider border-b border-neutral-800 pb-2">
-              Quick links
+            <h3 className="font-heading text-sm font-bold text-white tracking-wider border-b border-neutral-800 pb-2">
+              Quick Links
             </h3>
             <ul className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
               {footerQuickLinks.map((link, idx) => (
@@ -122,7 +122,7 @@ export const Footer = () => {
 
           {/* Column 3: Our Stores & Workshop (4 cols) */}
           <div className="lg:col-span-4 space-y-3">
-            <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider border-b border-neutral-800 pb-2">
+            <h3 className="font-heading text-sm font-bold text-white tracking-wider border-b border-neutral-800 pb-2">
               Our Stores & Workshop
             </h3>
             <div className="space-y-3 text-xs text-neutral-400">

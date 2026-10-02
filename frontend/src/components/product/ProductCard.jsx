@@ -138,23 +138,23 @@ export const ProductCard = ({ product }) => {
       <div className="flex-1 flex flex-col justify-between text-left space-y-2.5">
         <div>
           {/* Vendor */}
-          <div className="text-[10px] font-medium tracking-[0.08em] text-neutral-400 uppercase mb-0.5">
+          <div className="text-xs font-medium tracking-[0.08em] text-neutral-400 uppercase mb-0.5">
             {product.vendor || 'Azim Crafts'}
           </div>
 
           {/* Title */}
-          <h3 className="font-heading text-xs sm:text-[13.5px] font-normal text-neutral-900 leading-snug line-clamp-2 group-hover:text-[#ae2828] transition-colors">
+          <h3 className="font-heading text-xs sm:text-sm font-normal text-neutral-900 leading-snug line-clamp-2 group-hover:text-[#ae2828] transition-colors">
             {product.title}
           </h3>
 
           {/* Low Stock Alert Badge / Sold Out Label */}
           {isLowStock ? (
-            <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50/90 border border-amber-200/90 px-2 py-0.5 rounded-md">
+            <div className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-amber-800 bg-amber-50/90 border border-amber-200/90 px-2 py-0.5 rounded-md">
               <span className="animate-pulse text-xs">🔥</span>
               <span>Only {stockQty} left in stock!</span>
             </div>
           ) : isSoldOut ? (
-            <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">
+            <div className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">
               <span>Sold out</span>
             </div>
           ) : null}
@@ -164,7 +164,7 @@ export const ProductCard = ({ product }) => {
         <div className="w-full border border-neutral-300 group-hover:border-neutral-800 rounded-md py-2 px-3 text-center bg-white group-hover:bg-neutral-50/80 transition-all shadow-2xs">
           {isSoldOut ? (
             <div className="flex items-center justify-center gap-1.5">
-              <span className="text-xs sm:text-[13px] font-semibold text-neutral-400 uppercase tracking-wide">
+              <span className="text-xs sm:text-sm font-semibold text-neutral-400 uppercase tracking-wide">
                 Sold Out
               </span>
               <span className="text-xs text-neutral-400">
@@ -173,15 +173,15 @@ export const ProductCard = ({ product }) => {
             </div>
           ) : (product.isOnSale || (product.regularPrice && Number(product.regularPrice) > Number(product.price)) || (product.regular_price && Number(product.regular_price) > Number(product.price))) ? (
             <div className="flex items-center justify-center gap-1.5">
-              <span className="text-xs sm:text-[13px] font-bold text-[#ae2828]">
+              <span className="text-xs sm:text-sm font-bold text-[#ae2828]">
                 ${Number(product.price).toFixed(2)} USD
               </span>
-              <span className="text-[10.5px] text-neutral-400 line-through">
+              <span className="text-xs text-neutral-400 line-through">
                 ${Number(product.regularPrice || product.regular_price).toFixed(2)}
               </span>
             </div>
           ) : (
-            <span className="text-xs sm:text-[13px] font-semibold text-neutral-900 tracking-wide">
+            <span className="text-xs sm:text-sm font-semibold text-neutral-900 tracking-wide">
               ${Number(product.price).toFixed(2)} USD
             </span>
           )}

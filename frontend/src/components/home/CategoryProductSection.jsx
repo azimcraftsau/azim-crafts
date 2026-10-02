@@ -41,7 +41,7 @@ export const CategoryProductSection = ({
         {/* Section Header (Clean without top-right button) */}
         <div className="mb-6 pb-4 border-b border-neutral-200">
           {tag && (
-            <span className="text-[11px] font-bold text-[#ae2828] uppercase tracking-[0.15em] block mb-1">
+            <span className="text-xs font-bold text-[#ae2828] uppercase tracking-[0.15em] block mb-1">
               {tag}
             </span>
           )}
