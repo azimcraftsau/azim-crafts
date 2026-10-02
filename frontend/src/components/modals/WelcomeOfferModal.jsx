@@ -76,24 +76,21 @@ export const WelcomeOfferModal = () => {
       try {
         const userEmail = (user?.email || '').toLowerCase().trim();
 
-        // Check real orders from database
+        // Check real orders from database only if user is logged in with an email
         let orders = [];
-        try {
-          const res = await fetch('/api/orders');
-          if (res.ok) {
-            orders = await res.json();
-          }
-        } catch (e) {}
+        if (userEmail) {
+          try {
+            const res = await fetch(`/api/orders?email=${encodeURIComponent(userEmail)}`);
+            if (res.ok) {
+              orders = await res.json();
+            }
+          } catch (e) {}
+        }
 
         // If database has orders for this user, they are an existing buyer -> do NOT show!
         if (userEmail && Array.isArray(orders) && orders.length > 0) {
-          const hasPastOrderInDB = orders.some(o => 
-            (o.customerEmail && o.customerEmail.toLowerCase().trim() === userEmail)
-          );
-          if (hasPastOrderInDB) {
-            setIsOpen(false);
-            return;
-          }
+          setIsOpen(false);
+          return;
         }
 
         // If database is clean or user has no past orders, reset any stale flags
