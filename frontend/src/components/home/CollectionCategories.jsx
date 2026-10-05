@@ -1,10 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { allProducts } from '../../data/products';
 import { useCart } from '../../context/CartContext';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 
 export const CollectionCategories = () => {
-  const { products, openCategory, openCategoryCollection } = useCart();
+  const { products, openCategory, openCategoryCollection, openCustomQuote } = useCart();
   const sourceProducts = products && products.length > 0 ? products : allProducts;
   const scrollRef = useRef(null);
 
@@ -231,6 +231,34 @@ export const CollectionCategories = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Bespoke Custom Orders Callout (Directly Below Categories Slider) */}
+        <div className="mt-8 bg-[#fbf7ee] bg-gradient-to-r from-[#fbf7ee] via-[#f5ecdd] to-[#fbf7ee] rounded-2xl p-5 md:p-6 shadow-xs border border-[#e5d6be] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 text-center sm:text-left">
+            <div className="w-11 h-11 rounded-xl bg-white border border-[#dfceb6] shadow-2xs flex items-center justify-center shrink-0 text-[#b57f38]">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10.5px] font-bold text-[#b57f38] uppercase tracking-wider block mb-0.5">
+                100% Handcrafted • Custom Orders For Every Product
+              </span>
+              <h4 className="font-heading text-sm md:text-base font-bold text-neutral-900 tracking-wide">
+                We Handcraft Custom Orders For Every Product
+              </h4>
+              <p className="text-xs text-neutral-600 font-medium mt-1 max-w-xl leading-relaxed">
+                Need specific room dimensions, tailored metal finishes (Brass, Iron, Bronze), customized heraldry, or a brand-new artisan design? Our master craftsmen handcraft every single piece to your exact order.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => openCustomQuote({ categoryName: 'General Custom Commission' })}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#c8924b] hover:bg-[#b57f38] active:scale-98 text-white font-bold text-xs py-3.5 px-6 rounded-xl transition-all shadow-md cursor-pointer tracking-wider uppercase shrink-0"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Request Custom Order</span>
+          </button>
         </div>
 
       </div>

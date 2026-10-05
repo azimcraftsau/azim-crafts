@@ -79,45 +79,15 @@ export const CategoryProductSection = ({
           ))}
         </div>
 
-        {/* Action Controls & Category Bespoke Banner */}
-        <div className="mt-8 md:mt-10 space-y-4">
-          <div className="text-center">
-            <button
-              onClick={handleViewAll}
-              className="inline-flex items-center gap-2 bg-[#1b1a1a] hover:bg-[#333333] text-white font-semibold text-xs py-3 px-8 rounded-md transition-all shadow-sm hover:shadow-md cursor-pointer active:scale-98 tracking-wider uppercase group"
-            >
-              <span>View all {title}</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-
-          {/* Bespoke Category Commission Box */}
-          <div className="bg-[#fbf7ee] bg-gradient-to-r from-[#fbf7ee] via-[#f5ecdd] to-[#fbf7ee] rounded-2xl p-5 md:p-6 shadow-xs border border-[#e5d6be] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5 text-center sm:text-left">
-              <div className="w-11 h-11 rounded-xl bg-white border border-[#dfceb6] shadow-2xs flex items-center justify-center shrink-0 text-[#b57f38]">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[10.5px] font-bold text-[#b57f38] uppercase tracking-wider block mb-0.5">
-                  100% Handcrafted • Custom Orders For Every Product
-                </span>
-                <h4 className="font-heading text-sm md:text-base font-bold text-neutral-900 tracking-wide">
-                  We Handcraft Custom Orders For Every Product
-                </h4>
-                <p className="text-xs text-neutral-600 font-medium mt-1 max-w-xl leading-relaxed">
-                  Whether you need specific dimensions for {title}, customized metals (Brass, Iron, Bronze), or a brand-new bespoke design — our master artisans handcraft every single piece to your exact order.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => openCustomQuote({ categoryName: title, categoryKey: categoryKey || id })}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#c8924b] hover:bg-[#b57f38] active:scale-98 text-white font-bold text-xs py-3 px-6 rounded-xl transition-all shadow-md cursor-pointer tracking-wider uppercase shrink-0"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Request Custom Order</span>
-            </button>
-          </div>
+        {/* Action Controls */}
+        <div className="mt-8 md:mt-10 text-center">
+          <button
+            onClick={handleViewAll}
+            className="inline-flex items-center gap-2 bg-[#1b1a1a] hover:bg-[#333333] text-white font-semibold text-xs py-3 px-8 rounded-md transition-all shadow-sm hover:shadow-md cursor-pointer active:scale-98 tracking-wider uppercase group"
+          >
+            <span>View all {title}</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </button>
         </div>
 
       </div>
