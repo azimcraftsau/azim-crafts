@@ -472,6 +472,7 @@ export function AdminMessages() {
     return {
       total: messages.length,
       liveCount: messages.filter(m => m.isLiveChat).length,
+      customCount: messages.filter(m => m.subject?.includes('Custom Quote') || m.subject?.includes('Bespoke') || m.subject?.includes('Custom Order')).length,
       unread: messages.filter((m) => !m.read).length,
       highPriority: messages.filter((m) => m.priority === 'high').length,
       replied: messages.filter((m) => m.replied).length,
@@ -484,6 +485,7 @@ export function AdminMessages() {
     return messages.filter((m) => {
       const matchFilter = 
         filter === 'all' ? true :
+        filter === 'custom' ? (m.subject?.includes('Custom Quote') || m.subject?.includes('Bespoke') || m.subject?.includes('Custom Order')) :
         filter === 'live' ? m.isLiveChat :
         filter === 'active' ? !m.isResolved :
         filter === 'resolved' ? m.isResolved :
@@ -574,6 +576,7 @@ export function AdminMessages() {
         <div className="flex flex-wrap gap-2">
           {[
             { key: 'all', label: 'All Messages', count: stats.total },
+            { key: 'custom', label: 'Custom Orders 🎨', count: stats.customCount },
             { key: 'live', label: 'Live Chats 🔴', count: stats.liveCount },
             { key: 'active', label: 'Open / Active', count: stats.active },
             { key: 'resolved', label: 'Resolved ✓', count: stats.resolved },
