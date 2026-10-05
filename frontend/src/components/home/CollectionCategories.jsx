@@ -233,28 +233,28 @@ export const CollectionCategories = () => {
           ))}
         </div>
 
-        {/* Bespoke Custom Orders Callout (Directly Below Categories Slider) */}
-        <div className="mt-8 bg-[#fbf7ee] bg-gradient-to-r from-[#fbf7ee] via-[#f5ecdd] to-[#fbf7ee] rounded-2xl p-5 md:p-6 shadow-xs border border-[#e5d6be] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 text-center sm:text-left">
-            <div className="w-11 h-11 rounded-xl bg-white border border-[#dfceb6] shadow-2xs flex items-center justify-center shrink-0 text-[#b57f38]">
-              <Sparkles className="w-5 h-5" />
+        {/* Compact Bespoke Custom Orders Callout */}
+        <div className="mt-5 sm:mt-6 bg-[#fbf7ee] bg-gradient-to-r from-[#fbf7ee] via-[#f5ecdd] to-[#fbf7ee] rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-[#e5d6be] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white border border-[#dfceb6] shadow-2xs flex items-center justify-center shrink-0 text-[#b57f38]">
+              <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
             </div>
-            <div>
-              <span className="text-[10.5px] font-bold text-[#b57f38] uppercase tracking-wider block mb-0.5">
-                100% Handcrafted • Custom Orders For Every Product
-              </span>
-              <h4 className="font-heading text-sm md:text-base font-bold text-neutral-900 tracking-wide">
-                We Handcraft Custom Orders For Every Product
+            <div className="min-w-0">
+              <h4 className="font-heading text-xs sm:text-sm font-bold text-neutral-900 tracking-wide flex items-center gap-2 flex-wrap">
+                <span>Custom Orders For Any Product</span>
+                <span className="hidden sm:inline-block text-[10px] font-semibold text-[#b57f38] bg-white px-2 py-0.5 rounded-full border border-[#dfceb6]">
+                  100% Handcrafted
+                </span>
               </h4>
-              <p className="text-xs text-neutral-600 font-medium mt-1 max-w-xl leading-relaxed">
-                Need specific room dimensions, tailored metal finishes (Brass, Iron, Bronze), customized heraldry, or a brand-new artisan design? Our master craftsmen handcraft every single piece to your exact order.
+              <p className="text-[11px] sm:text-xs text-neutral-600 mt-0.5 leading-snug">
+                Custom sizing, metal finishes, or bespoke designs made to your exact order.
               </p>
             </div>
           </div>
 
           <button
             onClick={() => openCustomQuote({ categoryName: 'General Custom Commission' })}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#c8924b] hover:bg-[#b57f38] active:scale-98 text-white font-bold text-xs py-3.5 px-6 rounded-xl transition-all shadow-md cursor-pointer tracking-wider uppercase shrink-0"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-[#c8924b] hover:bg-[#b57f38] active:scale-98 text-white font-bold text-[11px] sm:text-xs py-2.5 px-4 sm:px-5 rounded-lg sm:rounded-xl transition-all shadow-xs cursor-pointer tracking-wider uppercase shrink-0"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Request Custom Order</span>

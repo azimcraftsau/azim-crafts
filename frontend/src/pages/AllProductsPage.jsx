@@ -316,20 +316,20 @@ export const AllProductsPage = () => {
         )}
 
         {/* Category-Level Bespoke Commission Callout */}
-        <div className="mt-12 bg-[#fbf7ee] bg-gradient-to-r from-[#fbf7ee] via-[#f5ecdd] to-[#fbf7ee] rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xs border border-[#e5d6be] flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-start sm:items-center gap-4 text-center sm:text-left">
-            <div className="w-12 h-12 rounded-2xl bg-white border border-[#dfceb6] shadow-2xs flex items-center justify-center shrink-0 text-[#b57f38]">
-              <Sparkles className="w-6 h-6" />
+        <div className="mt-8 sm:mt-10 bg-[#fbf7ee] bg-gradient-to-r from-[#fbf7ee] via-[#f5ecdd] to-[#fbf7ee] rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-xs border border-[#e5d6be] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white border border-[#dfceb6] shadow-2xs flex items-center justify-center shrink-0 text-[#b57f38]">
+              <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
             </div>
-            <div>
-              <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#b57f38] uppercase tracking-wider mb-1">
-                <span>Handmade by Roorkee Artisans • Custom Orders For Every Product</span>
-              </div>
-              <h3 className="font-heading text-lg sm:text-xl font-bold text-neutral-900">
-                We Handcraft Custom Orders For Every Product
+            <div className="min-w-0">
+              <h3 className="font-heading text-xs sm:text-sm font-bold text-neutral-900 tracking-wide flex items-center gap-2 flex-wrap">
+                <span>Custom Orders &amp; Sizing Available</span>
+                <span className="hidden sm:inline-block text-[10px] font-semibold text-[#b57f38] bg-white px-2 py-0.5 rounded-full border border-[#dfceb6]">
+                  Roorkee Artisans
+                </span>
               </h3>
-              <p className="text-xs sm:text-sm text-neutral-600 font-medium mt-1 max-w-2xl leading-relaxed">
-                Whether you need specific room dimensions, special patina finishes, customized heraldry, or a brand-new artisan design — our master craftsmen build every piece to your exact specifications.
+              <p className="text-[11px] sm:text-xs text-neutral-600 mt-0.5 leading-snug">
+                Custom room dimensions, patina finishes, or bespoke artisan pieces made to your exact order.
               </p>
             </div>
           </div>
@@ -339,10 +339,10 @@ export const AllProductsPage = () => {
               categoryName: isAll ? 'General Custom Commission' : activeCategoryObj.label,
               categoryKey: selectedCategory
             })}
-            className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-[#c8924b] hover:bg-[#b57f38] active:scale-98 text-white font-bold text-xs py-3.5 px-6 rounded-xl transition-all shadow-md cursor-pointer tracking-wider uppercase shrink-0"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-[#c8924b] hover:bg-[#b57f38] active:scale-98 text-white font-bold text-[11px] sm:text-xs py-2.5 px-4 sm:px-5 rounded-lg sm:rounded-xl transition-all shadow-xs cursor-pointer tracking-wider uppercase shrink-0"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Request Custom {isAll ? 'Order' : activeCategoryObj.label}</span>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Request Custom Order</span>
           </button>
         </div>
 
