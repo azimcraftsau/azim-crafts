@@ -153,6 +153,8 @@ export const CollectionCategories = () => {
     scrollRef.current.scrollBy({ left: cardWidth + gap, behavior: 'smooth' });
   };
 
+  const activeCollections = collectionsList.filter(c => c.products && c.products.length > 0);
+
   return (
     <section id="categories-section" className="py-10 md:py-16 bg-white border-b border-neutral-100 font-menu select-none">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
@@ -198,7 +200,7 @@ export const CollectionCategories = () => {
           className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory py-2 pb-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {collectionsList.map((cat) => (
+          {activeCollections.map((cat) => (
             <div
               key={cat.id}
               onClick={() => openCategory(cat.id)}

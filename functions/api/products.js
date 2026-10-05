@@ -73,7 +73,7 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify(mapped), {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=30, s-maxage=120, stale-while-revalidate=300'
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
       }
     });
   } catch (err) {

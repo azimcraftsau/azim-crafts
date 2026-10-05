@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, ChevronDown, Phone, Mail, MapPin, Sparkles, Shield, Compass, BookOpen, Layers, Instagram, Linkedin } from 'lucide-react';
 import { allProductsTabs } from '../../data/navigation';
 import { useCart } from '../../context/CartContext';
 
 export const MobileDrawer = ({ isOpen, onClose }) => {
-  const { navigateTo, openCategory, user, currentPage } = useCart();
+  const { navigateTo, openCategory, user, currentPage, products: liveProducts = [] } = useCart();
   const [isCategoryExpanded, setIsCategoryExpanded] = useState(false);
+
+  const availableTabs = useMemo(() => {
+    if (!liveProducts || liveProducts.length === 0) return allProductsTabs;
+    return allProductsTabs.filter(tab => {
+      return liveProducts.some(p => 
+        p.category === tab.filterCategory || 
+        (tab.productIds && tab.productIds.includes(p.id))
+      );
+    });
+  }, [liveProducts]);
 
   if (!isOpen) return null;
 
@@ -112,7 +122,7 @@ export const MobileDrawer = ({ isOpen, onClose }) => {
             </button>
             {isCategoryExpanded && (
               <div className="pl-3 pr-2 py-2 space-y-1 bg-neutral-50 rounded-lg mb-2">
-                {allProductsTabs.map((tab, idx) => (
+                {availableTabs.map((tab, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleLinkClick(null, tab.tag)}
@@ -142,12 +152,14 @@ export const MobileDrawer = ({ isOpen, onClose }) => {
           </button>
 
           {/* 5. Leather Journals Direct Link */}
-          <button
-            onClick={() => handleLinkClick(null, 'leather-journals')}
-            className="block w-full text-left py-3 px-2 text-sm font-medium text-neutral-800 hover:text-[#ae2828] border-b border-neutral-100 transition-colors cursor-pointer"
-          >
-            Leather Journals
-          </button>
+          {liveProducts.some(p => p.category === 'leather-journals') && (
+            <button
+              onClick={() => handleLinkClick(null, 'leather-journals')}
+              className="block w-full text-left py-3 px-2 text-sm font-medium text-neutral-800 hover:text-[#ae2828] border-b border-neutral-100 transition-colors cursor-pointer"
+            >
+              Leather Journals
+            </button>
+          )}
 
           {/* 6. About Us Link */}
           <button

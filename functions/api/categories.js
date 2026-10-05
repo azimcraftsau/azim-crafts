@@ -15,7 +15,7 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify({ success: true, data: results || [] }), {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
       }
     });
   } catch (err) {

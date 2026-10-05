@@ -164,11 +164,11 @@ export async function uploadBannerMedia(file) {
 // ==================== PRODUCTS ====================
 export async function getProducts() {
   try {
-    const res = await fetch('/api/products');
+    const res = await fetch(`/api/products?_t=${Date.now()}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       const list = unwrapData(data);
-      if (list && Array.isArray(list) && list.length > 0) {
+      if (list && Array.isArray(list)) {
         _cachedProducts = list;
         return list;
       }
@@ -205,6 +205,9 @@ export async function saveProductToDB(product, isNew = false) {
 
 export async function deleteProductFromDB(productId) {
   try {
+    if (_cachedProducts && Array.isArray(_cachedProducts)) {
+      _cachedProducts = _cachedProducts.filter(p => p.id !== productId);
+    }
     const res = await fetch(`/api/products?id=${encodeURIComponent(productId)}`, {
       method: 'DELETE'
     });
@@ -366,11 +369,11 @@ export async function deleteCouponFromDB(couponId) {
 // ==================== CATEGORIES ====================
 export async function getCategories() {
   try {
-    const res = await fetch('/api/categories');
+    const res = await fetch(`/api/categories?_t=${Date.now()}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       const list = unwrapData(data);
-      if (list && Array.isArray(list) && list.length > 0) {
+      if (list && Array.isArray(list)) {
         _cachedCategories = list;
         return list;
       }
@@ -407,10 +410,15 @@ export async function deleteCategoryFromDB(key) {
     if (_cachedCategories && Array.isArray(_cachedCategories)) {
       _cachedCategories = _cachedCategories.filter(c => c.key !== key);
     }
+    if (_cachedProducts && Array.isArray(_cachedProducts)) {
+      _cachedProducts = _cachedProducts.filter(p => p.category !== key);
+    }
     const res = await fetch(`/api/categories?key=${encodeURIComponent(key)}`, {
       method: 'DELETE'
     });
     notifySync('vw_categories_updated');
+    notifySync('vw_products_updated');
+    notifySync('vw_trash_updated');
     if (res.ok) return await res.json();
   } catch (err) {
     console.error('Error deleting category from DB:', err);
@@ -524,6 +532,9 @@ export async function saveStoreSettingsToDB(settings) {
 // ==================== TRASH PRODUCTS ====================
 export async function moveToTrashDB(product) {
   try {
+    if (_cachedProducts && Array.isArray(_cachedProducts) && product?.id) {
+      _cachedProducts = _cachedProducts.filter(p => p.id !== product.id);
+    }
     const res = await fetch('/api/trash', {
       method: 'POST',
       headers: {

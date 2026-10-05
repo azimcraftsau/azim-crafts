@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, User, ShoppingBag, Menu, ChevronDown, ArrowRight, Sparkles, Compass, Shield, BookOpen, Anchor } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { allProductsTabs } from '../../data/navigation';
@@ -6,10 +6,23 @@ import { allProducts } from '../../data/products';
 import { MobileDrawer } from './MobileDrawer';
 
 export const Header = () => {
-  const { totalItems, setIsCartOpen, setIsSearchOpen, setQuickViewProduct, navigateTo, openCategory } = useCart();
+  const { 
+    totalItems, 
+    setIsCartOpen, 
+    setIsSearchOpen, 
+    setQuickViewProduct, 
+    navigateTo, 
+    openCategory,
+    products: liveProducts = []
+  } = useCart();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeMegaTab, setActiveMegaTab] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Active products strictly resolved from live DB products
+  const activeProducts = useMemo(() => {
+    return (liveProducts && liveProducts.length > 0) ? liveProducts : allProducts;
+  }, [liveProducts]);
 
   // Accessibility: Close dropdowns and menus with Escape key (STORE-003)
   useEffect(() => {
@@ -23,12 +36,28 @@ export const Header = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Filter products for tabbed mega menu
-  const selectedTab = allProductsTabs[activeMegaTab] || allProductsTabs[0];
-  const tabProducts = selectedTab?.productIds 
-    ? selectedTab.productIds.map(id => allProducts.find(p => p.id === id)).filter(Boolean).slice(0, 3)
-    : allProducts.slice(0, 3);
-  const displayMegaProducts = tabProducts.length > 0 ? tabProducts : allProducts.slice(0, 3);
+  // Filter mega menu tabs: ONLY show categories that actually have active products
+  const availableMegaTabs = useMemo(() => {
+    return allProductsTabs.filter(tab => {
+      return activeProducts.some(p => 
+        p.category === tab.filterCategory || 
+        (tab.productIds && tab.productIds.includes(p.id))
+      );
+    });
+  }, [activeProducts]);
+
+  const safeMegaIndex = (activeMegaTab >= 0 && activeMegaTab < availableMegaTabs.length) ? activeMegaTab : 0;
+  const selectedTab = availableMegaTabs[safeMegaIndex] || availableMegaTabs[0] || null;
+
+  // Filter products for tabbed mega menu strictly from active products (never show deleted products!)
+  const displayMegaProducts = useMemo(() => {
+    if (!selectedTab) return [];
+    const matched = activeProducts.filter(p => 
+      p.category === selectedTab.filterCategory || 
+      (selectedTab.productIds && selectedTab.productIds.includes(p.id))
+    );
+    return matched.slice(0, 3);
+  }, [selectedTab, activeProducts]);
 
   // Clean, Authentic Category Links mapped to real category keys
   const vikingLinks = [
@@ -55,6 +84,23 @@ export const Header = () => {
     { title: 'Handmade Leather Journals', catKey: 'leather-journals' },
     { title: 'Walking Sticks & Brolly Stand', catKey: 'walking-sticks' }
   ];
+
+  const activeVikingLinks = useMemo(() => 
+    vikingLinks.filter(l => activeProducts.some(p => p.category === l.catKey)),
+    [activeProducts]
+  );
+  const activeLightingLinks = useMemo(() => 
+    lightingLinks.filter(l => activeProducts.some(p => p.category === l.catKey)),
+    [activeProducts]
+  );
+  const activeMaritimeLinks = useMemo(() => 
+    maritimeLinks.filter(l => activeProducts.some(p => p.category === l.catKey)),
+    [activeProducts]
+  );
+  const activeLeatherLinks = useMemo(() => 
+    leatherLinks.filter(l => activeProducts.some(p => p.category === l.catKey)),
+    [activeProducts]
+  );
 
   const handleNavCategoryClick = (e, catKey) => {
     e.preventDefault();
@@ -267,29 +313,31 @@ export const Header = () => {
             </li>
 
             {/* 6. Handmade Leather Journals Dropdown */}
-            <li 
-              className="relative"
-              onMouseEnter={() => setActiveDropdown('leather')}>
-              <button 
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setActiveDropdown(activeDropdown === 'leather' ? null : 'leather');
-                  } else if (e.key === 'Escape') {
-                    setActiveDropdown(null);
-                    e.currentTarget.focus();
-                  }
-                }}
-                aria-haspopup="true"
-                aria-expanded={activeDropdown === "leather"} 
-                className={`flex items-center gap-0.5 py-2 hover:text-[#ae2828] transition-colors cursor-pointer font-medium ${
-                  activeDropdown === 'leather' ? 'text-[#ae2828] font-bold' : ''
-                }`}
-              >
-                <span>Leather & Canes</span>
-                <ChevronDown className="w-3 h-3 opacity-60 ml-0.5" />
-              </button>
-            </li>
+            {activeLeatherLinks.length > 0 && (
+              <li 
+                className="relative"
+                onMouseEnter={() => setActiveDropdown('leather')}>
+                <button 
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setActiveDropdown(activeDropdown === 'leather' ? null : 'leather');
+                    } else if (e.key === 'Escape') {
+                      setActiveDropdown(null);
+                      e.currentTarget.focus();
+                    }
+                  }}
+                  aria-haspopup="true"
+                  aria-expanded={activeDropdown === "leather"} 
+                  className={`flex items-center gap-0.5 py-2 hover:text-[#ae2828] transition-colors cursor-pointer font-medium ${
+                    activeDropdown === 'leather' ? 'text-[#ae2828] font-bold' : ''
+                  }`}
+                >
+                  <span>Leather & Canes</span>
+                  <ChevronDown className="w-3 h-3 opacity-60 ml-0.5" />
+                </button>
+              </li>
+            )}
 
             {/* 7. Contact */}
             <li>
@@ -370,22 +418,22 @@ export const Header = () => {
                 </button>
               </div>
 
-              {allProductsTabs.map((tab, idx) => (
+              {availableMegaTabs.map((tab, idx) => (
                 <button
-                  key={idx}
+                  key={tab.tag || idx}
                   onMouseEnter={() => setActiveMegaTab(idx)}
                   onClick={() => {
                     setActiveDropdown(null);
                     openCategory(tab.tag);
                   }}
                   className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
-                    activeMegaTab === idx
+                    safeMegaIndex === idx
                       ? 'bg-amber-50 text-[#ae2828] font-bold shadow-2xs'
                       : 'text-neutral-700 hover:bg-neutral-50'
                   }`}
                 >
                   <span>{tab.title}</span>
-                  <ArrowRight className={`w-3.5 h-3.5 transition-opacity ${activeMegaTab === idx ? 'opacity-100 text-[#ae2828]' : 'opacity-0'}`} />
+                  <ArrowRight className={`w-3.5 h-3.5 transition-opacity ${safeMegaIndex === idx ? 'opacity-100 text-[#ae2828]' : 'opacity-0'}`} />
                 </button>
               ))}
             </div>
@@ -394,22 +442,29 @@ export const Header = () => {
             <div className="col-span-8">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-heading text-sm font-bold text-neutral-900">
-                  {selectedTab?.title}
+                  {selectedTab?.title || 'Featured Collection'}
                 </h4>
-                <button
-                  onClick={() => {
-                    setActiveDropdown(null);
-                    openCategory(selectedTab?.tag);
-                  }}
-                  role="menuitem"
-                  className="text-xs text-[#ae2828] font-bold hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <span>View All in {selectedTab?.title}</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
+                {selectedTab && (
+                  <button
+                    onClick={() => {
+                      setActiveDropdown(null);
+                      openCategory(selectedTab.tag);
+                    }}
+                    role="menuitem"
+                    className="text-xs text-[#ae2828] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>View All in {selectedTab.title}</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                )}
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              {displayMegaProducts.length === 0 ? (
+                <div className="py-12 text-center text-xs text-neutral-400 bg-neutral-50 rounded-2xl border border-neutral-100">
+                  <p>No listed items in this category currently.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-4">
                 {displayMegaProducts.map((p) => (
                   <div
                     key={p.id}
@@ -435,6 +490,7 @@ export const Header = () => {
                   </div>
                 ))}
               </div>
+            )}
             </div>
           </div>
         </div>
@@ -453,7 +509,7 @@ export const Header = () => {
               <span className="text-[11px] uppercase tracking-wider font-bold text-neutral-400 block mb-1">
                 Battle-Ready Replicas & Armour
               </span>
-              {vikingLinks.map((link, i) => (
+              {activeVikingLinks.map((link, i) => (
                 <button 
                   key={i} 
                   onClick={(e) => handleNavCategoryClick(e, link.catKey)}
@@ -507,7 +563,7 @@ export const Header = () => {
               <span className="text-[11px] uppercase tracking-wider font-bold text-neutral-400 block mb-1">
                 Handcrafted Vintage Lighting
               </span>
-              {lightingLinks.map((link, i) => (
+              {activeLightingLinks.map((link, i) => (
                 <button 
                   key={i} 
                   onClick={(e) => handleNavCategoryClick(e, link.catKey)}
@@ -561,7 +617,7 @@ export const Header = () => {
               <span className="text-[11px] uppercase tracking-wider font-bold text-neutral-400 block mb-1">
                 Authentic Maritime Instruments
               </span>
-              {maritimeLinks.map((link, i) => (
+              {activeMaritimeLinks.map((link, i) => (
                 <button 
                   key={i} 
                   onClick={(e) => handleNavCategoryClick(e, link.catKey)}
@@ -603,7 +659,7 @@ export const Header = () => {
       )}
 
       {/* 4. Handmade Leather Journals Dropdown */}
-      {activeDropdown === 'leather' && (
+      {activeDropdown === 'leather' && activeLeatherLinks.length > 0 && (
         <div 
           role="menu"
           className="absolute top-full left-0 w-full bg-white border-b border-neutral-200 shadow-xl py-6 animate-fade-in z-50"
@@ -613,9 +669,9 @@ export const Header = () => {
           <div className="max-w-[1350px] mx-auto px-4 lg:px-6 xl:px-8 grid grid-cols-12 gap-4 lg:gap-6 xl:gap-8 items-center">
             <div className="col-span-5 space-y-2.5">
               <span className="text-[11px] uppercase tracking-wider font-bold text-neutral-400 block mb-1">
-                Artisan Hand-Bound Leather
+                Artisan Hand-Crafted
               </span>
-              {leatherLinks.map((link, i) => (
+              {activeLeatherLinks.map((link, i) => (
                 <button 
                   key={i} 
                   onClick={(e) => handleNavCategoryClick(e, link.catKey)}
@@ -628,30 +684,38 @@ export const Header = () => {
               ))}
             </div>
 
-            <div className="col-span-7 bg-[#fcfaf7] p-5 rounded-2xl border border-neutral-200/80 flex items-center gap-5">
-              <img
-                src="/All categories/All Products/product 14/1.jpg"
-                alt="Embossed Leather Journal"
-                className="w-28 h-28 object-contain rounded-xl bg-white p-2 shadow-2xs border border-neutral-100 shrink-0"
-              />
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#ae2828] block">
-                  Artisan Hand-Bound
-                </span>
-                <h4 className="font-heading text-sm font-bold text-neutral-900 leading-snug">
-                  Handmade Embossed Leather Journals
-                </h4>
-                <p className="text-[11.5px] text-neutral-500 leading-relaxed">
-                  Genuine buffalo leather diaries with hand-cut deckle edge cotton parchment paper and antique lock keys.
-                </p>
-                <button 
-                  onClick={(e) => handleNavCategoryClick(e, 'leather-journals')}
-                  className="text-xs font-bold text-neutral-900 hover:text-[#ae2828] underline pt-1 inline-flex items-center gap-1 cursor-pointer"
-                >
-                  Explore Leather Journals →
-                </button>
-              </div>
-            </div>
+            {/* Dynamic Promo Box */}
+            {(() => {
+              const promoProduct = activeProducts.find(p => p.category === 'leather-journals') || 
+                                   activeProducts.find(p => p.category === 'walking-sticks');
+              if (!promoProduct) return null;
+              return (
+                <div className="col-span-7 bg-[#fcfaf7] p-5 rounded-2xl border border-neutral-200/80 flex items-center gap-5">
+                  <img
+                    src={promoProduct.image || promoProduct.hoverImage || '/logo/logo without bg.png'}
+                    alt={promoProduct.title}
+                    className="w-28 h-28 object-contain rounded-xl bg-white p-2 shadow-2xs border border-neutral-100 shrink-0"
+                  />
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#ae2828] block">
+                      Artisan Handcrafted
+                    </span>
+                    <h4 className="font-heading text-sm font-bold text-neutral-900 leading-snug">
+                      {promoProduct.title}
+                    </h4>
+                    <p className="text-[11.5px] text-neutral-500 leading-relaxed line-clamp-2">
+                      Handcrafted authentic pieces made by master artisans with export-grade protective packaging.
+                    </p>
+                    <button 
+                      onClick={(e) => handleNavCategoryClick(e, promoProduct.category)}
+                      className="text-xs font-bold text-neutral-900 hover:text-[#ae2828] underline pt-1 inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      Explore {promoProduct.categoryName || 'Collection'} →
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}

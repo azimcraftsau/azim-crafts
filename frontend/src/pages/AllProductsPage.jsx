@@ -86,7 +86,7 @@ export const AllProductsPage = () => {
     }
   ];
 
-  // Merge default categories with any dynamic categories added by admin
+  // Merge default categories with any dynamic categories, filtering out categories with 0 active products
   const categories = useMemo(() => {
     const baseList = [...STATIC_CATEGORIES];
     if (Array.isArray(dynamicCategories)) {
@@ -100,8 +100,21 @@ export const AllProductsPage = () => {
         }
       });
     }
-    return baseList;
-  }, [dynamicCategories]);
+    // Filter out categories that have no active products (except 'all')
+    return baseList.filter(cat => {
+      if (cat.key === 'all') return true;
+      return sourceProducts.some(p => 
+        p.category === cat.key || (cat.productIds && cat.productIds.includes(p.id))
+      );
+    });
+  }, [dynamicCategories, sourceProducts]);
+
+  // If active category was deleted, fallback to 'all'
+  useEffect(() => {
+    if (selectedCategory !== 'all' && !categories.some(c => c.key === selectedCategory)) {
+      setSelectedCategory('all');
+    }
+  }, [selectedCategory, categories, setSelectedCategory]);
 
   // Filter & Sort Products (Strict category isolation)
   const filteredProducts = useMemo(() => {
