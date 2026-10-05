@@ -133,10 +133,9 @@ export const Footer = () => {
               <li>
                 <button
                   onClick={() => openPolicy && openPolicy('refund')}
-                  className="text-neutral-400 hover:text-[#f7eddb] transition-colors text-left py-0.5 cursor-pointer flex items-center gap-1.5"
+                  className="text-neutral-400 hover:text-[#f7eddb] transition-colors text-left py-0.5 cursor-pointer"
                 >
-                  <span>Return &amp; Refund</span>
-                  <span className="text-[10px] bg-amber-500/20 text-[#c8924b] px-1.5 py-0.2 rounded font-bold">14 Days</span>
+                  Return &amp; Refund Policy
                 </button>
               </li>
               <li>
@@ -266,7 +265,7 @@ export const Footer = () => {
               onClick={() => openPolicy && openPolicy('refund')}
               className="hover:text-[#f7eddb] transition-colors cursor-pointer underline text-[11.5px]"
             >
-              Return &amp; Refund Policy (14 Days)
+              Return &amp; Refund Policy
             </button>
             <span className="text-neutral-700">&bull;</span>
             <button
