@@ -6,6 +6,7 @@ import {
 import { useCart } from '../../context/CartContext';
 import { saveMessageToDB } from '../../lib/cloudflareService';
 import { featuredCategories } from '../../data/categories';
+import { PhoneInputWithCountry } from '../common/PhoneInputWithCountry';
 
 // Standard 13 Master Categories List
 const DEFAULT_CATEGORIES = [
@@ -329,19 +330,14 @@ export const CustomQuoteModal = () => {
                   <label className="block text-[11px] font-bold text-neutral-700 mb-1">
                     Phone Number <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative">
-                    <Phone className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-                    <input
-                      type="tel"
-                      required
-                      value={formData.phone}
-                      onChange={(e) => handleChange('phone', e.target.value)}
-                      placeholder="e.g. +1 (555) 234-5678 or +44 7911 123456"
-                      className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all font-medium"
-                    />
-                  </div>
+                  <PhoneInputWithCountry
+                    required
+                    value={formData.phone}
+                    onChange={(fullVal) => handleChange('phone', fullVal)}
+                    placeholder="Enter phone number"
+                  />
                   <p className="text-[10px] text-neutral-500 mt-1">
-                    Please include country code for international inquiries.
+                    Select country code with flag for international artisan coordination.
                   </p>
                 </div>
               </div>

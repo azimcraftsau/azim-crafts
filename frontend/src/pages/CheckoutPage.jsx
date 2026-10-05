@@ -7,6 +7,7 @@ import {
 import { createOrderInDB } from '../lib/cloudflareService';
 import { POPULAR_COUNTRIES, ALL_COUNTRIES, COUNTRY_TO_ISO } from '../data/countries';
 import { validateCheckoutAddress } from '../utils/checkoutValidation';
+import { PhoneInputWithCountry } from '../components/common/PhoneInputWithCountry';
 
 const buildStructuredItems = (cartItems) => cartItems.map((i, idx) => {
   const prod = i?.product || i;
@@ -1365,25 +1366,19 @@ export const CheckoutPage = () => {
               {/* Phone */}
               <div>
                 <div className="relative">
-                  <input
-                    type="tel"
-                    data-field="phone"
-                    autoComplete="tel"
-                    placeholder="Phone"
+                  <PhoneInputWithCountry
+                    dataField="phone"
+                    placeholder="Phone number for courier delivery updates"
                     required
+                    countryCode={country}
                     value={phone}
                     onBlur={() => handleFieldBlur('phone')}
-                    onChange={(e) => {
-                      setPhone(e.target.value);
+                    onChange={(fullVal) => {
+                      setPhone(fullVal);
                       clearFieldError('phone');
                     }}
-                    className={`w-full px-3.5 py-2.5 text-xs md:text-sm border rounded-md focus:outline-none transition-colors ${
-                      touchedFields.phone && formErrors.phone
-                        ? 'border-red-500 bg-red-50/20 ring-1 ring-red-500'
-                        : 'border-neutral-300 focus:border-black'
-                    }`}
+                    hasError={Boolean(touchedFields.phone && formErrors.phone)}
                   />
-                  <HelpCircle className="w-4 h-4 text-neutral-400 absolute right-3.5 top-3" />
                 </div>
                 {touchedFields.phone && formErrors.phone && (
                   <p className="flex items-center gap-1.5 text-[11px] text-red-600 mt-1 font-medium">

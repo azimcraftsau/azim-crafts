@@ -10,6 +10,7 @@ import {
   updateAdminUser,
   deleteAdminUser
 } from '../../lib/cloudflareService';
+import { PhoneInputWithCountry } from '../../components/common/PhoneInputWithCountry';
 
 export function AdminTeam() {
   const [users, setUsers] = useState([]);
@@ -530,14 +531,13 @@ export function AdminTeam() {
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                    Phone (Optional)
+                    Contact Phone (Optional)
                   </label>
-                  <input
-                    type="text"
-                    placeholder="+61 483 172 489"
+                  <PhoneInputWithCountry
+                    size="sm"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c8924b] outline-none"
+                    onChange={(fullVal) => setFormData({ ...formData, phone: fullVal })}
+                    placeholder="Mobile number"
                   />
                 </div>
               </div>
@@ -655,13 +655,13 @@ export function AdminTeam() {
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                    Phone
+                    Contact Phone
                   </label>
-                  <input
-                    type="text"
+                  <PhoneInputWithCountry
+                    size="sm"
                     value={editFormData.phone}
-                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c8924b] outline-none"
+                    onChange={(fullVal) => setEditFormData({ ...editFormData, phone: fullVal })}
+                    placeholder="Mobile number"
                   />
                 </div>
               </div>

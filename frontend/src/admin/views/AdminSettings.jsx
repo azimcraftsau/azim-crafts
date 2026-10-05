@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Download, CheckCircle, Loader2 } from 'lucide-react';
 import { allProducts } from '../../data/products';
+import { PhoneInputWithCountry } from '../../components/common/PhoneInputWithCountry';
 
 function Toast({ msg, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]);
@@ -156,8 +157,12 @@ export function AdminSettings() {
             <input className={inputCls} type="email" value={storeInfo.email} onChange={(e) => setStoreInfo((s) => ({ ...s, email: e.target.value }))} />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">WhatsApp Number</label>
-            <input className={inputCls} value={storeInfo.whatsapp} onChange={(e) => setStoreInfo((s) => ({ ...s, whatsapp: e.target.value }))} />
+            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">WhatsApp / Contact Number</label>
+            <PhoneInputWithCountry
+              value={storeInfo.whatsapp}
+              onChange={(fullVal) => setStoreInfo((s) => ({ ...s, whatsapp: fullVal }))}
+              placeholder="WhatsApp number"
+            />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Store Address</label>
