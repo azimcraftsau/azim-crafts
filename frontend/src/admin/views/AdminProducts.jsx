@@ -83,7 +83,9 @@ const EMPTY_PRODUCT = {
   disclaimer: 'All of our items are handmade (HANDCRAFTED) by master artisans who employ techniques (TOOLS) and traditions that are often centuries old. Some natural blemishes or imperfections are to be expected. These are not product flaws. Instead, they are precisely what make these pieces so extraordinary and beautiful.',
   allowEngraving: false,
   engravingPlaceholder: 'e.g. Enter name, initials or date to engrave',
-  engravingCharLimit: ''
+  engravingCharLimit: '',
+  isCustomInquiry: false,
+  customInquiryNote: ''
 };
 
 function Toast({ msg, onClose }) {
@@ -273,6 +275,12 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     ? initial.engravingCharLimit
     : ((initial?.specifications?.engravingCharLimit !== undefined && initial?.specifications?.engravingCharLimit !== null && initial?.specifications?.engravingCharLimit !== '') ? initial.specifications.engravingCharLimit : '');
   const initialEngravingPlaceholder = initial?.engravingPlaceholder || initial?.engraving_placeholder || initial?.specifications?.engravingPlaceholder || 'e.g. Enter name, initials or date to engrave';
+  const initialIsCustomInquiry = Boolean(
+    initial?.isCustomInquiry ||
+    initial?.is_custom_inquiry ||
+    initial?.specifications?.isCustomInquiry
+  );
+  const initialCustomInquiryNote = initial?.customInquiryNote || initial?.custom_inquiry_note || initial?.specifications?.customInquiryNote || '';
 
   const [form, setForm] = useState({ 
     ...EMPTY_PRODUCT, 
@@ -286,6 +294,8 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     allowEngraving: initialAllowEngraving,
     engravingCharLimit: initialEngravingLimit,
     engravingPlaceholder: initialEngravingPlaceholder,
+    isCustomInquiry: initialIsCustomInquiry,
+    customInquiryNote: initialCustomInquiryNote,
     specifications: {
       ...EMPTY_PRODUCT.specifications,
       ...(initial?.specifications || {})
@@ -448,6 +458,9 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
       allow_engraving: form.allowEngraving ? 1 : 0,
       engravingPlaceholder: form.engravingPlaceholder || '',
       engravingCharLimit: finalCharLimit,
+      isCustomInquiry: Boolean(form.isCustomInquiry),
+      is_custom_inquiry: form.isCustomInquiry ? 1 : 0,
+      customInquiryNote: form.customInquiryNote || '',
       image: primaryImg,
       images: form.images && form.images.length > 0 ? form.images : [primaryImg],
       videos: finalVideos,
@@ -457,6 +470,8 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
         allowEngraving: Boolean(form.allowEngraving),
         engravingPlaceholder: form.engravingPlaceholder || '',
         engravingCharLimit: finalCharLimit,
+        isCustomInquiry: Boolean(form.isCustomInquiry),
+        customInquiryNote: form.customInquiryNote || '',
         productName: form.specifications?.productName || form.title,
         brand: form.specifications?.brand || 'Azim Crafts'
       }
@@ -922,6 +937,55 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                       </div>
                       <p className="text-[11px] text-gray-600 border-t border-amber-200/60 pt-2">
                         💡 <strong>How it works:</strong> Customer sees an engraving box above "Add to Cart". When they order, their custom text is saved with the order and highlighted in your Admin Orders tab and packing slip.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bespoke Commission / Request Quote Only Option */}
+                <div className="sm:col-span-2 pt-4 border-t border-gray-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                        <span>🎨 Bespoke Commission / Quote Request Only</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${form.isCustomInquiry ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-gray-100 text-gray-600'}`}>
+                          {form.isCustomInquiry ? 'Quote Request Mode Active' : 'Standard Add to Cart'}
+                        </span>
+                      </label>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        Enable for custom listings (e.g. Custom Wall Lights, Chandeliers, Bespoke Armour). Replaces "Add to Cart" with a luxury "Request Custom Quote / Commission" form.
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(form.isCustomInquiry)}
+                        onChange={(e) => set('isCustomInquiry', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c8924b]"></div>
+                    </label>
+                  </div>
+
+                  {form.isCustomInquiry && (
+                    <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/90 space-y-3 animate-fade-in">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-700 uppercase mb-1">
+                          Custom Order Note / Notice to Customer (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={form.customInquiryNote || ''}
+                          onChange={(e) => set('customInquiryNote', e.target.value)}
+                          placeholder="e.g. Handcrafted to bespoke dimensions & finish. Lead time 2-3 weeks."
+                          className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-[#c8924b] outline-none bg-white"
+                        />
+                        <p className="text-[10.5px] text-gray-500 mt-1">
+                          Displayed prominently on the product listing informing customers that custom sizing and finishes are available.
+                        </p>
+                      </div>
+                      <p className="text-[11px] text-amber-900 border-t border-amber-200/60 pt-2">
+                        💡 <strong>How it works:</strong> When a customer clicks <em>"Request Custom Quote / Commission"</em>, they submit their required dimensions, finish preference, room specs, and phone/WhatsApp. Inquiries arrive instantly in your <strong>Messages</strong> tab!
                       </p>
                     </div>
                   )}
@@ -1733,6 +1797,11 @@ export function AdminProducts({ onNavigate }) {
                                 <span>{p.videos.length} video{p.videos.length > 1 ? 's' : ''}</span>
                               </span>
                             )}
+                            {(p.isCustomInquiry || p.is_custom_inquiry || p.specifications?.isCustomInquiry) && (
+                              <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-300 flex items-center gap-1">
+                                <span>🎨 Bespoke Quote</span>
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="px-4 py-3.5 whitespace-nowrap">
@@ -1741,11 +1810,19 @@ export function AdminProducts({ onNavigate }) {
                           </span>
                         </td>
                         <td className="px-4 py-3.5 whitespace-nowrap">
-                          <div className="font-bold text-neutral-900 text-sm">${Number(p.price).toFixed(2)}</div>
-                          {(p.regularPrice > p.price || p.regular_price > p.price) && (
-                            <div className="text-[11px] text-neutral-400 line-through">
-                              ${Number(p.regularPrice || p.regular_price).toFixed(2)}
-                            </div>
+                          {(p.isCustomInquiry || p.is_custom_inquiry || p.specifications?.isCustomInquiry) ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300">
+                              Quote on Request
+                            </span>
+                          ) : (
+                            <>
+                              <div className="font-bold text-neutral-900 text-sm">${Number(p.price).toFixed(2)}</div>
+                              {(p.regularPrice > p.price || p.regular_price > p.price) && (
+                                <div className="text-[11px] text-neutral-400 line-through">
+                                  ${Number(p.regularPrice || p.regular_price).toFixed(2)}
+                                </div>
+                              )}
+                            </>
                           )}
                         </td>
                         <td className="px-4 py-3.5 text-xs text-neutral-600 max-w-[140px]">

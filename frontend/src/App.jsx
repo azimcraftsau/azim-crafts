@@ -15,6 +15,7 @@ import { Footer } from './components/layout/Footer';
 import { CartDrawer } from './components/modals/CartDrawer';
 import { SearchModal } from './components/modals/SearchModal';
 import { QuickViewModal } from './components/product/QuickViewModal';
+import { CustomQuoteModal } from './components/modals/CustomQuoteModal';
 import { Toast } from './components/modals/Toast';
 import { WelcomeOfferModal } from './components/modals/WelcomeOfferModal';
 import { AuthModal } from './components/modals/AuthModal';
@@ -253,6 +254,7 @@ function AppContent() {
       <AuthModal />
       <SearchModal />
       <QuickViewModal />
+      <CustomQuoteModal />
       <Toast />
       <WelcomeOfferModal />
       <ChatWidget />

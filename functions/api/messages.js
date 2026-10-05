@@ -50,7 +50,7 @@ export async function onRequestPost(context) {
           ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
       `).bind(
-        m.id, m.name, m.email, m.subject, m.message, m.date || 'Today',
+        m.id || Date.now(), m.name, m.email, m.subject, m.message, m.date || 'Today',
         m.read ? 1 : 0, m.replied ? 1 : 0, m.priority || 'medium', m.replyText || ''
       ).run();
     }

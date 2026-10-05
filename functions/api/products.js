@@ -63,7 +63,10 @@ export async function onRequestGet(context) {
         engravingPlaceholder: p.engraving_placeholder || safeParse(p.specifications, {}).engravingPlaceholder || '',
         engravingCharLimit: (safeParse(p.specifications, {}).engravingCharLimit !== undefined && safeParse(p.specifications, {}).engravingCharLimit !== null && safeParse(p.specifications, {}).engravingCharLimit !== '')
           ? (Number(safeParse(p.specifications, {}).engravingCharLimit) || null)
-          : (p.engraving_char_limit ? (Number(p.engraving_char_limit) || null) : null)
+          : (p.engraving_char_limit ? (Number(p.engraving_char_limit) || null) : null),
+        isCustomInquiry: Boolean(p.is_custom_inquiry || safeParse(p.specifications, {}).isCustomInquiry),
+        is_custom_inquiry: (p.is_custom_inquiry || safeParse(p.specifications, {}).isCustomInquiry) ? 1 : 0,
+        customInquiryNote: p.custom_inquiry_note || safeParse(p.specifications, {}).customInquiryNote || ''
       };
     });
 
@@ -105,12 +108,16 @@ export async function onRequestPost(context) {
     const engravingCharLimit = (p.engravingCharLimit !== undefined && p.engravingCharLimit !== null && p.engravingCharLimit !== '')
       ? (Number(p.engravingCharLimit) || null)
       : (rawSpecs.engravingCharLimit !== undefined ? (Number(rawSpecs.engravingCharLimit) || null) : null);
+    const isCustomInquiry = Boolean(p.isCustomInquiry || p.is_custom_inquiry || rawSpecs.isCustomInquiry);
+    const customInquiryNote = p.customInquiryNote || p.custom_inquiry_note || rawSpecs.customInquiryNote || '';
 
     const mergedSpecs = {
       ...rawSpecs,
       allowEngraving,
       engravingPlaceholder,
-      engravingCharLimit
+      engravingCharLimit,
+      isCustomInquiry,
+      customInquiryNote
     };
 
     if (env.DB) {
@@ -159,6 +166,9 @@ export async function onRequestPost(context) {
         allow_engraving: allowEngraving ? 1 : 0,
         engravingPlaceholder,
         engravingCharLimit,
+        isCustomInquiry,
+        is_custom_inquiry: isCustomInquiry ? 1 : 0,
+        customInquiryNote,
         specifications: mergedSpecs,
         image: primaryImg,
         images: imagesList,

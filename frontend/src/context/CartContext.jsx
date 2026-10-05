@@ -154,6 +154,7 @@ export const CartProvider = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [quickViewProduct, setQuickViewProductState] = useState(null);
+  const [customQuoteProduct, setCustomQuoteProduct] = useState(null);
   const [activeCategoryCollection, setActiveCategoryCollection] = useState(null);
   const [toast, setToast] = useState(null);
 
@@ -246,6 +247,7 @@ export const CartProvider = ({ children }) => {
   const navigateTo = (page, targetCategory = null) => {
     setCurrentPage(page);
     setQuickViewProductState(null);
+    setCustomQuoteProduct(null);
     setActiveCategoryCollection(null);
     setIsCartOpen(false);
 
@@ -319,6 +321,14 @@ export const CartProvider = ({ children }) => {
         window.history.pushState({}, '', window.location.pathname + (currentPage !== 'home' ? `#${currentPage}` : ''));
       }
     }
+  };
+
+  const openCustomQuote = (product) => {
+    setCustomQuoteProduct(product);
+  };
+
+  const closeCustomQuote = () => {
+    setCustomQuoteProduct(null);
   };
 
   const showToast = (message, type = 'success') => {
@@ -570,6 +580,7 @@ export const CartProvider = ({ children }) => {
         isCartOpen,
         isSearchOpen,
         quickViewProduct,
+        customQuoteProduct,
         activeCategoryCollection,
         toast,
         totalItems,
@@ -594,6 +605,8 @@ export const CartProvider = ({ children }) => {
         setAuthRedirectAction,
         requireAuth,
         setQuickViewProduct,
+        openCustomQuote,
+        closeCustomQuote,
         openCategoryCollection,
         closeCategoryCollection,
         navigateTo,
