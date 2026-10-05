@@ -109,7 +109,7 @@ export const CustomQuoteModal = () => {
       return;
     }
     if (!formData.phone.trim()) {
-      setError('Please provide a WhatsApp or phone number so our artisans can connect with you.');
+      setError('Please provide a contact phone number.');
       return;
     }
 
@@ -124,7 +124,7 @@ export const CustomQuoteModal = () => {
       `--- CLIENT CONTACT DETAILS ---`,
       `Full Name: ${formData.name.trim()}`,
       `Email Address: ${formData.email.trim()}`,
-      `WhatsApp / Phone Number: ${formData.phone.trim()}`,
+      `Phone Number: ${formData.phone.trim()}`,
       ``,
       `--- CUSTOM SPECIFICATIONS ---`,
       `Requested Dimensions / Sizing: ${formData.dimensions.trim() || 'Custom / To Be Discussed with Artisan'}`,
@@ -232,7 +232,7 @@ export const CustomQuoteModal = () => {
                 </div>
                 <ul className="text-neutral-600 space-y-1.5 text-[11.5px] list-disc list-inside">
                   <li>Our artisans will calculate the exact metal, woodwork, and workshop time for your specifications.</li>
-                  <li>We will reach out to you directly via <strong>WhatsApp / Email ({formData.phone || formData.email})</strong> within 24 hours with custom design drawings, price quotation, and delivery lead time.</li>
+                  <li>We will reach out to you directly via <strong>Email / Phone ({formData.email || formData.phone})</strong> with custom design drawings, price quotation, and delivery lead time.</li>
                   <li>No upfront payment required until you approve the design and quote.</li>
                 </ul>
               </div>
@@ -318,7 +318,7 @@ export const CustomQuoteModal = () => {
 
                 <div>
                   <label className="block text-[11px] font-bold text-neutral-700 mb-1">
-                    WhatsApp / Phone Number <span className="text-red-500">*</span>
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Phone className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -332,7 +332,7 @@ export const CustomQuoteModal = () => {
                     />
                   </div>
                   <p className="text-[10px] text-neutral-500 mt-1">
-                    Please include country code. We will share CAD sketches, metal samples &amp; quote directly via WhatsApp.
+                    Please include country code for international inquiries.
                   </p>
                 </div>
               </div>

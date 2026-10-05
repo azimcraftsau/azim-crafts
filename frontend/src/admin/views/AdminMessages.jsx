@@ -909,61 +909,6 @@ export function AdminMessages() {
                 ) : (
                   /* Standard CRM Inquiry Display */
                   <div className="space-y-4">
-                    {/* Quick WhatsApp & Email Action Card for Bespoke Commission */}
-                    {(() => {
-                      const isCustomQuote = selected.subject?.includes('Custom Quote') || selected.subject?.includes('Bespoke') || selected.subject?.includes('Custom Order');
-                      const phoneMatch = selected.message?.match(/(?:WhatsApp|Phone)[:\s]+([+\d\s\-()]+)/i);
-                      const rawPhone = phoneMatch ? phoneMatch[1].trim() : '';
-                      const cleanPhone = rawPhone.replace(/[^\d]/g, '');
-
-                      if (!isCustomQuote) return null;
-
-                      return (
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-2xl p-4 shadow-2xs space-y-3 animate-fade-in">
-                          <div className="flex items-center justify-between flex-wrap gap-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xl">🎨</span>
-                              <div>
-                                <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wide">
-                                  Bespoke Commission Inquiry
-                                </h4>
-                                <p className="text-[11px] text-amber-800">
-                                  Contact customer directly to finalize dimensions, finishes, and price quote:
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {cleanPhone && (
-                                <a
-                                  href={`https://wa.me/${cleanPhone}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-2xs transition-all cursor-pointer"
-                                >
-                                  <span>💬 Chat on WhatsApp</span>
-                                </a>
-                              )}
-                              {selected.email && (
-                                <a
-                                  href={`mailto:${selected.email}?subject=Re:%20Bespoke%20Commission%20Quote%20-%20Azim%20Crafts`}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1a1a] hover:bg-[#333333] text-white rounded-xl text-xs font-bold shadow-2xs transition-all cursor-pointer"
-                                >
-                                  <span>✉️ Email Customer</span>
-                                </a>
-                              )}
-                            </div>
-                          </div>
-
-                          {rawPhone && (
-                            <div className="text-[11px] font-mono text-amber-900 bg-white/80 px-2.5 py-1 rounded-lg border border-amber-200/60 inline-block">
-                              Client WhatsApp: <strong>{rawPhone}</strong>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
-
                     <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-2xs space-y-2">
                       <div className="flex items-center justify-between text-xs font-bold text-gray-700">
                         <span>Message Content:</span>
