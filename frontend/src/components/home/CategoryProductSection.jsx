@@ -98,11 +98,14 @@ export const CategoryProductSection = ({
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
+                <span className="text-[10.5px] font-bold text-[#b57f38] uppercase tracking-wider block mb-0.5">
+                  100% Handcrafted • Custom Orders For Every Product
+                </span>
                 <h4 className="font-heading text-sm md:text-base font-bold text-neutral-900 tracking-wide">
-                  Looking for a custom {title}?
+                  We Handcraft Custom Orders For Every Product
                 </h4>
                 <p className="text-xs text-neutral-600 font-medium mt-1 max-w-xl leading-relaxed">
-                  Need specific dimensions, customized metals, or an exclusive design? Our master artisans handcraft to your exact order.
+                  Whether you need specific dimensions for {title}, customized metals (Brass, Iron, Bronze), or a brand-new bespoke design — our master artisans handcraft every single piece to your exact order.
                 </p>
               </div>
             </div>

@@ -323,13 +323,13 @@ export const AllProductsPage = () => {
             </div>
             <div>
               <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#b57f38] uppercase tracking-wider mb-1">
-                <span>Handmade by Roorkee Artisans</span>
+                <span>Handmade by Roorkee Artisans • Custom Orders For Every Product</span>
               </div>
               <h3 className="font-heading text-lg sm:text-xl font-bold text-neutral-900">
-                Need Custom Sizing or a Unique {isAll ? 'Artisan Piece' : activeCategoryObj.label}?
+                We Handcraft Custom Orders For Every Product
               </h3>
               <p className="text-xs sm:text-sm text-neutral-600 font-medium mt-1 max-w-2xl leading-relaxed">
-                Whether you need specific room dimensions, special patina finishes, customized heraldry, or tailored lighting chains — our master craftsmen will create it to your exact specifications.
+                Whether you need specific room dimensions, special patina finishes, customized heraldry, or a brand-new artisan design — our master craftsmen build every piece to your exact specifications.
               </p>
             </div>
           </div>
