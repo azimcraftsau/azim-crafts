@@ -636,7 +636,7 @@ export async function getMessages() {
     if (res.ok) {
       const data = await res.json();
       const list = unwrapData(data);
-      if (list && Array.isArray(list) && list.length > 0) {
+      if (list && Array.isArray(list)) {
         return list;
       }
     }
