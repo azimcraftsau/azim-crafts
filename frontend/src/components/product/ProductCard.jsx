@@ -153,7 +153,7 @@ export const ProductCard = ({ product }) => {
             {product.title}
           </h3>
 
-          {/* Low Stock Alert Badge / Sold Out Label */}
+          {/* Low Stock Alert Badge / Sold Out Label / Engraving Badge */}
           {isLowStock ? (
             <div className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-amber-800 bg-amber-50/90 border border-amber-200/90 px-2 py-0.5 rounded-md">
               <span className="animate-pulse text-xs">🔥</span>
@@ -162,6 +162,10 @@ export const ProductCard = ({ product }) => {
           ) : isSoldOut ? (
             <div className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">
               <span>Sold out</span>
+            </div>
+          ) : (product.allowEngraving || product.allow_engraving || product.specifications?.allowEngraving) ? (
+            <div className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#8a5b1f] bg-amber-50/80 px-2 py-0.5 rounded border border-amber-200/60">
+              <span>🖋️ Custom Engraving</span>
             </div>
           ) : null}
         </div>

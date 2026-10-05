@@ -77,6 +77,25 @@ export async function onRequestDelete(context) {
     }
 
     if (env.DB) {
+      // 1. Find all active products belonging to this category
+      const { results: categoryProducts } = await env.DB.prepare(
+        'SELECT * FROM products WHERE category = ?'
+      ).bind(key).all().catch(() => ({ results: [] }));
+
+      // 2. Cascade each product to the trash table safely
+      if (Array.isArray(categoryProducts) && categoryProducts.length > 0) {
+        for (const prod of categoryProducts) {
+          await env.DB.prepare(`
+            INSERT OR REPLACE INTO trash (id, data, deleted_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+          `).bind(prod.id, JSON.stringify(prod)).run().catch(() => null);
+        }
+
+        // 3. Delete those products from active products table
+        await env.DB.prepare('DELETE FROM products WHERE category = ?').bind(key).run().catch(() => null);
+      }
+
+      // 4. Delete the category itself from categories table
       await env.DB.prepare('DELETE FROM categories WHERE key = ?').bind(key).run();
     }
 

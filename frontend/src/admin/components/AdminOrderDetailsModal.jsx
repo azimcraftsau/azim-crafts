@@ -198,6 +198,12 @@ export function AdminOrderDetailsModal({ order, onClose, onOpenPrint, onOpenEdit
                             </>
                           )}
                         </div>
+                        {item.customEngraving && (
+                          <div className="mt-2 inline-flex items-center gap-1.5 bg-amber-50 text-amber-950 border border-amber-300 px-3 py-1 rounded-lg font-medium text-xs shadow-2xs">
+                            <span>🖋️ <strong>Custom Engraving:</strong></span>
+                            <span className="font-bold text-black font-mono">"{item.customEngraving}"</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 

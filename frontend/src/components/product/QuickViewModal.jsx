@@ -21,6 +21,7 @@ export const QuickViewModal = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [selectedAddons, setSelectedAddons] = useState({});
   const [addingPartId, setAddingPartId] = useState(null);
+  const [customEngravingText, setCustomEngravingText] = useState('');
   
   // Collapsible Accordions State (Default open: description)
   const [openAccordions, setOpenAccordions] = useState({
@@ -43,6 +44,7 @@ export const QuickViewModal = () => {
     if (!quickViewProduct) return;
     setSelectedMediaIndex(0);
     setQuantity(1);
+    setCustomEngravingText('');
     const sizes = Array.isArray(quickViewProduct.sizes) && quickViewProduct.sizes.length > 0 
       ? quickViewProduct.sizes 
       : null;
@@ -99,6 +101,17 @@ export const QuickViewModal = () => {
     ? product.sizes
     : null;
 
+  const allowEngraving = Boolean(
+    product.allowEngraving || 
+    product.allow_engraving || 
+    (product.specifications && (product.specifications.allowEngraving || product.specifications.allow_engraving))
+  );
+  const rawLimit = product.engravingCharLimit !== undefined && product.engravingCharLimit !== null && product.engravingCharLimit !== ''
+    ? product.engravingCharLimit
+    : (product.specifications?.engravingCharLimit);
+  const engravingCharLimit = (rawLimit && Number(rawLimit) > 0) ? Number(rawLimit) : null;
+  const engravingPlaceholder = product.engravingPlaceholder || product.specifications?.engravingPlaceholder || 'e.g. Enter name, initials or date to engrave';
+
   const images = product.images && product.images.length > 0 
     ? product.images 
     : [product.image];
@@ -137,7 +150,7 @@ export const QuickViewModal = () => {
     if (isSoldOut) return;
     setIsAdding(true);
     const chosenSize = productSizes ? (selectedSize || productSizes[0]) : null;
-    addToCart(product, Math.min(quantity, Math.max(1, stockQty)), chosenSize);
+    addToCart(product, Math.min(quantity, Math.max(1, stockQty)), chosenSize, customEngravingText);
 
     // Add selected add-ons at accurate catalog price
     Object.keys(selectedAddons).forEach(addonId => {
@@ -526,6 +539,57 @@ export const QuickViewModal = () => {
                       </label>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Custom Engraving / Personalization Input Box */}
+              {allowEngraving && !product.isSoldOut && (
+                <div className="space-y-2 pt-3 border-t border-neutral-100 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="text-sm">🖋️</span>
+                      <span>Custom Engraving (Optional)</span>
+                    </label>
+                    <span className="text-[11px] font-semibold text-neutral-500">
+                      {engravingCharLimit ? (
+                        <span className={customEngravingText.length >= engravingCharLimit ? 'text-amber-600 font-bold' : ''}>
+                          {customEngravingText.length} / {engravingCharLimit} chars
+                        </span>
+                      ) : (
+                        <span>{customEngravingText.length} chars <span className="text-neutral-400 font-normal">(No limit)</span></span>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={customEngravingText}
+                      maxLength={engravingCharLimit || undefined}
+                      onChange={(e) => setCustomEngravingText(e.target.value)}
+                      placeholder={engravingPlaceholder || 'e.g. Enter name, initials or date to engrave'}
+                      className="w-full bg-[#faf8f5] border border-[#e2d8c9] focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all shadow-2xs font-medium"
+                    />
+                    {customEngravingText && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomEngravingText('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 text-xs px-1.5 py-0.5 rounded cursor-pointer"
+                        title="Clear engraving"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] text-neutral-500 leading-normal flex items-start gap-1">
+                    <span className="text-[#c8924b]">✨</span>
+                    <span>
+                      {engravingCharLimit
+                        ? `Hand-engraved by our master artisans (up to ${engravingCharLimit} characters). Leave blank if you prefer standard un-engraved finish.`
+                        : 'Hand-engraved by our master artisans with no character limit. Leave blank if you prefer standard un-engraved finish.'}
+                    </span>
+                  </p>
                 </div>
               )}
 

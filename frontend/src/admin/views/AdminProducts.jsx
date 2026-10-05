@@ -14,6 +14,7 @@ import {
   uploadProductVideo,
   getCategories,
   saveCategoryToDB,
+  deleteCategoryFromDB,
   getTrashProducts,
   moveToTrashDB,
   getCachedProducts,
@@ -79,7 +80,10 @@ const EMPTY_PRODUCT = {
     'Cosplay, LARP & reenactment prop'
   ],
   shippingInfo: 'Shipped From: Artisan Workshop, Roorkee, Uttarakhand, India.\nShipping Provider: DHL Express, FedEx, UPS & All Major International Courier services.\nAdditional Delivery Information: Order Processing 2 – 5 Business Days. Handcrafted by master artisans with export-grade protective packaging. Free worldwide shipping available.',
-  disclaimer: 'All of our items are handmade (HANDCRAFTED) by master artisans who employ techniques (TOOLS) and traditions that are often centuries old. Some natural blemishes or imperfections are to be expected. These are not product flaws. Instead, they are precisely what make these pieces so extraordinary and beautiful.'
+  disclaimer: 'All of our items are handmade (HANDCRAFTED) by master artisans who employ techniques (TOOLS) and traditions that are often centuries old. Some natural blemishes or imperfections are to be expected. These are not product flaws. Instead, they are precisely what make these pieces so extraordinary and beautiful.',
+  allowEngraving: false,
+  engravingPlaceholder: 'e.g. Enter name, initials or date to engrave',
+  engravingCharLimit: ''
 };
 
 function Toast({ msg, onClose }) {
@@ -260,6 +264,16 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     ? initial.videos
     : (initial?.video ? [initial.video] : []);
 
+  const initialAllowEngraving = Boolean(
+    initial?.allowEngraving || 
+    initial?.allow_engraving || 
+    initial?.specifications?.allowEngraving
+  );
+  const initialEngravingLimit = (initial?.engravingCharLimit !== undefined && initial?.engravingCharLimit !== null && initial?.engravingCharLimit !== '')
+    ? initial.engravingCharLimit
+    : ((initial?.specifications?.engravingCharLimit !== undefined && initial?.specifications?.engravingCharLimit !== null && initial?.specifications?.engravingCharLimit !== '') ? initial.specifications.engravingCharLimit : '');
+  const initialEngravingPlaceholder = initial?.engravingPlaceholder || initial?.engraving_placeholder || initial?.specifications?.engravingPlaceholder || 'e.g. Enter name, initials or date to engrave';
+
   const [form, setForm] = useState({ 
     ...EMPTY_PRODUCT, 
     ...initial,
@@ -269,6 +283,9 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     hasModularParts: initialHasModularParts,
     modularParts: initialModularParts,
     sizes: initialSizes,
+    allowEngraving: initialAllowEngraving,
+    engravingCharLimit: initialEngravingLimit,
+    engravingPlaceholder: initialEngravingPlaceholder,
     specifications: {
       ...EMPTY_PRODUCT.specifications,
       ...(initial?.specifications || {})
@@ -400,6 +417,11 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
     const finalIsOnSale = finalRegPrice > finalPrice;
     const finalVideos = Array.isArray(form.videos) ? form.videos.filter(Boolean) : [];
 
+    const rawLimit = form.engravingCharLimit;
+    const finalCharLimit = (rawLimit !== '' && rawLimit !== null && rawLimit !== undefined && !isNaN(Number(rawLimit)) && Number(rawLimit) > 0)
+      ? Number(rawLimit)
+      : null;
+
     const updatedProduct = {
       ...form,
       stockQuantity: finalStock,
@@ -422,12 +444,19 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
         price: Number(p.price) || 0,
         enabled: p.enabled !== false
       })) : [],
+      allowEngraving: Boolean(form.allowEngraving),
+      allow_engraving: form.allowEngraving ? 1 : 0,
+      engravingPlaceholder: form.engravingPlaceholder || '',
+      engravingCharLimit: finalCharLimit,
       image: primaryImg,
       images: form.images && form.images.length > 0 ? form.images : [primaryImg],
       videos: finalVideos,
       perfectFor: parsedPerfectFor.length > 0 ? parsedPerfectFor : EMPTY_PRODUCT.perfectFor,
       specifications: {
         ...form.specifications,
+        allowEngraving: Boolean(form.allowEngraving),
+        engravingPlaceholder: form.engravingPlaceholder || '',
+        engravingCharLimit: finalCharLimit,
         productName: form.specifications?.productName || form.title,
         brand: form.specifications?.brand || 'Azim Crafts'
       }
@@ -822,6 +851,78 @@ function ProductModal({ initial, isNew, categories, onSave, onClose }) {
                           </span>
                         </div>
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Custom Engraving / Personalization Option (Admin Toggle & Limit) */}
+                <div className="sm:col-span-2 pt-4 border-t border-gray-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                        <span>🖋️ Custom Engraving &amp; Personalization</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${form.allowEngraving ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}>
+                          {form.allowEngraving ? 'Active on Storefront' : 'Disabled'}
+                        </span>
+                      </label>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        Allow customers to request custom engraving (names, dates, vows, quotes) for this item before adding to cart.
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(form.allowEngraving)}
+                        onChange={(e) => set('allowEngraving', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c8924b]"></div>
+                    </label>
+                  </div>
+
+                  {form.allowEngraving && (
+                    <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-200/80 space-y-3 animate-fade-in">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-700 uppercase mb-1">
+                            Character Limit (Letters)
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="500"
+                            value={form.engravingCharLimit ?? ''}
+                            onChange={(e) => set('engravingCharLimit', e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value, 10)))}
+                            placeholder="Leave blank for No Limit, or enter e.g. 50"
+                            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-[#c8924b] outline-none bg-white"
+                          />
+                          <p className="text-[10.5px] text-gray-500 mt-1">
+                            {(!form.engravingCharLimit && form.engravingCharLimit !== 0) ? (
+                              <span className="text-emerald-700 font-bold">✨ No Limit: Customer can enter text of any length (e.g. Thor War Hammer).</span>
+                            ) : (
+                              <span className="text-amber-800 font-bold">📏 Max Limit: Capped strictly at {form.engravingCharLimit} characters (e.g. Compasses / Telescopes).</span>
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-700 uppercase mb-1">
+                            Input Instruction / Placeholder for Customer
+                          </label>
+                          <input
+                            type="text"
+                            value={form.engravingPlaceholder || ''}
+                            onChange={(e) => set('engravingPlaceholder', e.target.value)}
+                            placeholder="e.g. Enter name, initials or date to engrave"
+                            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-[#c8924b] outline-none bg-white"
+                          />
+                          <p className="text-[10.5px] text-gray-500 mt-1">
+                            Help text shown inside the customer's text box on the product page.
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-gray-600 border-t border-amber-200/60 pt-2">
+                        💡 <strong>How it works:</strong> Customer sees an engraving box above "Add to Cart". When they order, their custom text is saved with the order and highlighted in your Admin Orders tab and packing slip.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1243,6 +1344,7 @@ export function AdminProducts({ onNavigate }) {
   const [stockFilter, setStockFilter] = useState('all');
   const [modal, setModal] = useState(null); // null | 'add' | product obj for edit
   const [categoryModal, setCategoryModal] = useState(false);
+  const [deleteCategoryModal, setDeleteCategoryModal] = useState(null); // category obj to delete
   const [toast, setToast] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null); // product obj to move to trash
   const [trashCount, setTrashCount] = useState(0);
@@ -1313,6 +1415,31 @@ export function AdminProducts({ onNavigate }) {
     } catch (e) {
       console.error(e);
       setToast('Error creating category.');
+    }
+  };
+
+  // Delete Category & Cascade Products to Trash
+  const handleConfirmDeleteCategory = async () => {
+    if (!deleteCategoryModal) return;
+    const catKey = deleteCategoryModal.key;
+    const catName = deleteCategoryModal.name;
+    const prodsToMove = products.filter(p => p.category === catKey);
+    const count = prodsToMove.length;
+
+    try {
+      // 1. Delete category on DB (which cascades products to trash table on backend)
+      await deleteCategoryFromDB(catKey);
+
+      // 2. Also move any local active products to trash in frontend state
+      setProducts(prev => prev.filter(p => p.category !== catKey));
+      setCategories(prev => prev.filter(c => c.key !== catKey));
+      setTrashCount(prev => prev + count);
+      setDeleteCategoryModal(null);
+      setCatFilter('all');
+      setToast(`Category "${catName}" deleted. ${count} product${count !== 1 ? 's' : ''} safely moved to Trash.`);
+    } catch (err) {
+      console.error(err);
+      setToast('Error deleting category.');
     }
   };
   const handleSaveProduct = async (product) => {
@@ -1494,7 +1621,7 @@ export function AdminProducts({ onNavigate }) {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-2xs p-4 flex flex-wrap gap-3 items-center justify-between">
         
         {/* Active Category Indicator */}
-        <div className="flex items-center gap-2 min-w-[200px]">
+        <div className="flex items-center gap-3 min-w-[200px]">
           <Tag size={16} className="text-[#c8924b]" />
           <div>
             <span className="text-xs font-bold text-gray-900 block">
@@ -1504,6 +1631,17 @@ export function AdminProducts({ onNavigate }) {
               {filtered.length} product{filtered.length !== 1 ? 's' : ''} listed
             </span>
           </div>
+          {catFilter !== 'all' && activeCategoryObj && (
+            <button
+              type="button"
+              onClick={() => setDeleteCategoryModal(activeCategoryObj)}
+              className="ml-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 transition-all cursor-pointer shadow-2xs"
+              title="Delete this category and move its products to Trash"
+            >
+              <Trash2 size={13} />
+              <span>Delete Category</span>
+            </button>
+          )}
         </div>
 
         {/* Search and Stock filter */}
@@ -1739,6 +1877,51 @@ export function AdminProducts({ onNavigate }) {
               >
                 <Trash2 size={15} />
                 <span>Move to Trash</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Category Confirmation Modal (Cascades products to Trash) */}
+      {deleteCategoryModal && (
+        <div className="fixed inset-0 bg-black/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 font-menu">
+          <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-md w-full border border-gray-200 animate-fade-in">
+            <div className="flex items-center gap-3 text-red-600 mb-3">
+              <div className="p-2.5 bg-red-100 rounded-xl">
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Delete Category?</h3>
+                <p className="text-xs text-gray-500">{deleteCategoryModal.name}</p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 space-y-2 mb-6">
+              <p className="font-bold">⚠️ Notice: What happens to products?</p>
+              <p>
+                There are currently <strong>{products.filter(p => p.category === deleteCategoryModal.key).length} product(s)</strong> in this category.
+              </p>
+              <p>
+                Deleting this category will automatically move <strong>all of these products to the Trash</strong> so they can be restored later if needed. The category will be permanently deleted from the store.
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button 
+                type="button"
+                onClick={() => setDeleteCategoryModal(null)} 
+                className="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                onClick={handleConfirmDeleteCategory} 
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-sm transition-all cursor-pointer"
+              >
+                <Trash2 size={15} />
+                <span>Delete Category &amp; Move to Trash</span>
               </button>
             </div>
           </div>

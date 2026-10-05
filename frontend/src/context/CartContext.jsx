@@ -106,7 +106,8 @@ export const CartProvider = ({ children }) => {
               price: Number(item.product.price) || 0
             },
             quantity: Number(item.quantity) || 1,
-            selectedSize: item.selectedSize || null
+            selectedSize: item.selectedSize || null,
+            customEngraving: item.customEngraving || null
           };
         }
         return {
@@ -118,7 +119,8 @@ export const CartProvider = ({ children }) => {
             vendor: item.vendor || 'Azim Crafts'
           },
           quantity: Number(item.quantity) || 1,
-          selectedSize: item.selectedSize || null
+          selectedSize: item.selectedSize || null,
+          customEngraving: item.customEngraving || null
         };
       }).filter(Boolean);
     } catch {
@@ -353,7 +355,7 @@ export const CartProvider = ({ children }) => {
     showToast('Logged out successfully.');
   };
 
-  const addToCart = (product, quantity = 1, selectedSize = null) => {
+  const addToCart = (product, quantity = 1, selectedSize = null, customEngraving = '') => {
     const stockQty = product.stockQuantity !== undefined 
       ? Number(product.stockQuantity) 
       : (product.stock_quantity !== undefined ? Number(product.stock_quantity) : 10);
@@ -365,48 +367,61 @@ export const CartProvider = ({ children }) => {
     }
 
     const effectiveSize = selectedSize || ((product.sizes && product.sizes.length > 0) ? product.sizes[0] : null);
+    const cleanEngraving = (customEngraving || '').trim();
 
     setCart(prevCart => {
       const existing = prevCart.find(
-        item => item.product.id === product.id && (item.selectedSize || null) === (effectiveSize || null)
+        item => item.product.id === product.id && 
+                (item.selectedSize || null) === (effectiveSize || null) &&
+                (item.customEngraving || '') === cleanEngraving
       );
       if (existing) {
         const nextQty = Math.min(stockQty, existing.quantity + quantity);
         return prevCart.map(item =>
-          item.product.id === product.id && (item.selectedSize || null) === (effectiveSize || null)
+          item.product.id === product.id && 
+          (item.selectedSize || null) === (effectiveSize || null) &&
+          (item.customEngraving || '') === cleanEngraving
             ? { ...item, quantity: nextQty }
             : item
         );
       }
-      return [...prevCart, { product, quantity: Math.min(stockQty, quantity), selectedSize: effectiveSize }];
+      return [...prevCart, { 
+        product, 
+        quantity: Math.min(stockQty, quantity), 
+        selectedSize: effectiveSize,
+        customEngraving: cleanEngraving || null
+      }];
     });
 
     const sizeMsg = effectiveSize ? ` (Size: ${effectiveSize})` : '';
-    showToast(`Added "${product.title}"${sizeMsg} to cart! 🛍️`);
+    const engMsg = cleanEngraving ? ` [Engraved: "${cleanEngraving}"]` : '';
+    showToast(`Added "${product.title}"${sizeMsg}${engMsg} to cart! 🛍️`);
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (productId, selectedSize = undefined) => {
+  const removeFromCart = (productId, selectedSize = undefined, customEngraving = undefined) => {
     setCart(prevCart => prevCart.filter(item => {
-      if (selectedSize !== undefined) {
-        return !(item.product.id === productId && (item.selectedSize || null) === (selectedSize || null));
-      }
-      return item.product.id !== productId;
+      const prodMatches = item.product.id === productId;
+      if (!prodMatches) return true;
+      const sizeMatches = selectedSize === undefined || (item.selectedSize || null) === (selectedSize || null);
+      const engMatches = customEngraving === undefined || (item.customEngraving || null) === (customEngraving || null);
+      return !(sizeMatches && engMatches);
     }));
     showToast('Item removed from cart.');
   };
 
-  const updateQuantity = (productId, newQuantity, selectedSize = undefined) => {
+  const updateQuantity = (productId, newQuantity, selectedSize = undefined, customEngraving = undefined) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId, selectedSize);
+      removeFromCart(productId, selectedSize, customEngraving);
       return;
     }
     setCart(prevCart =>
       prevCart.map(item => {
-        const matches = selectedSize !== undefined
-          ? (item.product.id === productId && (item.selectedSize || null) === (selectedSize || null))
-          : item.product.id === productId;
-        if (!matches) return item;
+        const prodMatches = item.product.id === productId;
+        if (!prodMatches) return item;
+        const sizeMatches = selectedSize === undefined || (item.selectedSize || null) === (selectedSize || null);
+        const engMatches = customEngraving === undefined || (item.customEngraving || null) === (customEngraving || null);
+        if (!(sizeMatches && engMatches)) return item;
         const prod = item.product || {};
         const stockQty = prod.stockQuantity !== undefined 
           ? Number(prod.stockQuantity) 

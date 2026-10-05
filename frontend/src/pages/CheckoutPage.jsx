@@ -17,6 +17,7 @@ const buildStructuredItems = (cartItems) => cartItems.map((i, idx) => {
     quantity: Number(i?.quantity) || 1,
     price: Number(prod?.price) || 0,
     selectedSize: i?.selectedSize || null,
+    customEngraving: i?.customEngraving || null,
     sku: `VTM-${prod?.productNumber || prod?.id || 'VTM'}${i?.selectedSize ? `-${i.selectedSize}` : ''}`
   };
 });
@@ -412,7 +413,8 @@ export const CheckoutPage = () => {
 
             const itemsSummary = currentCart.map(i => {
               const prod = i?.product || i;
-              return `${prod?.title || 'Vintage Item'}${i?.selectedSize ? ` (Size: ${i.selectedSize})` : ''} (x${i?.quantity || 1})`;
+              const eng = i?.customEngraving ? ` [Engraving: "${i.customEngraving}"]` : '';
+              return `${prod?.title || 'Vintage Item'}${i?.selectedSize ? ` (Size: ${i.selectedSize})` : ''}${eng} (x${i?.quantity || 1})`;
             }).join(', ');
 
             const structuredItems = buildStructuredItems(currentCart);
@@ -514,7 +516,8 @@ export const CheckoutPage = () => {
     const safeList = Array.isArray(cart) ? cart.filter(Boolean) : [];
     const itemsSummary = safeList.map(i => {
       const prod = i?.product || i;
-      return `${prod?.title || 'Azim Crafts Item'}${i?.selectedSize ? ` (Size: ${i.selectedSize})` : ''} (x${i?.quantity || 1})`;
+      const eng = i?.customEngraving ? ` [Engraving: "${i.customEngraving}"]` : '';
+      return `${prod?.title || 'Azim Crafts Item'}${i?.selectedSize ? ` (Size: ${i.selectedSize})` : ''}${eng} (x${i?.quantity || 1})`;
     }).join(', ');
 
     const structuredItems = buildStructuredItems(safeList);
@@ -970,6 +973,11 @@ export const CheckoutPage = () => {
                       <div className="text-xs">
                         <p className="font-semibold text-neutral-900 line-clamp-1">{prodTitle}</p>
                         {selectedSize && <span className="text-[10px] text-amber-800">Size: {selectedSize}</span>}
+                        {item.customEngraving && (
+                          <span className="text-[10px] text-[#8a5b1f] font-medium block truncate max-w-[200px]">
+                            🖋️ Engraving: "{item.customEngraving}"
+                          </span>
+                        )}
                       </div>
                     </div>
                     <span className="text-xs font-bold text-neutral-900">${(price * qty).toFixed(2)}</span>
@@ -1635,6 +1643,11 @@ export const CheckoutPage = () => {
                           {selectedSize && (
                             <span className="text-[10px] font-bold text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200">
                               Size: {selectedSize}
+                            </span>
+                          )}
+                          {item.customEngraving && (
+                            <span className="text-[10px] font-medium text-[#8a5b1f] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                              🖋️ Engraving: "{item.customEngraving}"
                             </span>
                           )}
                         </div>

@@ -65,6 +65,9 @@ export const allProducts = [
     "categoryName": "Cinematic Antiques & Lore",
     "isSoldOut": false,
     "isOnSale": false,
+    "allowEngraving": true,
+    "engravingPlaceholder": "Enter custom text, battle vow, or runic inscription",
+    "engravingCharLimit": null,
     "image": "/All categories/All Products/product 2/1.jpeg",
     "hoverImage": "/All categories/All Products/product 2/2.jpeg",
     "images": [
@@ -1188,6 +1191,9 @@ export const allProducts = [
     "categoryName": "Vintage Compasses",
     "isSoldOut": false,
     "isOnSale": false,
+    "allowEngraving": true,
+    "engravingPlaceholder": "Enter name, date, or inscription (Max 50 chars)",
+    "engravingCharLimit": 50,
     "image": "/All categories/All Products/product 25/1.jpg",
     "hoverImage": "/All categories/All Products/product 25/1.jpg",
     "images": [
@@ -1271,6 +1277,9 @@ export const allProducts = [
     "categoryName": "Vintage Compasses",
     "isSoldOut": false,
     "isOnSale": false,
+    "allowEngraving": true,
+    "engravingPlaceholder": "Enter name, coordinates or date (Max 50 chars)",
+    "engravingCharLimit": 50,
     "image": "/All categories/All Products/product 27/1.jpg",
     "hoverImage": "/All categories/All Products/product 27/1.jpg",
     "images": [
@@ -1313,6 +1322,9 @@ export const allProducts = [
     "categoryName": "Vintage Compasses",
     "isSoldOut": false,
     "isOnSale": false,
+    "allowEngraving": true,
+    "engravingPlaceholder": "Enter name, message or date (Max 50 chars)",
+    "engravingCharLimit": 50,
     "image": "/All categories/All Products/product 28/1.jpg",
     "hoverImage": "/All categories/All Products/product 28/2.jpg",
     "images": [

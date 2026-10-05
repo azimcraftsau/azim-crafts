@@ -196,6 +196,11 @@ export function AdminShippingSlipModal({ order, onClose }) {
                             </span>
                           )}
                         </div>
+                        {item.customEngraving && (
+                          <div className="mt-1 text-[10.5px] text-amber-900 font-bold bg-amber-50 border border-amber-300 px-2 py-0.5 rounded inline-block">
+                            🖋️ Engraving: "{item.customEngraving}"
+                          </div>
+                        )}
                       </td>
                       <td className="p-3 font-mono text-[11px] text-neutral-600">{item.sku || `VTM-PRD-${index + 1}`}</td>
                       <td className="p-3 text-center font-bold">{qty}</td>

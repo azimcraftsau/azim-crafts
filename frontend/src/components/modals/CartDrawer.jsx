@@ -153,9 +153,15 @@ export const CartDrawer = () => {
                               Size: {selectedSize}
                             </span>
                           )}
+                          {item.customEngraving && (
+                            <div className="mt-1 flex items-center gap-1 text-[10.5px] font-medium text-[#8a5b1f] bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200/80">
+                              <span>🖋️</span>
+                              <span className="truncate">Engraving: <strong>"{item.customEngraving}"</strong></span>
+                            </div>
+                          )}
                         </div>
                         <button
-                          onClick={() => removeFromCart(prodId, selectedSize)}
+                          onClick={() => removeFromCart(prodId, selectedSize, item.customEngraving)}
                           className="text-neutral-400 hover:text-[#ae2828] p-1 transition-colors cursor-pointer"
                           title="Remove item"
                         >
@@ -167,7 +173,7 @@ export const CartDrawer = () => {
                         {/* Quantity Selector */}
                         <div className="flex items-center border border-neutral-300 rounded overflow-hidden">
                           <button
-                            onClick={() => updateQuantity(prodId, qty - 1, selectedSize)}
+                            onClick={() => updateQuantity(prodId, qty - 1, selectedSize, item.customEngraving)}
                             className="px-2 py-1 hover:bg-neutral-100 text-neutral-600 text-xs cursor-pointer"
                           >
                             <Minus className="w-3 h-3" />
@@ -176,7 +182,7 @@ export const CartDrawer = () => {
                             {qty}
                           </span>
                           <button
-                            onClick={() => updateQuantity(prodId, qty + 1, selectedSize)}
+                            onClick={() => updateQuantity(prodId, qty + 1, selectedSize, item.customEngraving)}
                             className="px-2 py-1 hover:bg-neutral-100 text-neutral-600 text-xs cursor-pointer"
                           >
                             <Plus className="w-3 h-3" />

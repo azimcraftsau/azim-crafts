@@ -54,7 +54,16 @@ export async function onRequestGet(context) {
         images: safeParse(p.images, [p.image]),
         videos: normalizedVideos,
         perfectFor: safeParse(p.perfect_for, []),
-        specifications: safeParse(p.specifications, {})
+        specifications: (() => {
+          const s = safeParse(p.specifications, {});
+          return s;
+        })(),
+        allowEngraving: Boolean(p.allow_engraving || safeParse(p.specifications, {}).allowEngraving),
+        allow_engraving: (p.allow_engraving || safeParse(p.specifications, {}).allowEngraving) ? 1 : 0,
+        engravingPlaceholder: p.engraving_placeholder || safeParse(p.specifications, {}).engravingPlaceholder || '',
+        engravingCharLimit: (safeParse(p.specifications, {}).engravingCharLimit !== undefined && safeParse(p.specifications, {}).engravingCharLimit !== null && safeParse(p.specifications, {}).engravingCharLimit !== '')
+          ? (Number(safeParse(p.specifications, {}).engravingCharLimit) || null)
+          : (p.engraving_char_limit ? (Number(p.engraving_char_limit) || null) : null)
       };
     });
 
@@ -90,6 +99,20 @@ export async function onRequestPost(context) {
     const imagesList = Array.isArray(p.images) && p.images.length > 0 ? p.images.filter(Boolean) : [p.image || ''];
     const primaryImg = p.image || (imagesList.length > 0 ? imagesList[0] : '');
 
+    const rawSpecs = safeParse(p.specifications, {});
+    const allowEngraving = Boolean(p.allowEngraving || p.allow_engraving || rawSpecs.allowEngraving);
+    const engravingPlaceholder = p.engravingPlaceholder || p.engraving_placeholder || rawSpecs.engravingPlaceholder || '';
+    const engravingCharLimit = (p.engravingCharLimit !== undefined && p.engravingCharLimit !== null && p.engravingCharLimit !== '')
+      ? (Number(p.engravingCharLimit) || null)
+      : (rawSpecs.engravingCharLimit !== undefined ? (Number(rawSpecs.engravingCharLimit) || null) : null);
+
+    const mergedSpecs = {
+      ...rawSpecs,
+      allowEngraving,
+      engravingPlaceholder,
+      engravingCharLimit
+    };
+
     if (env.DB) {
       await env.DB.prepare(`
         INSERT OR REPLACE INTO products (
@@ -111,7 +134,7 @@ export async function onRequestPost(context) {
         p.category || 'general', p.categoryName || p.category_name || '', isSoldOut, isOnSale ? 1 : 0,
         p.badge || '', primaryImg, p.hoverImage || p.hover_image || '',
         JSON.stringify(imagesList), JSON.stringify(videosList),
-        p.vendor || 'Azim Crafts', p.description || '', JSON.stringify(p.specifications || {}),
+        p.vendor || 'Azim Crafts', p.description || '', JSON.stringify(mergedSpecs),
         JSON.stringify(p.perfectFor || p.perfect_for || []), p.dimensions || '', p.weight || '',
         p.materials || '', p.shippingInfo || p.shipping_info || '', p.disclaimer || '',
         p.rating || 5, p.reviewsCount || p.reviews_count || 10,
@@ -132,6 +155,11 @@ export async function onRequestPost(context) {
         stock_quantity: stockQty,
         isSoldOut: Boolean(isSoldOut),
         is_sold_out: isSoldOut,
+        allowEngraving,
+        allow_engraving: allowEngraving ? 1 : 0,
+        engravingPlaceholder,
+        engravingCharLimit,
+        specifications: mergedSpecs,
         image: primaryImg,
         images: imagesList,
         videos: videosList
