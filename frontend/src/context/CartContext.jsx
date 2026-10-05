@@ -156,7 +156,14 @@ export const CartProvider = ({ children }) => {
   const [quickViewProduct, setQuickViewProductState] = useState(null);
   const [customQuoteCategory, setCustomQuoteCategory] = useState(null);
   const [activeCategoryCollection, setActiveCategoryCollection] = useState(null);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+  const [policyModalTab, setPolicyModalTab] = useState('refund');
   const [toast, setToast] = useState(null);
+
+  const openPolicy = (tab = 'refund') => {
+    setPolicyModalTab(tab);
+    setIsPolicyModalOpen(true);
+  };
 
   // Debounced cart saving to prevent micro-stutter on rapid item updates (STORE-006)
   useEffect(() => {
@@ -629,7 +636,12 @@ export const CartProvider = ({ children }) => {
         removeCoupon,
         showToast,
         categories: categoriesList,
-        refreshCategories
+        refreshCategories,
+        isPolicyModalOpen,
+        setIsPolicyModalOpen,
+        policyModalTab,
+        setPolicyModalTab,
+        openPolicy
       }}
     >
       {children}

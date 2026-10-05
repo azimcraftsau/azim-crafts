@@ -42,7 +42,8 @@ export const CheckoutPage = () => {
     freeShippingThreshold = 200,
     standardShippingFee = 20,
     isFreeShipping = false,
-    shippingFee = 0
+    shippingFee = 0,
+    openPolicy
   } = useCart() || {};
 
   // Form states
@@ -1588,10 +1589,34 @@ export const CheckoutPage = () => {
               </button>
 
               <div className="flex items-center justify-between text-[11px] text-neutral-500 pt-2 border-t border-neutral-200">
-                <a href="/pages/t-c-refund-policy" className="hover:underline text-[#0066cc]">Refund policy</a>
-                <a href="#" className="hover:underline text-[#0066cc]">Shipping</a>
-                <a href="/pages/privacy-policy" className="hover:underline text-[#0066cc]">Privacy policy</a>
-                <a href="/policies/terms-of-service" className="hover:underline text-[#0066cc]">Terms of service</a>
+                <button
+                  type="button"
+                  onClick={() => openPolicy && openPolicy('refund')}
+                  className="hover:underline text-[#0066cc] cursor-pointer"
+                >
+                  Refund policy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openPolicy && openPolicy('shipping')}
+                  className="hover:underline text-[#0066cc] cursor-pointer"
+                >
+                  Shipping
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openPolicy && openPolicy('privacy')}
+                  className="hover:underline text-[#0066cc] cursor-pointer"
+                >
+                  Privacy policy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openPolicy && openPolicy('refund')}
+                  className="hover:underline text-[#0066cc] cursor-pointer"
+                >
+                  Terms of service
+                </button>
               </div>
             </div>
           </form>

@@ -203,7 +203,7 @@ export const ChatWidget = () => {
         id: Date.now() + 1,
         sender: 'bot',
         senderName: 'Support Bot',
-        text: 'We have a 30-Day Hassle-Free Return Policy. If you are not completely satisfied with your handcrafted vintage piece, contact us for a replacement or full refund.',
+        text: 'We offer a 14-Day Return & Refund Policy if you are not satisfied with the quality or if your item arrives damaged in transit! Note: For custom orders, returns and refunds are not available (we share high-res photos before dispatch for approval).',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
     } else {

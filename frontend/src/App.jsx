@@ -19,6 +19,7 @@ import { CustomQuoteModal } from './components/modals/CustomQuoteModal';
 import { Toast } from './components/modals/Toast';
 import { WelcomeOfferModal } from './components/modals/WelcomeOfferModal';
 import { AuthModal } from './components/modals/AuthModal';
+import { PolicyModal } from './components/modals/PolicyModal';
 import { ChatWidget } from './components/layout/ChatWidget';
 import { CartPage } from './pages/CartPage';
 import { CheckoutPage } from './pages/CheckoutPage';
@@ -27,7 +28,7 @@ import { AllProductsPage } from './pages/AllProductsPage';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 function AppContent() {
-  const { currentPage } = useCart();
+  const { currentPage, isPolicyModalOpen, setIsPolicyModalOpen, policyModalTab } = useCart();
 
   // Detect write_review=true URL param from delivery email
   const [reviewParams, setReviewParams] = React.useState({ autoOpen: false, name: '', email: '', orderId: '' });
@@ -62,6 +63,11 @@ function AppContent() {
         <div className="min-h-screen bg-white text-[#131313]">
           <CheckoutPage />
           <Toast />
+          <PolicyModal
+            isOpen={isPolicyModalOpen}
+            onClose={() => setIsPolicyModalOpen(false)}
+            initialTab={policyModalTab}
+          />
         </div>
       </ErrorBoundary>
     );
@@ -257,6 +263,11 @@ function AppContent() {
       <CustomQuoteModal />
       <Toast />
       <WelcomeOfferModal />
+      <PolicyModal
+        isOpen={isPolicyModalOpen}
+        onClose={() => setIsPolicyModalOpen(false)}
+        initialTab={policyModalTab}
+      />
       <ChatWidget />
     </div>
   );

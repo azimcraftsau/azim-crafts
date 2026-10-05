@@ -7,10 +7,14 @@ import {
 } from 'lucide-react';
 
 export const Footer = () => {
-  const { currentPage, navigateTo, openCategory } = useCart();
+  const { currentPage, navigateTo, openCategory, openPolicy } = useCart();
 
   const handleFooterLinkClick = (e, link) => {
     e.preventDefault();
+    if (link.policyTab) {
+      if (openPolicy) openPolicy(link.policyTab);
+      return;
+    }
     if (link.href === '#about-section') {
       if (currentPage !== 'home') {
         navigateTo('home');
@@ -100,13 +104,13 @@ export const Footer = () => {
             </div>
           </div>
 
-          {/* Column 2: Quick Links (4 cols) */}
-          <div className="lg:col-span-4 space-y-3">
+          {/* Column 2: Artisan Collections (3 cols) */}
+          <div className="lg:col-span-3 space-y-3">
             <h3 className="font-heading text-sm font-bold text-white tracking-wider border-b border-neutral-800 pb-2">
-              Quick Links
+              Artisan Collections
             </h3>
-            <ul className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
-              {footerQuickLinks.map((link, idx) => (
+            <ul className="grid grid-cols-1 gap-y-2 text-xs">
+              {footerQuickLinks.slice(0, 7).map((link, idx) => (
                 <li key={idx}>
                   <a
                     href={link.href}
@@ -120,8 +124,59 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 3: Our Stores & Workshop (4 cols) */}
-          <div className="lg:col-span-4 space-y-3">
+          {/* Column 3: Customer Care & Policies (2 cols) */}
+          <div className="lg:col-span-2 space-y-3">
+            <h3 className="font-heading text-sm font-bold text-white tracking-wider border-b border-neutral-800 pb-2">
+              Policies &amp; Care
+            </h3>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <button
+                  onClick={() => openPolicy && openPolicy('refund')}
+                  className="text-neutral-400 hover:text-[#f7eddb] transition-colors text-left py-0.5 cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>Return &amp; Refund</span>
+                  <span className="text-[10px] bg-amber-500/20 text-[#c8924b] px-1.5 py-0.2 rounded font-bold">14 Days</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => openPolicy && openPolicy('shipping')}
+                  className="text-neutral-400 hover:text-[#f7eddb] transition-colors text-left py-0.5 cursor-pointer"
+                >
+                  Shipping &amp; Delivery
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => openPolicy && openPolicy('privacy')}
+                  className="text-neutral-400 hover:text-[#f7eddb] transition-colors text-left py-0.5 cursor-pointer"
+                >
+                  Privacy &amp; Security
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => openPolicy && openPolicy('refund')}
+                  className="text-neutral-400 hover:text-[#f7eddb] transition-colors text-left py-0.5 cursor-pointer"
+                >
+                  Custom Order Terms
+                </button>
+              </li>
+              <li>
+                <a
+                  href="#about-section"
+                  onClick={(e) => handleFooterLinkClick(e, { href: '#about-section' })}
+                  className="text-neutral-400 hover:text-[#f7eddb] transition-colors inline-block py-0.5 cursor-pointer"
+                >
+                  About Our Heritage
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Our Stores & Workshop (3 cols) */}
+          <div className="lg:col-span-3 space-y-3">
             <h3 className="font-heading text-sm font-bold text-white tracking-wider border-b border-neutral-800 pb-2">
               Our Stores & Workshop
             </h3>
@@ -156,10 +211,10 @@ export const Footer = () => {
               <div className="space-y-0.5 pt-2 border-t border-neutral-800/80">
                 <div className="flex items-center gap-2 text-white font-semibold">
                   <Globe className="w-3.5 h-3.5 text-[#f7eddb] shrink-0" />
-                  <span>Manufacturing Unit & Workshop</span>
+                  <span>Manufacturing Foundry</span>
                 </div>
                 <p className="pl-5 text-neutral-400 leading-relaxed">
-                  Master Artisan Foundry, Roorkee, Uttarakhand, India
+                  Master Artisan Workshop, Roorkee, Uttarakhand, India
                 </p>
               </div>
 
@@ -200,9 +255,34 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-8 text-center text-xs text-neutral-400 border-t border-neutral-900 pt-6">
-          <p>© 2026, <a href="/" className="hover:underline text-neutral-300">Azim Crafts</a>. Handcrafted with authenticity.</p>
+        {/* Copyright & Policy Quick Links */}
+        <div className="mt-8 text-xs text-neutral-400 border-t border-neutral-900 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-center md:text-left">
+            © 2026, <a href="/" className="hover:underline text-neutral-300">Azim Crafts</a>. Handcrafted with authenticity. All rights reserved.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-neutral-400">
+            <button
+              onClick={() => openPolicy && openPolicy('refund')}
+              className="hover:text-[#f7eddb] transition-colors cursor-pointer underline text-[11.5px]"
+            >
+              Return &amp; Refund Policy (14 Days)
+            </button>
+            <span className="text-neutral-700">&bull;</span>
+            <button
+              onClick={() => openPolicy && openPolicy('shipping')}
+              className="hover:text-[#f7eddb] transition-colors cursor-pointer underline text-[11.5px]"
+            >
+              Shipping Policy
+            </button>
+            <span className="text-neutral-700">&bull;</span>
+            <button
+              onClick={() => openPolicy && openPolicy('privacy')}
+              className="hover:text-[#f7eddb] transition-colors cursor-pointer underline text-[11.5px]"
+            >
+              Privacy Policy
+            </button>
+          </div>
         </div>
       </div>
     </footer>
