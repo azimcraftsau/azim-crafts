@@ -92,16 +92,16 @@ export const CategoryProductSection = ({
           </div>
 
           {/* Bespoke Category Commission Box */}
-          <div className="bg-[#181615] bg-gradient-to-r from-[#181615] via-[#26221e] to-[#181615] text-white rounded-2xl p-5 md:p-6 shadow-md border border-[#c8924b]/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-[#fbf7ee] bg-gradient-to-r from-[#fbf7ee] via-[#f5ecdd] to-[#fbf7ee] rounded-2xl p-5 md:p-6 shadow-xs border border-[#e5d6be] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3.5 text-center sm:text-left">
-              <div className="w-11 h-11 rounded-xl bg-[#c8924b]/20 border border-[#c8924b]/50 flex items-center justify-center shrink-0 text-[#c8924b]">
+              <div className="w-11 h-11 rounded-xl bg-white border border-[#dfceb6] shadow-2xs flex items-center justify-center shrink-0 text-[#b57f38]">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-heading text-sm md:text-base font-bold text-white tracking-wide">
+                <h4 className="font-heading text-sm md:text-base font-bold text-neutral-900 tracking-wide">
                   Looking for a custom {title}?
                 </h4>
-                <p className="text-xs text-stone-300 mt-1 max-w-xl leading-relaxed">
+                <p className="text-xs text-neutral-600 font-medium mt-1 max-w-xl leading-relaxed">
                   Need specific dimensions, customized metals, or an exclusive design? Our master artisans handcraft to your exact order.
                 </p>
               </div>

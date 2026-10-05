@@ -316,19 +316,19 @@ export const AllProductsPage = () => {
         )}
 
         {/* Category-Level Bespoke Commission Callout */}
-        <div className="mt-12 bg-[#181615] bg-gradient-to-r from-[#181615] via-[#26221e] to-[#181615] text-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-md border border-[#c8924b]/40 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="mt-12 bg-[#fbf7ee] bg-gradient-to-r from-[#fbf7ee] via-[#f5ecdd] to-[#fbf7ee] rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xs border border-[#e5d6be] flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-start sm:items-center gap-4 text-center sm:text-left">
-            <div className="w-12 h-12 rounded-2xl bg-[#c8924b]/20 border border-[#c8924b]/50 flex items-center justify-center shrink-0 text-[#c8924b]">
+            <div className="w-12 h-12 rounded-2xl bg-white border border-[#dfceb6] shadow-2xs flex items-center justify-center shrink-0 text-[#b57f38]">
               <Sparkles className="w-6 h-6" />
             </div>
             <div>
-              <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#c8924b] uppercase tracking-wider mb-1">
+              <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#b57f38] uppercase tracking-wider mb-1">
                 <span>Handmade by Roorkee Artisans</span>
               </div>
-              <h3 className="font-heading text-lg sm:text-xl font-bold text-white">
+              <h3 className="font-heading text-lg sm:text-xl font-bold text-neutral-900">
                 Need Custom Sizing or a Unique {isAll ? 'Artisan Piece' : activeCategoryObj.label}?
               </h3>
-              <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-2xl leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral-600 font-medium mt-1 max-w-2xl leading-relaxed">
                 Whether you need specific room dimensions, special patina finishes, customized heraldry, or tailored lighting chains — our master craftsmen will create it to your exact specifications.
               </p>
             </div>
