@@ -154,7 +154,7 @@ export const CartProvider = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [quickViewProduct, setQuickViewProductState] = useState(null);
-  const [customQuoteProduct, setCustomQuoteProduct] = useState(null);
+  const [customQuoteCategory, setCustomQuoteCategory] = useState(null);
   const [activeCategoryCollection, setActiveCategoryCollection] = useState(null);
   const [toast, setToast] = useState(null);
 
@@ -247,7 +247,7 @@ export const CartProvider = ({ children }) => {
   const navigateTo = (page, targetCategory = null) => {
     setCurrentPage(page);
     setQuickViewProductState(null);
-    setCustomQuoteProduct(null);
+    setCustomQuoteCategory(null);
     setActiveCategoryCollection(null);
     setIsCartOpen(false);
 
@@ -323,12 +323,20 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const openCustomQuote = (product) => {
-    setCustomQuoteProduct(product);
+  const openCustomQuote = (categoryOrData) => {
+    if (typeof categoryOrData === 'string') {
+      setCustomQuoteCategory({ categoryName: categoryOrData, categoryKey: categoryOrData });
+    } else if (categoryOrData && typeof categoryOrData === 'object') {
+      const categoryName = categoryOrData.categoryName || categoryOrData.name || categoryOrData.title || 'General';
+      const categoryKey = categoryOrData.categoryKey || categoryOrData.category || categoryOrData.key || categoryOrData.id || 'all';
+      setCustomQuoteCategory({ ...categoryOrData, categoryName, categoryKey });
+    } else {
+      setCustomQuoteCategory({ categoryName: 'General Bespoke Commission', categoryKey: 'all' });
+    }
   };
 
   const closeCustomQuote = () => {
-    setCustomQuoteProduct(null);
+    setCustomQuoteCategory(null);
   };
 
   const showToast = (message, type = 'success') => {
@@ -580,7 +588,8 @@ export const CartProvider = ({ children }) => {
         isCartOpen,
         isSearchOpen,
         quickViewProduct,
-        customQuoteProduct,
+        customQuoteCategory,
+        customQuoteProduct: customQuoteCategory,
         activeCategoryCollection,
         toast,
         totalItems,

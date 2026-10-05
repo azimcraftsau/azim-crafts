@@ -1,40 +1,97 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Sparkles, Send, CheckCircle2, Ruler, Palette, Home, 
-  Phone, Mail, User, FileText, Clock, ShieldCheck, AlertCircle, Loader2
+  Phone, Mail, User, FileText, Clock, ShieldCheck, AlertCircle, Loader2, Layers, Check
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { saveMessageToDB } from '../../lib/cloudflareService';
+import { featuredCategories } from '../../data/categories';
+
+// Standard 13 Master Categories List
+const DEFAULT_CATEGORIES = [
+  'Vintage Wall Lights',
+  'Vintage Chandeliers',
+  'Vintage Armour & Suits',
+  'Wooden Shields',
+  'Fantasy & Gothic Armour Suit',
+  'Vintage Medieval Helmets',
+  'Vintage Diving Helmets',
+  'Cinematic Antiques & Lore',
+  'Vintage Compasses',
+  'Nautical Telescopes',
+  'Nautical Spotlights & Tripods',
+  'Walking Sticks & Canes',
+  'Vintage Gramophones & Decor',
+  'Handmade Leather Journals',
+  'Other Custom Handcrafted Commission'
+];
 
 export const CustomQuoteModal = () => {
-  const { customQuoteProduct, closeCustomQuote, setToast } = useCart();
+  const { 
+    customQuoteCategory, 
+    customQuoteProduct, 
+    closeCustomQuote, 
+    categories: dynamicCategories,
+    setToast 
+  } = useCart();
+
+  const quoteTarget = customQuoteCategory || customQuoteProduct;
+
+  // Build full list of available categories
+  const allCategoryNames = React.useMemo(() => {
+    const list = [...DEFAULT_CATEGORIES];
+    if (Array.isArray(dynamicCategories)) {
+      dynamicCategories.forEach(cat => {
+        const name = cat.name || cat.title || cat.label;
+        if (name && !list.includes(name)) {
+          list.push(name);
+        }
+      });
+    }
+    return list;
+  }, [dynamicCategories]);
+
   const [formData, setFormData] = useState({
+    category: 'Vintage Wall Lights',
     name: '',
     email: '',
     phone: '',
     dimensions: '',
-    finish: 'Antique Brass (Aged Patina)',
+    finish: 'Antique Brass (Aged Hand Patina)',
+    quantity: '1 Piece',
     roomDetails: '',
     notes: ''
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
 
+  // Pre-fill category when modal opens
   useEffect(() => {
-    if (customQuoteProduct) {
+    if (quoteTarget) {
       setIsSubmitted(false);
       setError('');
+      
+      const targetName = quoteTarget.categoryName || quoteTarget.title || quoteTarget.name || '';
+      // Find closest match in categories list
+      const matched = allCategoryNames.find(c => 
+        c.toLowerCase() === targetName.toLowerCase() || 
+        targetName.toLowerCase().includes(c.toLowerCase()) ||
+        c.toLowerCase().includes(targetName.toLowerCase())
+      ) || targetName || 'Vintage Wall Lights';
+
       setFormData(prev => ({
         ...prev,
+        category: matched,
         dimensions: '',
         roomDetails: '',
         notes: ''
       }));
     }
-  }, [customQuoteProduct]);
+  }, [quoteTarget, allCategoryNames]);
 
-  if (!customQuoteProduct) return null;
+  if (!quoteTarget) return null;
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -52,7 +109,7 @@ export const CustomQuoteModal = () => {
       return;
     }
     if (!formData.phone.trim()) {
-      setError('Please provide a WhatsApp or phone number so our artisans can reach you.');
+      setError('Please provide a WhatsApp or phone number so our artisans can connect with you.');
       return;
     }
 
@@ -60,22 +117,21 @@ export const CustomQuoteModal = () => {
     setError('');
 
     const formattedMessage = [
-      `🎨 BESPOKE COMMISSION / CUSTOM QUOTE REQUEST`,
-      `Item Reference: ${customQuoteProduct.title}`,
-      `Category: ${customQuoteProduct.categoryName || customQuoteProduct.category || 'General'}`,
-      `Product ID: #${customQuoteProduct.id}`,
+      `🎨 BESPOKE CATEGORY COMMISSION / CUSTOM ORDER REQUEST`,
+      `Target Category: ${formData.category}`,
+      `Quantity Needed: ${formData.finish ? formData.quantity : '1'}`,
       ``,
-      `--- CLIENT CONTACT ---`,
-      `Name: ${formData.name.trim()}`,
-      `Email: ${formData.email.trim()}`,
-      `WhatsApp / Phone: ${formData.phone.trim()}`,
+      `--- CLIENT CONTACT DETAILS ---`,
+      `Full Name: ${formData.name.trim()}`,
+      `Email Address: ${formData.email.trim()}`,
+      `WhatsApp / Phone Number: ${formData.phone.trim()}`,
       ``,
       `--- CUSTOM SPECIFICATIONS ---`,
-      `Requested Dimensions / Sizing: ${formData.dimensions.trim() || 'Standard / Artisan Recommended'}`,
-      `Preferred Finish / Material: ${formData.finish}`,
+      `Requested Dimensions / Sizing: ${formData.dimensions.trim() || 'Custom / To Be Discussed with Artisan'}`,
+      `Preferred Metal Finish & Tone: ${formData.finish}`,
       `Room / Installation Space: ${formData.roomDetails.trim() || 'Not specified'}`,
       ``,
-      `--- CLIENT NOTES & SPECIAL INSTRUCTIONS ---`,
+      `--- CLIENT NOTES & DESIGN DETAILS ---`,
       formData.notes.trim() || 'No additional notes provided.'
     ].join('\n');
 
@@ -83,7 +139,7 @@ export const CustomQuoteModal = () => {
       id: Date.now(),
       name: formData.name.trim(),
       email: formData.email.trim(),
-      subject: `🎨 Custom Quote: ${customQuoteProduct.title}`,
+      subject: `🎨 Custom Order Request: ${formData.category}`,
       message: formattedMessage,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       priority: 'high',
@@ -96,10 +152,10 @@ export const CustomQuoteModal = () => {
       await saveMessageToDB(quoteMessage);
       setIsSubmitted(true);
       if (setToast) {
-        setToast('✨ Custom commission quote request sent successfully!');
+        setToast('✨ Custom order request submitted successfully! We will connect shortly.');
       }
     } catch (err) {
-      console.error('Failed to submit quote inquiry:', err);
+      console.error('Failed to submit custom quote inquiry:', err);
       setError('Failed to send request. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
@@ -107,7 +163,7 @@ export const CustomQuoteModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs font-sans overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs font-sans overflow-y-auto">
       <div 
         className="relative w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden my-auto animate-fade-in text-neutral-900"
         onClick={(e) => e.stopPropagation()}
@@ -124,36 +180,33 @@ export const CustomQuoteModal = () => {
 
           <div className="flex items-center gap-2 text-[#c8924b] text-xs font-bold uppercase tracking-widest mb-1.5">
             <Sparkles className="w-4 h-4" />
-            <span>Master Artisan Commission</span>
+            <span>Handcrafted Bespoke Commission</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-serif font-normal text-[#f7eddb] tracking-wide leading-snug">
-            Request Custom Quote
+            Request Custom {formData.category}
           </h2>
           <p className="text-xs text-neutral-300 mt-1 max-w-md leading-relaxed">
-            Every home and space is unique. Submit your custom dimensions, metal finish &amp; room specs directly to our Roorkee artisans.
+            Can't find the exact size, design, or finish in our listings? Our master artisans in Roorkee will build your piece to your exact custom specifications.
           </p>
         </div>
 
-        {/* Product Snippet Header */}
-        <div className="px-6 py-3.5 sm:px-8 bg-[#faf8f5] border-b border-neutral-200 flex items-center gap-3.5">
-          <div className="w-14 h-14 rounded-xl bg-white border border-neutral-200 p-1 shrink-0 overflow-hidden flex items-center justify-center">
-            <img 
-              src={customQuoteProduct.image || '/logo.png'} 
-              alt={customQuoteProduct.title}
-              className="w-full h-full object-contain"
-            />
+        {/* Category Highlight Bar */}
+        <div className="px-6 py-3.5 sm:px-8 bg-[#faf8f5] border-b border-neutral-200/80 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="text-lg">🛠️</span>
+            <div>
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                Selected Commission Category
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-neutral-900">
+                {formData.category}
+              </span>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <span className="text-[10px] font-bold text-[#c8924b] uppercase tracking-wider block">
-              {customQuoteProduct.categoryName || customQuoteProduct.category || 'Handcrafted Masterpiece'}
-            </span>
-            <h3 className="text-xs sm:text-sm font-bold text-neutral-900 truncate">
-              {customQuoteProduct.title}
-            </h3>
-            <span className="inline-block mt-0.5 text-[10.5px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.2 rounded border border-emerald-200">
-              ✓ 100% Made-to-Order Customization Available
-            </span>
-          </div>
+          <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
+            <Check className="w-3 h-3 text-emerald-600" />
+            <span>100% Made-to-Order</span>
+          </span>
         </div>
 
         {/* Body Content */}
@@ -165,22 +218,22 @@ export const CustomQuoteModal = () => {
               </div>
               <div className="space-y-1.5">
                 <h3 className="text-xl font-serif font-bold text-neutral-900">
-                  Quote Request Received!
+                  Custom Order Request Received!
                 </h3>
                 <p className="text-xs sm:text-sm text-neutral-600 max-w-md mx-auto leading-relaxed">
-                  Thank you, <strong className="text-neutral-900">{formData.name}</strong>. Your custom specifications have been routed directly to our master craftsmen in Roorkee.
+                  Thank you, <strong className="text-neutral-900">{formData.name}</strong>. Your custom inquiry for <strong className="text-[#c8924b]">{formData.category}</strong> has been sent directly to our workshop artisans.
                 </p>
               </div>
 
               <div className="bg-[#faf8f5] border border-amber-200/80 rounded-2xl p-4 text-left max-w-md mx-auto space-y-2 text-xs">
                 <div className="flex items-center gap-2 font-bold text-[#b57a2e]">
                   <Clock className="w-4 h-4" />
-                  <span>What happens next?</span>
+                  <span>Next Steps:</span>
                 </div>
                 <ul className="text-neutral-600 space-y-1.5 text-[11.5px] list-disc list-inside">
-                  <li>Our artisans will review your required dimensions and finish.</li>
-                  <li>We will reach out to you via <strong>WhatsApp / Email ({formData.phone || formData.email})</strong> within 24 hours with a custom quotation and lead time.</li>
-                  <li>Custom production begins immediately upon your design approval.</li>
+                  <li>Our artisans will calculate the exact metal, woodwork, and workshop time for your specifications.</li>
+                  <li>We will reach out to you directly via <strong>WhatsApp / Email ({formData.phone || formData.email})</strong> within 24 hours with custom design drawings, price quotation, and delivery lead time.</li>
+                  <li>No upfront payment required until you approve the design and quote.</li>
                 </ul>
               </div>
 
@@ -203,11 +256,34 @@ export const CustomQuoteModal = () => {
                 </div>
               )}
 
-              {/* Contact Information */}
-              <div className="space-y-3">
+              {/* 1. Category Switcher */}
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold text-neutral-700 uppercase tracking-wider">
+                  Category for Custom Commission <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.category}
+                    onChange={(e) => handleChange('category', e.target.value)}
+                    className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs font-semibold text-neutral-900 outline-none transition-all cursor-pointer"
+                  >
+                    {allCategoryNames.map(cat => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="text-[10px] text-neutral-500">
+                  You can change the category if you need custom items across different collections.
+                </p>
+              </div>
+
+              {/* 2. Contact Information */}
+              <div className="space-y-3 pt-2 border-t border-neutral-100">
                 <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-[#c8924b]" />
-                  <span>1. Your Contact Details</span>
+                  <span>Your Contact Details</span>
                 </h4>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -220,7 +296,7 @@ export const CustomQuoteModal = () => {
                       required
                       value={formData.name}
                       onChange={(e) => handleChange('name', e.target.value)}
-                      placeholder="e.g. Eleanor Vance"
+                      placeholder="e.g. Johnathan Miller"
                       className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all font-medium"
                     />
                   </div>
@@ -234,7 +310,7 @@ export const CustomQuoteModal = () => {
                       required
                       value={formData.email}
                       onChange={(e) => handleChange('email', e.target.value)}
-                      placeholder="e.g. eleanor@example.com"
+                      placeholder="e.g. jmiller@example.com"
                       className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all font-medium"
                     />
                   </div>
@@ -251,79 +327,98 @@ export const CustomQuoteModal = () => {
                       required
                       value={formData.phone}
                       onChange={(e) => handleChange('phone', e.target.value)}
-                      placeholder="e.g. +1 (555) 000-0000 or +44 7911 123456"
+                      placeholder="e.g. +1 (555) 234-5678 or +44 7911 123456"
                       className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all font-medium"
                     />
                   </div>
                   <p className="text-[10px] text-neutral-500 mt-1">
-                    Include country code. Our master artisans will send quote details and photos directly on WhatsApp or Email.
+                    Please include country code. We will share CAD sketches, metal samples &amp; quote directly via WhatsApp.
                   </p>
                 </div>
               </div>
 
-              {/* Custom Specifications */}
+              {/* 3. Custom Specifications & Sizing */}
               <div className="space-y-3 pt-2 border-t border-neutral-100">
                 <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
                   <Ruler className="w-3.5 h-3.5 text-[#c8924b]" />
-                  <span>2. Custom Specifications &amp; Sizing</span>
+                  <span>Custom Sizing &amp; Materials</span>
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-neutral-700 mb-1">
-                      Required Dimensions (Height, Width, Dia)
+                      Target Dimensions (Height, Width, Dia)
                     </label>
                     <input
                       type="text"
                       value={formData.dimensions}
                       onChange={(e) => handleChange('dimensions', e.target.value)}
-                      placeholder="e.g. Diameter: 36 inches, Height: 48 inches"
+                      placeholder="e.g. Height: 32in, Width: 20in, Chain: 48in"
                       className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all font-medium"
                     />
                   </div>
 
                   <div>
                     <label className="block text-[11px] font-bold text-neutral-700 mb-1">
-                      Preferred Metal Finish &amp; Tone
+                      Preferred Metal Finish &amp; Patina
                     </label>
                     <select
                       value={formData.finish}
                       onChange={(e) => handleChange('finish', e.target.value)}
                       className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 outline-none transition-all font-medium cursor-pointer"
                     >
-                      <option value="Antique Brass (Aged Patina)">Antique Brass (Aged Patina)</option>
+                      <option value="Antique Brass (Aged Hand Patina)">Antique Brass (Aged Hand Patina)</option>
                       <option value="Hand-Forged Wrought Iron (Matte Black)">Hand-Forged Wrought Iron (Matte Black)</option>
                       <option value="Burnished Bronze">Burnished Bronze</option>
                       <option value="Vintage Polished Copper">Vintage Polished Copper</option>
                       <option value="Distressed Antique Pewter / Steel">Distressed Antique Pewter / Steel</option>
-                      <option value="Natural Hardwood &amp; Brass Accent">Natural Hardwood &amp; Brass Accent</option>
+                      <option value="Natural Hardwood with Brass Accents">Natural Hardwood with Brass Accents</option>
+                      <option value="Polished High-Shine Brass">Polished High-Shine Brass</option>
                       <option value="Custom Finish (Specify in Notes)">Custom Finish (Specify in Notes)</option>
                     </select>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-neutral-700 mb-1">
-                    Room / Installation Space (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.roomDetails}
-                    onChange={(e) => handleChange('roomDetails', e.target.value)}
-                    placeholder="e.g. Living room high ceiling (12 ft), Dining foyer, Entrance archway"
-                    className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all font-medium"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-700 mb-1">
+                      Quantity Needed
+                    </label>
+                    <select
+                      value={formData.quantity}
+                      onChange={(e) => handleChange('quantity', e.target.value)}
+                      className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 outline-none transition-all font-medium cursor-pointer"
+                    >
+                      <option value="1 Piece (Single Bespoke Unit)">1 Piece (Single Bespoke Unit)</option>
+                      <option value="Pair (2 Pieces)">Pair (2 Pieces)</option>
+                      <option value="Set of 3 to 5 Pieces">Set of 3 to 5 Pieces</option>
+                      <option value="Bulk / Hospitality Project (6+ Pieces)">Bulk / Hospitality Project (6+ Pieces)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-700 mb-1">
+                      Room / Installation Space (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.roomDetails}
+                      onChange={(e) => handleChange('roomDetails', e.target.value)}
+                      placeholder="e.g. Dining Hall (14ft ceiling), Stairway wall"
+                      className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all font-medium"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-bold text-neutral-700 mb-1">
-                    Special Instructions / Reference Link (Optional)
+                    Design Notes, Special Engraving or Reference Link (Optional)
                   </label>
                   <textarea
                     rows={3}
                     value={formData.notes}
                     onChange={(e) => handleChange('notes', e.target.value)}
-                    placeholder="Describe any special chain lengths, bulb fittings, custom motifs, or paste link to reference photos/drawings..."
+                    placeholder="Describe specific motifs, historical era reference, bulb fittings, glass shade requirements, or paste a link to reference images..."
                     className="w-full bg-[#faf8f5] border border-neutral-300 focus:border-[#c8924b] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition-all font-medium resize-none"
                   />
                 </div>
@@ -332,8 +427,8 @@ export const CustomQuoteModal = () => {
               {/* Artisan Guarantee Notice */}
               <div className="bg-[#faf8f5] p-3 rounded-xl border border-amber-200/60 flex items-start gap-2.5 text-[11px] text-neutral-600">
                 <ShieldCheck className="w-4 h-4 text-[#c8924b] shrink-0 mt-0.5" />
-                <p leading-normal>
-                  <strong>Artisan Guarantee:</strong> No obligation. We will provide a formal quotation, exact shipping timeframe, and workshop photos before any payment is requested.
+                <p className="leading-normal">
+                  <strong>Master Artisan Guarantee:</strong> No purchase obligation. Our master artisans in Roorkee review every request individually to deliver authentic craftsmanship, custom drawings, and fair pricing.
                 </p>
               </div>
 
@@ -352,7 +447,7 @@ export const CustomQuoteModal = () => {
                   ) : (
                     <>
                       <Send className="w-4 h-4 text-[#c8924b]" />
-                      <span>Submit Bespoke Commission Request</span>
+                      <span>Request Custom {formData.category} Quote</span>
                     </>
                   )}
                 </button>

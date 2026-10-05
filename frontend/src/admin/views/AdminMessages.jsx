@@ -693,9 +693,9 @@ export function AdminMessages() {
 
                   <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-100/60">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      {msg.subject?.includes('Custom Quote') || msg.subject?.includes('Bespoke') ? (
+                      {msg.subject?.includes('Custom Quote') || msg.subject?.includes('Bespoke') || msg.subject?.includes('Custom Order') ? (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-300 flex items-center gap-1">
-                          <span>🎨 Bespoke Quote</span>
+                          <span>🎨 Bespoke Commission</span>
                         </span>
                       ) : msg.isLiveChat ? (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
@@ -754,13 +754,13 @@ export function AdminMessages() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border ${
-                        selected.subject?.includes('Custom Quote') || selected.subject?.includes('Bespoke')
+                        selected.subject?.includes('Custom Quote') || selected.subject?.includes('Bespoke') || selected.subject?.includes('Custom Order')
                           ? 'bg-amber-100 text-amber-900 border-amber-300 font-black'
                           : selected.isLiveChat
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-amber-50 text-[#c8924b] border-amber-200'
                       }`}>
-                        {selected.subject?.includes('Custom Quote') || selected.subject?.includes('Bespoke')
+                        {selected.subject?.includes('Custom Quote') || selected.subject?.includes('Bespoke') || selected.subject?.includes('Custom Order')
                           ? '🎨 Bespoke Commission Request'
                           : selected.isLiveChat
                             ? '🔴 Storefront Live Chat'
@@ -908,7 +908,7 @@ export function AdminMessages() {
                   <div className="space-y-4">
                     {/* Quick WhatsApp & Email Action Card for Bespoke Commission */}
                     {(() => {
-                      const isCustomQuote = selected.subject?.includes('Custom Quote') || selected.subject?.includes('Bespoke');
+                      const isCustomQuote = selected.subject?.includes('Custom Quote') || selected.subject?.includes('Bespoke') || selected.subject?.includes('Custom Order');
                       const phoneMatch = selected.message?.match(/(?:WhatsApp|Phone)[:\s]+([+\d\s\-()]+)/i);
                       const rawPhone = phoneMatch ? phoneMatch[1].trim() : '';
                       const cleanPhone = rawPhone.replace(/[^\d]/g, '');

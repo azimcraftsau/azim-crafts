@@ -57,13 +57,8 @@ export const ProductCard = ({ product }) => {
   const stockQty = product.stockQuantity !== undefined 
     ? Number(product.stockQuantity) 
     : (product.stock_quantity !== undefined ? Number(product.stock_quantity) : 10);
-  const isCustomInquiry = Boolean(
-    product.isCustomInquiry || 
-    product.is_custom_inquiry || 
-    (product.specifications && (product.specifications.isCustomInquiry || product.specifications.is_custom_inquiry))
-  );
-  const isSoldOut = !isCustomInquiry && (Boolean(product.isSoldOut) || stockQty <= 0);
-  const isLowStock = !isCustomInquiry && !isSoldOut && stockQty > 0 && stockQty <= 5;
+  const isSoldOut = Boolean(product.isSoldOut) || stockQty <= 0;
+  const isLowStock = !isSoldOut && stockQty > 0 && stockQty <= 5;
 
   const currentMedia = mediaList[activeImageIndex] || mediaList[0] || { type: 'image', src: product.image };
 
@@ -77,14 +72,8 @@ export const ProductCard = ({ product }) => {
       {/* Product Media Container */}
       <div className="aspect-square w-full relative mb-3 bg-white rounded-lg overflow-hidden flex items-center justify-center">
         
-        {/* Sold Out Badge (only if sold out) or Custom Commission Badge */}
-        {isCustomInquiry ? (
-          <div className="absolute top-2 left-2 z-10">
-            <span className="bg-[#b57a2e] text-white text-[9.5px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider shadow-xs">
-              Bespoke Quote
-            </span>
-          </div>
-        ) : isSoldOut ? (
+        {/* Sold Out Badge (only if sold out) */}
+        {isSoldOut ? (
           <div className="absolute top-1 left-1 z-10">
             <span className="bg-[#757575] text-white text-[9.5px] font-semibold px-2 py-0.5 rounded-xs tracking-wider uppercase shadow-2xs">
               Sold out
@@ -164,12 +153,8 @@ export const ProductCard = ({ product }) => {
             {product.title}
           </h3>
 
-          {/* Low Stock Alert Badge / Sold Out Label / Engraving Badge / Bespoke Badge */}
-          {isCustomInquiry ? (
-            <div className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#8a5b1f] bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200/70">
-              <span>✨ Bespoke Commission / Made to Order</span>
-            </div>
-          ) : isLowStock ? (
+          {/* Low Stock Alert Badge / Sold Out Label / Engraving Badge */}
+          {isLowStock ? (
             <div className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-amber-800 bg-amber-50/90 border border-amber-200/90 px-2 py-0.5 rounded-md">
               <span className="animate-pulse text-xs">🔥</span>
               <span>Only {stockQty} left in stock!</span>
@@ -187,14 +172,7 @@ export const ProductCard = ({ product }) => {
 
         {/* Clean Luxury Price Display */}
         <div className="pt-1 flex items-baseline gap-2">
-          {isCustomInquiry ? (
-            <div className="flex items-center justify-between w-full">
-              <span className="text-xs sm:text-sm font-bold text-[#b57a2e] uppercase tracking-wider flex items-center gap-1.5">
-                <span>Request Custom Quote</span>
-                <span className="text-xs font-bold">→</span>
-              </span>
-            </div>
-          ) : isSoldOut ? (
+          {isSoldOut ? (
             <div className="flex items-center gap-1.5">
               <span className="text-xs sm:text-sm font-semibold text-neutral-400 uppercase tracking-wide">
                 Sold Out

@@ -111,12 +111,6 @@ export const QuickViewModal = () => {
     : (product.specifications?.engravingCharLimit);
   const engravingCharLimit = (rawLimit && Number(rawLimit) > 0) ? Number(rawLimit) : null;
   const engravingPlaceholder = product.engravingPlaceholder || product.specifications?.engravingPlaceholder || 'e.g. Enter name, initials or date to engrave';
-  const isCustomInquiry = Boolean(
-    product.isCustomInquiry || 
-    product.is_custom_inquiry || 
-    (product.specifications && (product.specifications.isCustomInquiry || product.specifications.is_custom_inquiry))
-  );
-  const customInquiryNote = product.customInquiryNote || product.specifications?.customInquiryNote || '';
 
   const images = product.images && product.images.length > 0 
     ? product.images 
@@ -379,43 +373,23 @@ export const QuickViewModal = () => {
                   {product.title}
                 </h1>
 
-                {/* Price Box / Bespoke Quote Indicator */}
-                {isCustomInquiry ? (
-                  <div className="space-y-1.5 py-1">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <div className="inline-block border border-amber-300 rounded-xl px-4 py-2 bg-amber-50/70 shadow-2xs">
-                        <span className="text-base sm:text-lg font-bold text-[#b57a2e] tracking-wide">
-                          Bespoke Commission / Custom Quote
-                        </span>
-                      </div>
-                      <span className="bg-amber-100 text-amber-900 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border border-amber-300">
-                        ✨ Made to Order
-                      </span>
-                    </div>
-                    <p className="text-[11.5px] text-neutral-500 font-medium">
-                      Pricing is custom-quoted based on your required dimensions, metal finish, and artisan specifications.
-                    </p>
+                {/* Price Box */}
+                <div className="flex items-center gap-3">
+                  <div className="inline-block border border-neutral-300 rounded-xl px-4 py-1.5 bg-neutral-50 shadow-2xs">
+                    <span className="text-xl font-black text-neutral-900">
+                      ${formatPrice(product.price)} USD
+                    </span>
                   </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <div className="inline-block border border-neutral-300 rounded-xl px-4 py-1.5 bg-neutral-50 shadow-2xs">
-                        <span className="text-xl font-black text-neutral-900">
-                          ${formatPrice(product.price)} USD
-                        </span>
-                      </div>
-                      {(product.regularPrice > product.price || product.regular_price > product.price) && (
-                        <span className="text-sm font-semibold text-neutral-400 line-through">
-                          ${formatPrice(product.regularPrice || product.regular_price)} USD
-                        </span>
-                      )}
-                    </div>
+                  {(product.regularPrice > product.price || product.regular_price > product.price) && (
+                    <span className="text-sm font-semibold text-neutral-400 line-through">
+                      ${formatPrice(product.regularPrice || product.regular_price)} USD
+                    </span>
+                  )}
+                </div>
 
-                    <p className="text-[11px] text-neutral-500">
-                      Tax included. <span className="underline text-neutral-700 font-medium">Free Worldwide Express Shipping</span> on orders over $200 USD.
-                    </p>
-                  </>
-                )}
+                <p className="text-[11px] text-neutral-500">
+                  Tax included. <span className="underline text-neutral-700 font-medium">Free Worldwide Express Shipping</span> on orders over $200 USD.
+                </p>
 
                 {/* Low Stock Urgency Alert */}
                 {isLowStock && (
@@ -488,7 +462,7 @@ export const QuickViewModal = () => {
               )}
 
               {/* Quantity Selector */}
-              {!isCustomInquiry && !isSoldOut && (
+              {!isSoldOut && (
                 <div className="space-y-1.5 pt-3 border-t border-neutral-100">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-neutral-800 uppercase tracking-wider">
@@ -522,7 +496,7 @@ export const QuickViewModal = () => {
               )}
 
               {/* Select Optional Add-ons */}
-              {!isCustomInquiry && availableAddons.length > 0 && (
+              {availableAddons.length > 0 && (
                 <div className="space-y-2.5 pt-3 border-t border-neutral-100">
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#c8924b]" />
@@ -569,7 +543,7 @@ export const QuickViewModal = () => {
               )}
 
               {/* Custom Engraving / Personalization Input Box */}
-              {!isCustomInquiry && allowEngraving && !product.isSoldOut && (
+              {allowEngraving && !product.isSoldOut && (
                 <div className="space-y-2 pt-3 border-t border-neutral-100 animate-fade-in">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -619,42 +593,9 @@ export const QuickViewModal = () => {
                 </div>
               )}
 
-              {/* Action Buttons: Custom Quote Mode vs Standard Add to Cart */}
-              {isCustomInquiry ? (
-                <div className="space-y-3 pt-3 border-t border-neutral-100 animate-fade-in">
-                  {customInquiryNote && (
-                    <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-3.5 text-xs text-amber-950 flex items-start gap-2.5 shadow-2xs">
-                      <Sparkles className="w-4 h-4 text-[#c8924b] shrink-0 mt-0.5" />
-                      <p className="font-medium leading-relaxed">
-                        {customInquiryNote}
-                      </p>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      if (openCustomQuote) {
-                        openCustomQuote(product);
-                      }
-                    }}
-                    className="w-full bg-[#1b1a1a] hover:bg-[#2e2d2d] active:scale-[0.99] text-white py-4 px-6 rounded-xl font-bold text-xs uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer border border-[#c8924b]/50 hover:border-[#c8924b]"
-                  >
-                    <Sparkles className="w-4 h-4 text-[#c8924b]" />
-                    <span>Request Custom Quote / Commission</span>
-                  </button>
-
-                  <div className="bg-[#faf8f5] p-3 rounded-xl border border-neutral-200/70 text-[11px] text-neutral-600 text-center space-y-1">
-                    <p className="font-semibold text-neutral-800">
-                      🛠️ Handcrafted to Your Exact Room &amp; Space Dimensions
-                    </p>
-                    <p className="text-neutral-500 leading-normal">
-                      Submit your dimensions, finish preferences, and ceiling/wall details. Our Roorkee artisans will respond with a tailored quotation within 24 hours.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2.5 pt-3 border-t border-neutral-100">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {/* Action Buttons */}
+              <div className="space-y-2.5 pt-3 border-t border-neutral-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <button
                     onClick={handleAddToCart}
                     disabled={isAdding || product.isSoldOut}
@@ -773,7 +714,6 @@ export const QuickViewModal = () => {
                   </div>
                 )}
               </div>
-            )}
 
               {/* ================= 5 COLLAPSIBLE ACCORDIONS (Placed on Right Side) ================= */}
               <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden bg-white shadow-2xs mt-4">

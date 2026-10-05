@@ -5,7 +5,7 @@ import { ProductCard } from '../components/product/ProductCard';
 import { Search, ArrowUpDown, Sparkles } from 'lucide-react';
 
 export const AllProductsPage = () => {
-  const { products: liveProducts, navigateTo, selectedCategory, setSelectedCategory, categories: dynamicCategories } = useCart();
+  const { products: liveProducts, navigateTo, selectedCategory, setSelectedCategory, categories: dynamicCategories, openCustomQuote } = useCart();
   const sourceProducts = liveProducts && liveProducts.length > 0 ? liveProducts : allProducts;
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -191,6 +191,19 @@ export const AllProductsPage = () => {
                 ? 'Explore our complete collection of authentic handcrafted historical reproductions, nautical antiques, medieval armour, and leather crafts.'
                 : `Explore our authentic handcrafted ${activeCategoryObj.label} collection made by master artisans at our Roorkee workshop with worldwide express delivery.`}
             </p>
+
+            <div className="pt-2">
+              <button
+                onClick={() => openCustomQuote({ 
+                  categoryName: isAll ? 'General Custom Commission' : activeCategoryObj.label,
+                  categoryKey: selectedCategory
+                })}
+                className="inline-flex items-center gap-2 bg-[#1b1a1a] hover:bg-[#333333] text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-xs transition-all cursor-pointer border border-[#c8924b]/40 hover:border-[#c8924b]"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#c8924b]" />
+                <span>Request Custom {isAll ? 'Artisan Commission' : activeCategoryObj.label}</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -259,15 +272,27 @@ export const AllProductsPage = () => {
             <p className="text-xs text-neutral-500 max-w-md mx-auto">
               We couldn't find any products matching your current filters. Try changing your search keywords or category selection.
             </p>
-            <button
-              onClick={() => {
-                setSelectedCategory('all');
-                setSearchQuery('');
-              }}
-              className="bg-[#c8924b] hover:bg-[#b57f38] text-white text-xs font-bold px-5 py-2.5 rounded-lg transition-all cursor-pointer"
-            >
-              Reset All Filters
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setSelectedCategory('all');
+                  setSearchQuery('');
+                }}
+                className="bg-neutral-800 hover:bg-neutral-900 text-white text-xs font-bold px-5 py-2.5 rounded-lg transition-all cursor-pointer"
+              >
+                Reset All Filters
+              </button>
+              <button
+                onClick={() => openCustomQuote({
+                  categoryName: isAll ? 'General Custom Commission' : activeCategoryObj.label,
+                  categoryKey: selectedCategory
+                })}
+                className="bg-[#c8924b] hover:bg-[#b57f38] text-white text-xs font-bold px-5 py-2.5 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Request Custom {isAll ? 'Order' : activeCategoryObj.label}</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
@@ -276,6 +301,37 @@ export const AllProductsPage = () => {
             ))}
           </div>
         )}
+
+        {/* Category-Level Bespoke Commission Callout */}
+        <div className="mt-12 bg-linear-to-r from-[#1b1a1a] via-[#262320] to-[#1b1a1a] text-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm border border-[#c8924b]/30 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-start sm:items-center gap-4 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-[#c8924b]/20 border border-[#c8924b]/50 flex items-center justify-center shrink-0 text-[#c8924b]">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#c8924b] uppercase tracking-wider mb-1">
+                <span>Handmade by Roorkee Artisans</span>
+              </div>
+              <h3 className="font-heading text-lg sm:text-xl font-bold text-[#f7eddb]">
+                Need Custom Sizing or a Unique {isAll ? 'Artisan Piece' : activeCategoryObj.label}?
+              </h3>
+              <p className="text-xs sm:text-sm text-neutral-300 mt-1 max-w-2xl leading-relaxed">
+                Whether you need specific room dimensions, special patina finishes, customized heraldry, or tailored lighting chains — our master craftsmen will create it to your exact specifications.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => openCustomQuote({
+              categoryName: isAll ? 'General Custom Commission' : activeCategoryObj.label,
+              categoryKey: selectedCategory
+            })}
+            className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-[#c8924b] hover:bg-[#b57f38] active:scale-98 text-white font-bold text-xs py-3.5 px-6 rounded-xl transition-all shadow-md cursor-pointer tracking-wider uppercase shrink-0"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Request Custom {isAll ? 'Order' : activeCategoryObj.label}</span>
+          </button>
+        </div>
 
       </div>
     </div>
