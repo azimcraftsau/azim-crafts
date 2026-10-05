@@ -137,15 +137,24 @@ export const CustomQuoteModal = () => {
 
     const quoteMessage = {
       id: Date.now(),
+      type: 'custom_order',
+      category: formData.category,
       name: formData.name.trim(),
       email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      dimensions: formData.dimensions.trim() || 'Custom / To Be Discussed',
+      finish: formData.finish,
+      quantity: formData.finish ? formData.quantity : '1',
+      roomDetails: formData.roomDetails.trim() || '',
+      notes: formData.notes.trim() || '',
       subject: `🎨 Custom Order Request: ${formData.category}`,
       message: formattedMessage,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       priority: 'high',
       read: false,
       replied: false,
-      replyText: ''
+      replyText: '',
+      isResolved: false
     };
 
     try {

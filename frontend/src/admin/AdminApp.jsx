@@ -16,7 +16,8 @@ import {
   Trash2,
   LayoutTemplate,
   ShieldCheck,
-  Star
+  Star,
+  Sparkles
 } from 'lucide-react';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './views/AdminDashboard';
@@ -24,6 +25,7 @@ import { AdminProducts } from './views/AdminProducts';
 import { AdminTrash } from './views/AdminTrash';
 import { AdminBanners } from './views/AdminBanners';
 import { AdminOrders } from './views/AdminOrders';
+import { AdminCustomOrders } from './views/AdminCustomOrders';
 import { AdminUsers } from './views/AdminUsers';
 import { AdminTeam } from './views/AdminTeam';
 import { AdminCoupons } from './views/AdminCoupons';
@@ -45,6 +47,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'products', label: 'Products', icon: Package },
   { id: 'orders', label: 'Orders', icon: ShoppingCart },
+  { id: 'custom-orders', label: 'Custom Orders', icon: Sparkles },
   { id: 'reviews', label: 'Customer Reviews', icon: Star },
   { id: 'customers', label: 'Customers', icon: Users },
   { id: 'team', label: 'Admins & Staff', icon: ShieldCheck },
@@ -59,6 +62,7 @@ const VIEW_COMPONENTS = {
   dashboard: AdminDashboard,
   products: AdminProducts,
   orders: AdminOrders,
+  'custom-orders': AdminCustomOrders,
   reviews: AdminReviews,
   customers: AdminUsers,
   team: AdminTeam,
@@ -69,7 +73,7 @@ const VIEW_COMPONENTS = {
   settings: AdminSettings,
 };
 
-function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobileClose, trashCount = 0, unreadMessagesCount = 0, pendingReviewsCount = 0 }) {
+function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobileClose, trashCount = 0, unreadMessagesCount = 0, unreadCustomOrdersCount = 0, pendingReviewsCount = 0 }) {
 
   return (
     <>
@@ -138,6 +142,11 @@ function Sidebar({ activeView, onNavigate, onLogout, session, mobileOpen, onMobi
                     {trashCount}
                   </span>
                 )}
+                {id === 'custom-orders' && unreadCustomOrdersCount > 0 && (
+                  <span className="bg-amber-500/20 text-[#c8924b] text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
+                    {unreadCustomOrdersCount}
+                  </span>
+                )}
                 {id === 'messages' && unreadMessagesCount > 0 && (
                   <span className="bg-amber-500/20 text-[#c8924b] text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
                     {unreadMessagesCount}
@@ -186,6 +195,7 @@ export function AdminApp() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [trashCount, setTrashCount] = useState(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [unreadCustomOrdersCount, setUnreadCustomOrdersCount] = useState(0);
   const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
 
   const updateCounts = async () => {
@@ -197,12 +207,21 @@ export function AdminApp() {
         getPendingReviewsCount().catch(() => 0)
       ]);
       setTrashCount(Array.isArray(trash) ? trash.length : 0);
-      const unreadMsgs = Array.isArray(msgs) ? msgs.filter(m => m.status === 'Unread' || !m.read).length : 0;
+
+      const isCustom = m => m.type === 'custom_order' || m.subject?.includes('Custom Quote') || m.subject?.includes('Custom Order') || m.subject?.includes('Bespoke');
+      const customOrders = Array.isArray(msgs) ? msgs.filter(isCustom) : [];
+      const normalMsgs = Array.isArray(msgs) ? msgs.filter(m => !isCustom(m)) : [];
+
+      const unreadCustom = customOrders.filter(m => !m.read && !m.isResolved).length;
+      const unreadMsgs = normalMsgs.filter(m => m.status === 'Unread' || !m.read).length;
       const unreadChats = Array.isArray(chats) ? chats.filter(c => !c.read && !c.isResolved).length : 0;
+
+      setUnreadCustomOrdersCount(unreadCustom);
       setUnreadMessagesCount(unreadMsgs + unreadChats);
       setPendingReviewsCount(typeof pendingRev === 'number' ? pendingRev : 0);
     } catch {
       setTrashCount(0);
+      setUnreadCustomOrdersCount(0);
       setUnreadMessagesCount(0);
       setPendingReviewsCount(0);
     }
@@ -345,6 +364,7 @@ export function AdminApp() {
         onMobileClose={() => setMobileOpen(false)}
         trashCount={trashCount}
         unreadMessagesCount={unreadMessagesCount}
+        unreadCustomOrdersCount={unreadCustomOrdersCount}
         pendingReviewsCount={pendingReviewsCount}
       />
 
@@ -375,7 +395,7 @@ export function AdminApp() {
               title="Notifications & Alerts"
             >
               <Bell size={18} />
-              {unreadMessagesCount > 0 && (
+              {(unreadMessagesCount > 0 || unreadCustomOrdersCount > 0) && (
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#c8924b] rounded-full animate-pulse" />
               )}
             </button>
@@ -393,14 +413,39 @@ export function AdminApp() {
                       <Bell size={16} className="text-[#c8924b]" />
                       <h4 className="font-bold text-gray-900 text-sm">Store Alerts &amp; Activity</h4>
                     </div>
-                    {unreadMessagesCount > 0 && (
+                    {(unreadMessagesCount > 0 || unreadCustomOrdersCount > 0) && (
                       <span className="bg-amber-100 text-[#c8924b] text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">
-                        {unreadMessagesCount} unread
+                        {unreadMessagesCount + unreadCustomOrdersCount} unread
                       </span>
                     )}
                   </div>
 
                   <div className="p-2 space-y-1 max-h-80 overflow-y-auto divide-y divide-gray-50">
+                    {/* Custom Orders Inquiries */}
+                    <button
+                      onClick={() => {
+                        setActiveView('custom-orders');
+                        setNotificationsOpen(false);
+                      }}
+                      className="w-full text-left p-3 hover:bg-amber-50/60 rounded-xl transition-colors flex items-start gap-3 cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-[#c8924b] flex items-center justify-center shrink-0 mt-0.5">
+                        <Sparkles size={16} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-gray-900 group-hover:text-[#c8924b]">
+                            Custom Orders &amp; Commissions
+                          </p>
+                          <ChevronRight size={14} className="text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          {unreadCustomOrdersCount > 0 
+                            ? `You have ${unreadCustomOrdersCount} unread custom requests`
+                            : 'All custom requests are reviewed'}
+                        </p>
+                      </div>
+                    </button>
                     {/* Live Chats & Inquiries */}
                     <button
                       onClick={() => {
