@@ -88,8 +88,8 @@ export const DEFAULT_HERO_SLIDES = [
     badgeText: 'ORIGINAL ARTISAN ATELIER',
     btnText: 'Explore Workshop Creations',
     targetProductId: 'product-14',
-    desktopVideo: '/desktop banner/video7.mp4?v=3',
-    mobileVideo: '/mobile banner/video6.mp4?v=3',
+    desktopVideo: '/desktop banner/video7.mp4?v=4',
+    mobileVideo: '/mobile banner/video6.mp4?v=4',
     active: true
   }
 ];

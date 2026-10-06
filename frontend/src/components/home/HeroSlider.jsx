@@ -85,9 +85,9 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 7,
-    desktopVideo: '/desktop banner/video7.mp4?v=3',
+    desktopVideo: '/desktop banner/video7.mp4?v=4',
     desktopPoster: '/desktop banner/poster7.webp',
-    mobileVideo: '/mobile banner/video6.mp4?v=3',
+    mobileVideo: '/mobile banner/video6.mp4?v=4',
     mobilePoster: '/mobile banner/poster6.webp',
     badgeText: 'BESPOKE ARTISAN WORKSHOP',
     title: 'Bespoke Custom Creations\n& Historical Artisanship',
@@ -125,7 +125,7 @@ export const HeroSlider = () => {
   const [slides, setSlides] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem('vw_active_hero_slides_v3');
+        const saved = localStorage.getItem('vw_active_hero_slides_v4');
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -152,7 +152,7 @@ export const HeroSlider = () => {
         const finalSlides = activeOnly.length > 0 ? activeOnly : DEFAULT_HERO_SLIDES;
         setSlides(finalSlides);
         try {
-          localStorage.setItem('vw_active_hero_slides_v3', JSON.stringify(finalSlides));
+          localStorage.setItem('vw_active_hero_slides_v4', JSON.stringify(finalSlides));
         } catch {}
         return;
       }
@@ -191,7 +191,7 @@ export const HeroSlider = () => {
 
   const totalSlides = displaySlides.length || 1;
 
-  // Defer pre-buffering next slide to prevent bandwidth competition on initial load
+  // Ultra-fast video pre-buffering for instant switching
   useEffect(() => {
     if (!Array.isArray(displaySlides) || displaySlides.length <= 1) return;
     const timer = setTimeout(() => {
@@ -201,9 +201,9 @@ export const HeroSlider = () => {
       if (targetVideo) {
         const vid = document.createElement('video');
         vid.src = targetVideo;
-        vid.preload = 'metadata';
+        vid.preload = 'auto';
       }
-    }, 3500);
+    }, 600);
     return () => clearTimeout(timer);
   }, [currentSlide, displaySlides, isMobile]);
 
