@@ -39,45 +39,56 @@ export const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 3,
+    title: 'Authentic Handcrafted\nArtisan Creations',
+    subtitle: 'Explore our latest handcrafted collection of historical artifacts & vintage masterpieces',
+    badgeText: 'MASTER CRAFTED HERITAGE',
+    btnText: 'Explore Collection',
+    targetProductId: 'all-products',
+    desktopVideo: '/desktop banner/video3.mp4',
+    mobileVideo: '',
+    active: true
+  },
+  {
+    id: 4,
     title: 'Forged Knight Armour\n& Centurion Helmets',
     subtitle: 'Authentic wearable historical reproductions for cosplay, collectors & decor',
     badgeText: 'LEGENDARY MEDIEVAL REENACTMENT',
     btnText: 'View Warriors Collection',
     targetProductId: 'product-3',
-    desktopVideo: '/desktop banner/video3.mp4',
+    desktopVideo: '/desktop banner/video4.mp4',
     mobileVideo: '/mobile banner/video3.mp4',
     active: true
   },
   {
-    id: 4,
+    id: 5,
     title: 'Thor Mjolnir Hammers\n& Medieval Weaponry',
     subtitle: 'Solid steel casting with carved ashwood handles and Norse rune engravings',
     badgeText: 'HAND-FORGED CARBON STEEL',
     btnText: 'Explore Mjolnir Collection',
     targetProductId: 'product-2',
-    desktopVideo: '/desktop banner/video4.mp4',
+    desktopVideo: '/desktop banner/video5.mp4',
     mobileVideo: '/mobile banner/video4.mp4',
     active: true
   },
   {
-    id: 5,
+    id: 6,
     title: 'Solid Brass Compasses\n& Handcrafted Journals',
     subtitle: 'Navigational sextants, diving helmets and 100% genuine buffalo leather crafts',
     badgeText: 'AUTHENTIC MARITIME & LEATHER',
     btnText: 'Discover Artisan Goods',
     targetProductId: 'product-11',
-    desktopVideo: '/desktop banner/video5.mp4',
+    desktopVideo: '/desktop banner/video6.mp4',
     mobileVideo: '/mobile banner/video5.mp4',
     active: true
   },
   {
-    id: 6,
+    id: 7,
     title: 'Master Artisans &\nHandcrafted Heritage',
     subtitle: 'Generational craftsmen shaping bespoke leather journals, heraldic shields, armour & artisan chandeliers',
     badgeText: 'ORIGINAL ARTISAN ATELIER',
     btnText: 'Explore Workshop Creations',
     targetProductId: 'product-14',
-    desktopVideo: '/desktop banner/video6.mp4',
+    desktopVideo: '/desktop banner/video7.mp4',
     mobileVideo: '',
     active: true
   }

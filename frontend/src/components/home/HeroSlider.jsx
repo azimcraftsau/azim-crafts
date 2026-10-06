@@ -35,6 +35,19 @@ const DEFAULT_HERO_SLIDES = [
     id: 3,
     desktopVideo: '/desktop banner/video3.mp4',
     desktopPoster: '/desktop banner/poster3.webp',
+    mobileVideo: '',
+    mobilePoster: '',
+    badgeText: 'MASTER CRAFTED HERITAGE',
+    title: 'Authentic Handcrafted\nArtisan Creations',
+    subtitle: 'Explore our latest handcrafted collection of historical artifacts & vintage masterpieces',
+    btnText: 'Explore Collection',
+    targetProductId: 'all-products',
+    btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
+  },
+  {
+    id: 4,
+    desktopVideo: '/desktop banner/video4.mp4',
+    desktopPoster: '/desktop banner/poster4.webp',
     mobileVideo: '/mobile banner/video3.mp4',
     mobilePoster: '/mobile banner/poster3.webp',
     badgeText: 'HAND-FORGED WROUGHT IRON',
@@ -45,9 +58,9 @@ const DEFAULT_HERO_SLIDES = [
     btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
   },
   {
-    id: 4,
-    desktopVideo: '/desktop banner/video4.mp4',
-    desktopPoster: '/desktop banner/poster4.webp',
+    id: 5,
+    desktopVideo: '/desktop banner/video5.mp4',
+    desktopPoster: '/desktop banner/poster5.webp',
     mobileVideo: '/mobile banner/video4.mp4',
     mobilePoster: '/mobile banner/poster4.webp',
     badgeText: 'HAND-FORGED CARBON STEEL',
@@ -58,9 +71,9 @@ const DEFAULT_HERO_SLIDES = [
     btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
   },
   {
-    id: 5,
-    desktopVideo: '/desktop banner/video5.mp4',
-    desktopPoster: '/desktop banner/poster5.webp',
+    id: 6,
+    desktopVideo: '/desktop banner/video6.mp4',
+    desktopPoster: '/desktop banner/poster6.webp',
     mobileVideo: '',
     mobilePoster: '',
     badgeText: 'ARTICULATED 18-GAUGE STEEL',
@@ -71,9 +84,9 @@ const DEFAULT_HERO_SLIDES = [
     btnColor: 'bg-[#c8924b] hover:bg-[#b57f38]'
   },
   {
-    id: 6,
-    desktopVideo: '/desktop banner/video6.mp4',
-    desktopPoster: '/desktop banner/poster6.webp',
+    id: 7,
+    desktopVideo: '/desktop banner/video7.mp4',
+    desktopPoster: '/desktop banner/poster7.webp',
     mobileVideo: '/mobile banner/video5.mp4',
     mobilePoster: '/mobile banner/poster5.webp',
     badgeText: 'BESPOKE ARTISAN WORKSHOP',
