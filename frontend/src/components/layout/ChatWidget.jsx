@@ -195,7 +195,7 @@ export const ChatWidget = () => {
         id: Date.now() + 1,
         sender: 'bot',
         senderName: 'Support Bot',
-        text: 'We offer Free Worldwide Express Shipping on all orders over $200 USD! Orders are dispatched from our Roorkee artisan workshop with DHL / FedEx tracking.',
+        text: 'We offer Free Standard Shipping on orders over $100 USD (7-8 business days, $15 for orders under $100). Express urgent courier delivery (DHL / FedEx / UPS, 3-5 business days) is also available for $25 USD. Orders are dispatched from our Roorkee artisan workshop with full tracking.',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
     } else if (prompt === 'What is your return policy?') {

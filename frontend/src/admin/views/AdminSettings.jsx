@@ -42,9 +42,10 @@ export function AdminSettings() {
     address: 'Store 1: Shrin Malik, 42a chestnut road, Auburn 2144, NSW, Australia | Store 2: 01 Oswald Street, Bolton BL3 4BA, UK',
   });
 
-  const [announcement, setAnnouncement] = useState('Free Worldwide Express Shipping Over $200 USD');
-  const [freeShipping, setFreeShipping] = useState('200');
-  const [standardShipping, setStandardShipping] = useState('20');
+  const [announcement, setAnnouncement] = useState('Free Worldwide Shipping Over $100 USD • Express Courier Available');
+  const [freeShipping, setFreeShipping] = useState('100');
+  const [standardShipping, setStandardShipping] = useState('15');
+  const [expressShipping, setExpressShipping] = useState('25');
 
   useEffect(() => {
     getStoreSettings().then(s => {
@@ -55,6 +56,9 @@ export function AdminSettings() {
         }
         if (s.standardShippingFee !== undefined && s.standardShippingFee !== null) {
           setStandardShipping(String(s.standardShippingFee));
+        }
+        if (s.expressShippingFee !== undefined && s.expressShippingFee !== null) {
+          setExpressShipping(String(s.expressShippingFee));
         }
         if (s.storeEmail || s.whatsappNumber || s.storeAddress) {
           setStoreInfo(prev => ({
@@ -72,31 +76,35 @@ export function AdminSettings() {
     setSavingSection(key);
     try {
       if (key === 'announcement') {
-        const cleanVal = (value || '').trim() || 'Free Worldwide Express Shipping Over $200 USD';
+        const cleanVal = (value || '').trim() || 'Free Worldwide Shipping Over $100 USD • Express Courier Available';
         setAnnouncement(cleanVal);
         await saveStoreSettingsToDB({ announcementText: cleanVal });
       }
       if (key === 'shipping') {
         const parsedThreshold = parseFloat(freeShipping);
-        const thresholdVal = !isNaN(parsedThreshold) && parsedThreshold >= 0 ? parsedThreshold : 200;
+        const thresholdVal = !isNaN(parsedThreshold) && parsedThreshold >= 0 ? parsedThreshold : 100;
         const parsedFee = parseFloat(standardShipping);
-        const feeVal = !isNaN(parsedFee) && parsedFee >= 0 ? parsedFee : 20;
+        const feeVal = !isNaN(parsedFee) && parsedFee >= 0 ? parsedFee : 15;
+        const parsedExpress = parseFloat(expressShipping);
+        const expressVal = !isNaN(parsedExpress) && parsedExpress >= 0 ? parsedExpress : 25;
 
         setFreeShipping(String(thresholdVal));
         setStandardShipping(String(feeVal));
+        setExpressShipping(String(expressVal));
 
         let updatedAnnouncement = announcement;
-        if (!announcement || announcement.includes('Free Worldwide Express Shipping')) {
+        if (!announcement || announcement.includes('Free Worldwide Express Shipping') || announcement.includes('Free Worldwide Shipping')) {
           updatedAnnouncement = thresholdVal <= 0
-            ? 'Free Worldwide Express Shipping on All Orders'
-            : `Free Worldwide Express Shipping Over $${thresholdVal} USD`;
+            ? 'Free Worldwide Shipping on All Orders • Express Delivery Available'
+            : `Free Worldwide Shipping Over $${thresholdVal} USD • Express Courier (3–5 Days) Available`;
           setAnnouncement(updatedAnnouncement);
         }
 
         await saveStoreSettingsToDB({
           announcementText: updatedAnnouncement,
           freeShippingThreshold: thresholdVal,
-          standardShippingFee: feeVal
+          standardShippingFee: feeVal,
+          expressShippingFee: expressVal
         });
       }
       if (key === 'store') {
@@ -210,7 +218,7 @@ export function AdminSettings() {
       {/* Shipping */}
       <SectionCard title="Shipping Settings">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Free Shipping Threshold (USD)</label>
               <div className="relative">
@@ -220,16 +228,16 @@ export function AdminSettings() {
                   type="number"
                   value={freeShipping}
                   onChange={(e) => setFreeShipping(e.target.value)}
-                  placeholder="200"
+                  placeholder="100"
                   min={0}
                   step="any"
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">Orders at or above this amount qualify for FREE worldwide shipping.</p>
+              <p className="text-xs text-gray-400 mt-1.5">Orders at or above this amount qualify for FREE Standard shipping.</p>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Standard Express Shipping Fee (USD)</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Standard Shipping Fee (USD)</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold">$</span>
                 <input
@@ -237,12 +245,29 @@ export function AdminSettings() {
                   type="number"
                   value={standardShipping}
                   onChange={(e) => setStandardShipping(e.target.value)}
-                  placeholder="20"
+                  placeholder="15"
                   min={0}
                   step="any"
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">Shipping fee applied when order subtotal is below the free shipping threshold.</p>
+              <p className="text-xs text-gray-400 mt-1.5">Standard 7–8 days delivery fee when subtotal is below $100.</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Express Shipping Fee (USD)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold">$</span>
+                <input
+                  className={inputCls + ' pl-7'}
+                  type="number"
+                  value={expressShipping}
+                  onChange={(e) => setExpressShipping(e.target.value)}
+                  placeholder="25"
+                  min={0}
+                  step="any"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">Express priority 3–5 days courier delivery option for urgent orders.</p>
             </div>
           </div>
 

@@ -388,7 +388,7 @@ export const QuickViewModal = () => {
                 </div>
 
                 <p className="text-[11px] text-neutral-500">
-                  Tax included. <span className="underline text-neutral-700 font-medium">Free Worldwide Express Shipping</span> on orders over $200 USD.
+                  Tax included. <span className="underline text-neutral-700 font-medium">Free Standard Shipping</span> on orders over $100 USD (Express 3–5d available).
                 </p>
 
                 {/* Low Stock Urgency Alert */}

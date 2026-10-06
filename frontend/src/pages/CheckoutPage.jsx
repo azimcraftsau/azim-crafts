@@ -39,8 +39,12 @@ export const CheckoutPage = () => {
     clearCart, 
     showToast, 
     navigateTo,
-    freeShippingThreshold = 200,
-    standardShippingFee = 20,
+    freeShippingThreshold = 100,
+    standardShippingFee = 15,
+    expressShippingFee = 25,
+    shippingMethod = 'standard',
+    setShippingMethod,
+    isStandardFree = false,
     isFreeShipping = false,
     shippingFee = 0,
     openPolicy
@@ -126,6 +130,7 @@ export const CheckoutPage = () => {
     discountAmount,
     shippingFee,
     isFreeShipping,
+    shippingMethod,
     finalTotal,
     appliedCoupon,
     firstName,
@@ -302,14 +307,38 @@ export const CheckoutPage = () => {
           requestShipping: true,
           shippingOptions: [
             {
-              id: isFreeShipping ? 'free-express' : 'standard-express',
-              label: isFreeShipping
-                ? (Number(freeShippingThreshold) <= 0 ? 'Worldwide Express Courier (FREE Shipping)' : `Worldwide Express Courier (Free Over $${freeShippingThreshold})`)
-                : 'Worldwide Standard Express Courier',
-              detail: 'DHL / FedEx / UPS (3-5 Days)',
-              amount: Math.round(Number(shippingFee || 0) * 100),
+              id: 'standard',
+              label: Number(data.subtotal || 0) >= Number(freeShippingThreshold || 100)
+                ? 'Standard Shipping (FREE • 7-8 Days)'
+                : 'Standard Shipping ($15 USD • 7-8 Days)',
+              detail: 'Reliable Courier Delivery (7-8 Business Days)',
+              amount: Math.round((Number(data.subtotal || 0) >= Number(freeShippingThreshold || 100) ? 0 : 15) * 100),
+            },
+            {
+              id: 'express',
+              label: 'Express Courier ($25 USD • 3-5 Days)',
+              detail: 'DHL / FedEx / UPS Priority Express (3-5 Business Days)',
+              amount: 2500,
             }
           ]
+        });
+
+        pr.on('shippingoptionchange', (ev) => {
+          const selectedOption = ev.shippingOption;
+          const cost = selectedOption.id === 'express' ? 25 : (Number(latestDataRef.current.subtotal || 0) >= Number(freeShippingThreshold || 100) ? 0 : 15);
+          if (setShippingMethod) {
+            setShippingMethod(selectedOption.id);
+          }
+          const baseSubtotal = Number(latestDataRef.current.subtotal || 0);
+          const disc = Number(latestDataRef.current.discountAmount || 0);
+          const newTotal = Math.max(50, Math.round((baseSubtotal - disc + cost) * 100));
+          ev.updateWith({
+            status: 'success',
+            total: {
+              label: 'Azim Crafts Order',
+              amount: newTotal,
+            }
+          });
         });
 
         pr.canMakePayment().then((result) => {
@@ -641,11 +670,12 @@ export const CheckoutPage = () => {
             subtotal: Number(subtotal || 0),
             discountAmount: Number(discountAmount || 0),
             shippingFee: Number(shippingFee || 0),
+            shippingMethod: shippingMethod,
             appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
             total: orderTotalAmount,
             payment: `Paid (Stripe Live: ${paymentIntent.id})`,
             status: 'Processing',
-            carrier: 'DHL Express',
+            carrier: shippingMethod === 'express' ? 'DHL / FedEx Express (3-5 Days)' : 'Standard Courier (7-8 Days)',
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
             createdAt: new Date().toISOString()
           });
@@ -678,11 +708,12 @@ export const CheckoutPage = () => {
         subtotal: Number(subtotal || 0),
         discountAmount: Number(discountAmount || 0),
         shippingFee: Number(shippingFee || 0),
+        shippingMethod: shippingMethod,
         appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
         total: orderTotalAmount,
         payment: 'Pending (Bank / Wire Transfer)',
         status: 'Unfulfilled',
-        carrier: 'DHL Express',
+        carrier: shippingMethod === 'express' ? 'DHL / FedEx Express (3-5 Days)' : 'Standard Courier (7-8 Days)',
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         createdAt: new Date().toISOString()
       });
@@ -723,8 +754,10 @@ export const CheckoutPage = () => {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-neutral-500">Estimated Delivery:</span>
-              <span className="font-semibold text-neutral-900">3 - 5 Business Days (DHL Express)</span>
+              <span className="text-neutral-500">Shipping Method:</span>
+              <span className="font-semibold text-neutral-900">
+                {shippingMethod === 'express' ? 'Express Courier (3–5 Business Days)' : 'Standard Shipping (7–8 Business Days)'}
+              </span>
             </div>
           </div>
 
@@ -999,7 +1032,7 @@ export const CheckoutPage = () => {
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Shipping</span>
+                <span>Shipping ({shippingMethod === 'express' ? 'Express 3–5d' : 'Standard 7–8d'})</span>
                 {isFreeShipping ? (
                   <span className="font-semibold text-emerald-600">FREE</span>
                 ) : (
@@ -1401,22 +1434,96 @@ export const CheckoutPage = () => {
             </div>
 
             {/* 3. Shipping Method */}
-            <div className="space-y-2">
-              <h2 className="text-base font-bold text-neutral-900">Shipping method</h2>
-              <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200 flex items-center justify-between text-xs md:text-sm">
-                <div>
-                  <span className="font-semibold text-neutral-900 block">
-                    {isFreeShipping
-                      ? (Number(freeShippingThreshold) <= 0 ? 'Worldwide Express Shipping (FREE Shipping)' : `Worldwide Express Shipping (Free Over $${freeShippingThreshold})`)
-                      : 'Worldwide Standard Express Shipping'}
-                  </span>
-                  <span className="text-[11px] text-neutral-500">Estimated 3-5 business days (DHL / FedEx / UPS)</span>
-                </div>
-                {isFreeShipping ? (
-                  <span className="font-bold text-emerald-700">FREE</span>
-                ) : (
-                  <span className="font-bold text-neutral-900">${Number(shippingFee || 0).toFixed(2)} USD</span>
-                )}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-neutral-900">Shipping method</h2>
+                <span className="text-xs text-neutral-500">Choose delivery option</span>
+              </div>
+
+              <div className="space-y-2.5">
+                {/* Option 1: Standard Shipping (7-8 business days) */}
+                <label
+                  onClick={() => setShippingMethod && setShippingMethod('standard')}
+                  className={`flex items-start justify-between p-3.5 sm:p-4 rounded-xl border cursor-pointer transition-all ${
+                    shippingMethod === 'standard'
+                      ? 'border-neutral-900 bg-neutral-50/80 shadow-xs ring-1 ring-neutral-900'
+                      : 'border-neutral-200 bg-white hover:border-neutral-300'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      name="shipping_method_choice"
+                      value="standard"
+                      checked={shippingMethod === 'standard'}
+                      onChange={() => setShippingMethod && setShippingMethod('standard')}
+                      className="mt-1 w-4 h-4 text-black focus:ring-black accent-black cursor-pointer"
+                    />
+                    <div className="space-y-0.5 text-left">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs sm:text-sm font-bold text-neutral-900">
+                          Standard Shipping
+                        </span>
+                        {isStandardFree ? (
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+                            Free over $100
+                          </span>
+                        ) : (
+                          <span className="text-[10px] bg-neutral-100 text-neutral-600 font-medium px-2 py-0.5 rounded-full">
+                            Free on orders over $100
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] sm:text-xs text-neutral-500">
+                        Delivery in <strong>7–8 business days</strong> (Reliable Courier)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 pl-2">
+                    {isStandardFree ? (
+                      <span className="font-bold text-xs sm:text-sm text-emerald-700">FREE</span>
+                    ) : (
+                      <span className="font-bold text-xs sm:text-sm text-neutral-900">$15.00 USD</span>
+                    )}
+                  </div>
+                </label>
+
+                {/* Option 2: Express Shipping (3-5 business days) */}
+                <label
+                  onClick={() => setShippingMethod && setShippingMethod('express')}
+                  className={`flex items-start justify-between p-3.5 sm:p-4 rounded-xl border cursor-pointer transition-all ${
+                    shippingMethod === 'express'
+                      ? 'border-neutral-900 bg-neutral-50/80 shadow-xs ring-1 ring-neutral-900'
+                      : 'border-neutral-200 bg-white hover:border-neutral-300'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      name="shipping_method_choice"
+                      value="express"
+                      checked={shippingMethod === 'express'}
+                      onChange={() => setShippingMethod && setShippingMethod('express')}
+                      className="mt-1 w-4 h-4 text-black focus:ring-black accent-black cursor-pointer"
+                    />
+                    <div className="space-y-0.5 text-left">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs sm:text-sm font-bold text-neutral-900">
+                          Express Shipping
+                        </span>
+                        <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                          Urgent Priority
+                        </span>
+                      </div>
+                      <p className="text-[11px] sm:text-xs text-neutral-500">
+                        Priority delivery in <strong>3–5 business days</strong> (DHL / FedEx / UPS)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 pl-2">
+                    <span className="font-bold text-xs sm:text-sm text-neutral-900">$25.00 USD</span>
+                  </div>
+                </label>
               </div>
             </div>
 
@@ -1721,7 +1828,7 @@ export const CheckoutPage = () => {
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Shipping</span>
+                <span>Shipping ({shippingMethod === 'express' ? 'Express 3–5 Days' : 'Standard 7–8 Days'})</span>
                 {isFreeShipping ? (
                   <span className="font-semibold text-emerald-700">FREE</span>
                 ) : (

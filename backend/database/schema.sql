@@ -83,10 +83,12 @@ CREATE TABLE IF NOT EXISTS messages (
 -- 5. STORE SETTINGS TABLE
 CREATE TABLE IF NOT EXISTS store_settings (
   id TEXT PRIMARY KEY DEFAULT 'main',
-  announcement_text TEXT DEFAULT 'Free Worldwide Express Shipping Over $200 USD',
-  free_shipping_threshold REAL DEFAULT 200,
-  store_email TEXT DEFAULT 'info@vintagetomodern.com',
-  whatsapp_number TEXT DEFAULT '+61 400 000 000',
+  announcement_text TEXT DEFAULT 'Free Worldwide Shipping Over $100 USD • Express Courier Available',
+  free_shipping_threshold REAL DEFAULT 100,
+  standard_shipping_fee REAL DEFAULT 15,
+  express_shipping_fee REAL DEFAULT 25,
+  store_email TEXT DEFAULT 'contact@azimcrafts.com',
+  whatsapp_number TEXT DEFAULT '+61 483 172 489',
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -126,5 +128,5 @@ CREATE TABLE IF NOT EXISTS password_resets (
 );
 
 -- Initialize default store settings
-INSERT OR IGNORE INTO store_settings (id, announcement_text, free_shipping_threshold)
-VALUES ('main', 'Free Worldwide Express Shipping Over $200 USD', 200);
+INSERT OR IGNORE INTO store_settings (id, announcement_text, free_shipping_threshold, standard_shipping_fee, express_shipping_fee)
+VALUES ('main', 'Free Worldwide Shipping Over $100 USD • Express Courier Available', 100, 15, 25);

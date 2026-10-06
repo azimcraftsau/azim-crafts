@@ -77,10 +77,10 @@ export const CartPage = () => {
             <span className="flex items-center gap-2">
               <Truck className="w-4 h-4 text-[#3F5147]" />
               {(amountToFreeShipping || 0) === 0 ? (
-                <strong className="text-[#3F5147]">You have unlocked FREE Express Shipping! 🎉</strong>
+                <strong className="text-[#3F5147]">You have unlocked FREE Standard Shipping! 🎉</strong>
               ) : (
                 <span>
-                  Add <strong className="text-neutral-900">${(amountToFreeShipping || 0).toFixed(2)} USD</strong> more to qualify for <strong>FREE Express Shipping</strong>!
+                  Add <strong className="text-neutral-900">${(amountToFreeShipping || 0).toFixed(2)} USD</strong> more to qualify for <strong>FREE Standard Shipping</strong>!
                 </span>
               )}
             </span>
@@ -92,6 +92,9 @@ export const CartPage = () => {
               style={{ width: `${Math.min(100, freeShippingProgress || 0)}%` }}
             />
           </div>
+          <p className="text-[11px] text-neutral-600 mt-2">
+            Standard delivery takes 7–8 business days (Free over $100 USD). Express urgent delivery in 3–5 business days ($25 USD) can be selected during checkout.
+          </p>
         </div>
 
         {cart.length === 0 ? (
@@ -299,7 +302,7 @@ export const CartPage = () => {
                     <span>Shipping</span>
                     <span className="font-semibold text-neutral-900">
                       {isFreeShipping ? (
-                        <span className="text-emerald-700 font-bold">FREE</span>
+                        <span className="text-emerald-700 font-bold">FREE (Standard)</span>
                       ) : (
                         `$${Number(shippingFee || 0).toFixed(2)} USD`
                       )}

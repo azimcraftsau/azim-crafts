@@ -8,8 +8,10 @@ export const CartProvider = ({ children }) => {
   const [products, setProducts] = useState(allProducts);
   const [couponsList, setCouponsList] = useState([]);
   const [categoriesList, setCategoriesList] = useState([]);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(200);
-  const [standardShippingFee, setStandardShippingFee] = useState(20);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(100);
+  const [standardShippingFee, setStandardShippingFee] = useState(15);
+  const [expressShippingFee, setExpressShippingFee] = useState(25);
+  const [shippingMethod, setShippingMethod] = useState('standard'); // 'standard' | 'express'
 
   const refreshCategories = useCallback(async () => {
     try {
@@ -59,6 +61,9 @@ export const CartProvider = ({ children }) => {
           }
           if (s.standardShippingFee !== undefined && s.standardShippingFee !== null) {
             setStandardShippingFee(Number(s.standardShippingFee));
+          }
+          if (s.expressShippingFee !== undefined && s.expressShippingFee !== null) {
+            setExpressShippingFee(Number(s.expressShippingFee));
           }
         }
       } catch {}
@@ -572,14 +577,24 @@ export const CartProvider = ({ children }) => {
 
   const threshold = (freeShippingThreshold !== undefined && freeShippingThreshold !== null && !isNaN(Number(freeShippingThreshold)))
     ? Number(freeShippingThreshold)
-    : 200;
+    : 100;
 
-  const isFreeShipping = totalItems > 0 && (threshold <= 0 || subtotal >= threshold);
   const standardFee = (standardShippingFee !== undefined && standardShippingFee !== null && !isNaN(Number(standardShippingFee)))
     ? Number(standardShippingFee)
-    : 20;
+    : 15;
+  const expressFee = (expressShippingFee !== undefined && expressShippingFee !== null && !isNaN(Number(expressShippingFee)))
+    ? Number(expressShippingFee)
+    : 25;
 
-  const shippingFee = (totalItems > 0 && !isFreeShipping) ? standardFee : 0;
+  const isStandardFree = totalItems > 0 && (threshold <= 0 || subtotal >= threshold);
+  
+  // If user chooses Express shipping: flat $25 USD
+  // If user chooses Standard shipping: FREE over $100, else $15 USD
+  const shippingFee = totalItems > 0
+    ? (shippingMethod === 'express' ? expressFee : (isStandardFree ? 0 : standardFee))
+    : 0;
+
+  const isFreeShipping = totalItems > 0 && shippingMethod === 'standard' && isStandardFree;
   const finalTotal = Math.max(0, subtotal - discountAmount + shippingFee);
 
   const freeShippingProgress = threshold <= 0 ? 100 : Math.min(100, (subtotal / threshold) * 100);
@@ -608,6 +623,10 @@ export const CartProvider = ({ children }) => {
         authRedirectAction,
         freeShippingThreshold,
         standardShippingFee,
+        expressShippingFee: expressFee,
+        shippingMethod,
+        setShippingMethod,
+        isStandardFree,
         isFreeShipping,
         shippingFee,
         freeShippingProgress,

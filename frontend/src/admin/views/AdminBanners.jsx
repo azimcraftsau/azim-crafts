@@ -356,7 +356,7 @@ export function AdminBanners() {
   };
 
   const handleSaveAnnouncement = async () => {
-    const clean = announcementText.trim() || 'Free Worldwide Express Shipping Over $200 USD';
+    const clean = announcementText.trim() || 'Free Worldwide Shipping Over $100 USD • Express Courier Available';
     setAnnouncementText(clean);
     await saveStoreSettingsToDB({ announcementText: clean });
     setToast('Announcement Bar updated live and saved to database!');
@@ -619,7 +619,7 @@ export function AdminBanners() {
                 className="w-full border border-gray-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-[#c8924b] focus:border-transparent outline-none bg-neutral-50 focus:bg-white"
                 value={announcementText}
                 onChange={(e) => setAnnouncementText(e.target.value)}
-                placeholder="e.g. Free Worldwide Express Shipping Over $200 USD"
+                placeholder="e.g. Free Worldwide Shipping Over $100 USD • Express Courier Available"
               />
             </div>
 
@@ -630,9 +630,9 @@ export function AdminBanners() {
               </label>
               <div className="w-full bg-[#faecd7] text-[#2c2b2b] py-2.5 px-4 rounded-xl border border-[#ebdcca] overflow-hidden">
                 <div className="flex items-center gap-6 text-xs font-semibold text-neutral-900">
-                  <span>✨ {announcementText || 'Free Worldwide Express Shipping Over $200 USD'} •</span>
-                  <span>✨ {announcementText || 'Free Worldwide Express Shipping Over $200 USD'} •</span>
-                  <span>✨ {announcementText || 'Free Worldwide Express Shipping Over $200 USD'}</span>
+                  <span>✨ {announcementText || 'Free Worldwide Shipping Over $100 USD • Express Courier Available'} •</span>
+                  <span>✨ {announcementText || 'Free Worldwide Shipping Over $100 USD • Express Courier Available'} •</span>
+                  <span>✨ {announcementText || 'Free Worldwide Shipping Over $100 USD • Express Courier Available'}</span>
                 </div>
               </div>
             </div>

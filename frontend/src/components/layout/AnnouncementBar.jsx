@@ -3,7 +3,7 @@ import { getStoreSettings } from '../../lib/cloudflareService';
 
 export const AnnouncementBar = () => {
   const [customText, setCustomText] = useState('');
-  const [threshold, setThreshold] = useState(200);
+  const [threshold, setThreshold] = useState(100);
 
   const loadSettings = async () => {
     try {
@@ -35,10 +35,10 @@ export const AnnouncementBar = () => {
   }, []);
 
   let displayText = customText.trim();
-  if (!displayText || displayText.startsWith('Free Worldwide Express Shipping')) {
+  if (!displayText || displayText.startsWith('Free Worldwide Express Shipping') || displayText.startsWith('Free Worldwide Shipping')) {
     displayText = threshold <= 0
-      ? 'Free Worldwide Express Shipping on All Orders'
-      : `Free Worldwide Express Shipping Over $${threshold} USD`;
+      ? 'Free Worldwide Shipping on All Orders • Express Delivery Available'
+      : `Free Worldwide Shipping Over $${threshold} USD • Express Courier (3–5 Days) Available`;
   }
 
   // Repeat the exact text 8 times so the marquee ticker scrolls smoothly across wide screens

@@ -152,11 +152,11 @@ export function PolicyModal({ isOpen, onClose, initialTab = 'refund' }) {
 
               <div className="border-t border-neutral-150 pt-5">
                 <h3 className="text-sm sm:text-base font-bold text-neutral-900 mb-2">
-                  2. Shipping Rates
+                  2. Shipping Rates &amp; Delivery Speeds
                 </h3>
                 <ul className="list-disc pl-5 space-y-1.5 text-neutral-700">
-                  <li><strong>Orders over $200 USD:</strong> Free Worldwide Express Shipping.</li>
-                  <li><strong>Orders under $200 USD:</strong> Flat shipping fee of $20 USD.</li>
+                  <li><strong>Standard Shipping (7–8 Business Days):</strong> Free on orders over $100 USD. For orders under $100 USD, a flat shipping fee of $15 USD applies.</li>
+                  <li><strong>Express Shipping (3–5 Business Days):</strong> Optional urgent courier delivery (DHL / FedEx / UPS) is available worldwide for $25 USD.</li>
                 </ul>
               </div>
 
@@ -166,7 +166,8 @@ export function PolicyModal({ isOpen, onClose, initialTab = 'refund' }) {
                 </h3>
                 <ul className="list-disc pl-5 space-y-1.5 text-neutral-700">
                   <li><strong>Dispatch:</strong> Standard catalog items ship within 1 to 3 business days.</li>
-                  <li><strong>Transit Time:</strong> International delivery typically takes 4 to 8 business days.</li>
+                  <li><strong>Standard Transit:</strong> 7 to 8 business days with door-to-door tracking.</li>
+                  <li><strong>Express Transit:</strong> 3 to 5 business days priority delivery.</li>
                   <li><strong>Custom Orders:</strong> Handcrafting takes approximately 7 to 14 days before dispatch.</li>
                 </ul>
               </div>

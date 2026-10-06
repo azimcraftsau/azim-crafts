@@ -79,9 +79,9 @@ export const CartDrawer = () => {
               <span className="flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-[#3F5147]" />
                 {(amountToFreeShipping || 0) === 0 ? (
-                  <strong className="text-[#3F5147]">You have qualified for FREE Shipping! 🎉</strong>
+                  <strong className="text-[#3F5147]">You have qualified for FREE Standard Shipping! 🎉</strong>
                 ) : (
-                  <span>Add <strong>${(amountToFreeShipping || 0).toFixed(2)} USD</strong> more for <strong>FREE Shipping</strong></span>
+                  <span>Add <strong>${(amountToFreeShipping || 0).toFixed(2)} USD</strong> more for <strong>FREE Standard Shipping</strong></span>
                 )}
               </span>
               <span>{Math.round(freeShippingProgress || 0)}%</span>
@@ -92,6 +92,9 @@ export const CartDrawer = () => {
                 style={{ width: `${Math.min(100, freeShippingProgress || 0)}%` }}
               />
             </div>
+            <p className="text-[10px] text-neutral-500 mt-1.5">
+              Standard 7–8 days (Free over $100). Express 3–5 days ($25) selectable at checkout.
+            </p>
           </div>
 
           {/* Cart Items List */}
@@ -247,7 +250,7 @@ export const CartDrawer = () => {
                   <span>Estimated Shipping</span>
                   <span className="font-medium text-neutral-800">
                     {isFreeShipping ? (
-                      <span className="text-emerald-700 font-bold">FREE</span>
+                      <span className="text-emerald-700 font-bold">FREE (Standard)</span>
                     ) : (
                       `$${Number(shippingFee || 0).toFixed(2)} USD`
                     )}
