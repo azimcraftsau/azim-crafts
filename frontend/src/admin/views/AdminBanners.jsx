@@ -39,11 +39,11 @@ export const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 3,
-    title: 'Authentic Handcrafted\nArtisan Creations',
-    subtitle: 'Explore our latest handcrafted collection of historical artifacts & vintage masterpieces',
-    badgeText: 'MASTER CRAFTED HERITAGE',
-    btnText: 'Explore Collection',
-    targetProductId: 'all-products',
+    title: 'Handcrafted Medieval Knight\nSteel Combat Gauntlets',
+    subtitle: 'Fully articulated finger plates, solid brass rivets & soft genuine leather combat gloves',
+    badgeText: '18-GAUGE ARTICULATED STEEL',
+    btnText: 'Explore Vintage Gauntlets',
+    targetProductId: 'product-4',
     desktopVideo: '/desktop banner/video3.mp4',
     mobileVideo: '',
     active: true
