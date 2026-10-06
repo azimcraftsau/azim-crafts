@@ -44,8 +44,8 @@ export const DEFAULT_HERO_SLIDES = [
     badgeText: '18-GAUGE ARTICULATED STEEL',
     btnText: 'Explore Vintage Gauntlets',
     targetProductId: 'product-4',
-    desktopVideo: '/desktop banner/video3.mp4?v=2',
-    mobileVideo: '/mobile banner/video3.mp4?v=2',
+    desktopVideo: '/desktop banner/video3.mp4?v=3',
+    mobileVideo: '/mobile banner/video3.mp4?v=3',
     active: true
   },
   {
@@ -55,8 +55,8 @@ export const DEFAULT_HERO_SLIDES = [
     badgeText: 'LEGENDARY MEDIEVAL REENACTMENT',
     btnText: 'View Warriors Collection',
     targetProductId: 'product-3',
-    desktopVideo: '/desktop banner/video4.mp4?v=2',
-    mobileVideo: '/mobile banner/video4.mp4?v=2',
+    desktopVideo: '/desktop banner/video4.mp4?v=3',
+    mobileVideo: '/mobile banner/video4.mp4?v=3',
     active: true
   },
   {
@@ -66,8 +66,8 @@ export const DEFAULT_HERO_SLIDES = [
     badgeText: 'HAND-FORGED CARBON STEEL',
     btnText: 'Explore Mjolnir Collection',
     targetProductId: 'product-2',
-    desktopVideo: '/desktop banner/video5.mp4?v=2',
-    mobileVideo: '/mobile banner/video5.mp4?v=2',
+    desktopVideo: '/desktop banner/video5.mp4?v=3',
+    mobileVideo: '/mobile banner/video5.mp4?v=3',
     active: true
   },
   {
@@ -77,7 +77,7 @@ export const DEFAULT_HERO_SLIDES = [
     badgeText: 'AUTHENTIC MARITIME & LEATHER',
     btnText: 'Discover Artisan Goods',
     targetProductId: 'product-11',
-    desktopVideo: '/desktop banner/video6.mp4?v=2',
+    desktopVideo: '/desktop banner/video6.mp4?v=3',
     mobileVideo: '',
     active: true
   },
@@ -88,8 +88,8 @@ export const DEFAULT_HERO_SLIDES = [
     badgeText: 'ORIGINAL ARTISAN ATELIER',
     btnText: 'Explore Workshop Creations',
     targetProductId: 'product-14',
-    desktopVideo: '/desktop banner/video7.mp4?v=2',
-    mobileVideo: '/mobile banner/video6.mp4?v=2',
+    desktopVideo: '/desktop banner/video7.mp4?v=3',
+    mobileVideo: '/mobile banner/video6.mp4?v=3',
     active: true
   }
 ];

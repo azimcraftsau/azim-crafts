@@ -33,9 +33,9 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 3,
-    desktopVideo: '/desktop banner/video3.mp4?v=2',
+    desktopVideo: '/desktop banner/video3.mp4?v=3',
     desktopPoster: '/desktop banner/poster3.webp',
-    mobileVideo: '/mobile banner/video3.mp4?v=2',
+    mobileVideo: '/mobile banner/video3.mp4?v=3',
     mobilePoster: '/mobile banner/poster3.webp',
     badgeText: '18-GAUGE ARTICULATED STEEL',
     title: 'Handcrafted Medieval Knight\nSteel Combat Gauntlets',
@@ -46,9 +46,9 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 4,
-    desktopVideo: '/desktop banner/video4.mp4?v=2',
+    desktopVideo: '/desktop banner/video4.mp4?v=3',
     desktopPoster: '/desktop banner/poster4.webp',
-    mobileVideo: '/mobile banner/video4.mp4?v=2',
+    mobileVideo: '/mobile banner/video4.mp4?v=3',
     mobilePoster: '/mobile banner/poster4.webp',
     badgeText: 'HAND-FORGED WROUGHT IRON',
     title: 'Vintage Medieval Chandeliers\n& Artisan Iron Pendants',
@@ -59,9 +59,9 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 5,
-    desktopVideo: '/desktop banner/video5.mp4?v=2',
+    desktopVideo: '/desktop banner/video5.mp4?v=3',
     desktopPoster: '/desktop banner/poster5.webp',
-    mobileVideo: '/mobile banner/video5.mp4?v=2',
+    mobileVideo: '/mobile banner/video5.mp4?v=3',
     mobilePoster: '/mobile banner/poster5.webp',
     badgeText: 'HAND-FORGED CARBON STEEL',
     title: 'Thor Mjolnir Hammers\n& Medieval Weaponry',
@@ -72,7 +72,7 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 6,
-    desktopVideo: '/desktop banner/video6.mp4?v=2',
+    desktopVideo: '/desktop banner/video6.mp4?v=3',
     desktopPoster: '/desktop banner/poster6.webp',
     mobileVideo: '',
     mobilePoster: '',
@@ -85,9 +85,9 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 7,
-    desktopVideo: '/desktop banner/video7.mp4?v=2',
+    desktopVideo: '/desktop banner/video7.mp4?v=3',
     desktopPoster: '/desktop banner/poster7.webp',
-    mobileVideo: '/mobile banner/video6.mp4?v=2',
+    mobileVideo: '/mobile banner/video6.mp4?v=3',
     mobilePoster: '/mobile banner/poster6.webp',
     badgeText: 'BESPOKE ARTISAN WORKSHOP',
     title: 'Bespoke Custom Creations\n& Historical Artisanship',
@@ -125,7 +125,7 @@ export const HeroSlider = () => {
   const [slides, setSlides] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem('vw_active_hero_slides');
+        const saved = localStorage.getItem('vw_active_hero_slides_v3');
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -152,7 +152,7 @@ export const HeroSlider = () => {
         const finalSlides = activeOnly.length > 0 ? activeOnly : DEFAULT_HERO_SLIDES;
         setSlides(finalSlides);
         try {
-          localStorage.setItem('vw_active_hero_slides', JSON.stringify(finalSlides));
+          localStorage.setItem('vw_active_hero_slides_v3', JSON.stringify(finalSlides));
         } catch {}
         return;
       }
@@ -252,7 +252,10 @@ export const HeroSlider = () => {
       }
     }
     const productCatalog = (products && products.length > 0 ? products : allProducts);
-    const targetProduct = productCatalog.find(p => p.id === productId);
+    const targetProduct = productCatalog.find(p => 
+      String(p.id).toLowerCase() === String(productId).toLowerCase() ||
+      (p.productNumber && String(p.productNumber) === String(productId).replace(/\D/g, ''))
+    );
     if (targetProduct && setQuickViewProduct) {
       setQuickViewProduct(targetProduct);
     } else if (openCategory) {
