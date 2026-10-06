@@ -74,8 +74,8 @@ const DEFAULT_HERO_SLIDES = [
     id: 6,
     desktopVideo: '/desktop banner/video6.mp4?v=3',
     desktopPoster: '/desktop banner/poster6.webp',
-    mobileVideo: '',
-    mobilePoster: '',
+    mobileVideo: '/desktop banner/video6.mp4?v=3',
+    mobilePoster: '/desktop banner/poster6.webp',
     badgeText: 'ARTICULATED 18-GAUGE STEEL',
     title: 'Handcrafted Steel Pauldrons\n& Articulated Armour',
     subtitle: '18-gauge solid carbon steel pauldrons, articulated knight armor plates & battle-ready protection',
@@ -184,9 +184,9 @@ export const HeroSlider = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Phone screen has strictly 5 slides (video1 to video5), desktop displays all configured slides
+  // Display all active slides on mobile and desktop
   const displaySlides = isMobile
-    ? slides.filter(s => Boolean(s.mobileVideo)).slice(0, 5)
+    ? slides.filter(s => Boolean(s.mobileVideo || s.desktopVideo))
     : slides;
 
   const totalSlides = displaySlides.length || 1;
@@ -197,7 +197,7 @@ export const HeroSlider = () => {
     const timer = setTimeout(() => {
       const nextIndex = (currentSlide + 1) % displaySlides.length;
       const nextSlideData = displaySlides[nextIndex];
-      const targetVideo = isMobile ? nextSlideData?.mobileVideo : nextSlideData?.desktopVideo;
+      const targetVideo = isMobile ? (nextSlideData?.mobileVideo || nextSlideData?.desktopVideo) : nextSlideData?.desktopVideo;
       if (targetVideo) {
         const vid = document.createElement('video');
         vid.src = targetVideo;
@@ -365,9 +365,9 @@ export const HeroSlider = () => {
         <div className="relative w-full h-[76vh] min-h-[520px] max-h-[700px] aspect-[9/16] bg-black overflow-hidden select-none">
           {isMobile && (
             <video
-              key={`mobile-video-${activeSlideData.id || safeSlideIndex}-${activeSlideData.mobileVideo}`}
+              key={`mobile-video-${activeSlideData.id || safeSlideIndex}-${activeSlideData.mobileVideo || activeSlideData.desktopVideo}`}
               ref={mobileVideoRef}
-              src={activeSlideData.mobileVideo}
+              src={activeSlideData.mobileVideo || activeSlideData.desktopVideo}
               poster={getSlidePoster(activeSlideData, true)}
               autoPlay
               muted

@@ -78,7 +78,7 @@ export const DEFAULT_HERO_SLIDES = [
     btnText: 'Discover Artisan Goods',
     targetProductId: 'product-11',
     desktopVideo: '/desktop banner/video6.mp4?v=3',
-    mobileVideo: '',
+    mobileVideo: '/desktop banner/video6.mp4?v=3',
     active: true
   },
   {
