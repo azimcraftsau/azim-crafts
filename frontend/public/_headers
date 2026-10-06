@@ -1,11 +1,11 @@
-﻿# Cloudflare Pages Edge and Browser Caching Headers
+# Cloudflare Pages Edge and Browser Caching Headers
 
 /desktop banner/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=3600, must-revalidate
   Access-Control-Allow-Origin: *
 
 /mobile banner/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=3600, must-revalidate
   Access-Control-Allow-Origin: *
 
 /All categories/*

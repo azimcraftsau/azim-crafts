@@ -33,10 +33,10 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 3,
-    desktopVideo: '/desktop banner/video3.mp4',
+    desktopVideo: '/desktop banner/video3.mp4?v=2',
     desktopPoster: '/desktop banner/poster3.webp',
-    mobileVideo: '',
-    mobilePoster: '',
+    mobileVideo: '/mobile banner/video3.mp4?v=2',
+    mobilePoster: '/mobile banner/poster3.webp',
     badgeText: '18-GAUGE ARTICULATED STEEL',
     title: 'Handcrafted Medieval Knight\nSteel Combat Gauntlets',
     subtitle: 'Fully articulated finger plates, solid brass rivets & soft genuine leather combat gloves',
@@ -46,10 +46,10 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 4,
-    desktopVideo: '/desktop banner/video4.mp4',
+    desktopVideo: '/desktop banner/video4.mp4?v=2',
     desktopPoster: '/desktop banner/poster4.webp',
-    mobileVideo: '/mobile banner/video3.mp4',
-    mobilePoster: '/mobile banner/poster3.webp',
+    mobileVideo: '/mobile banner/video4.mp4?v=2',
+    mobilePoster: '/mobile banner/poster4.webp',
     badgeText: 'HAND-FORGED WROUGHT IRON',
     title: 'Vintage Medieval Chandeliers\n& Artisan Iron Pendants',
     subtitle: 'Gothic ring frames, candle-style lighting & rustic farmhouse iron ceiling lamps',
@@ -59,10 +59,10 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 5,
-    desktopVideo: '/desktop banner/video5.mp4',
+    desktopVideo: '/desktop banner/video5.mp4?v=2',
     desktopPoster: '/desktop banner/poster5.webp',
-    mobileVideo: '/mobile banner/video4.mp4',
-    mobilePoster: '/mobile banner/poster4.webp',
+    mobileVideo: '/mobile banner/video5.mp4?v=2',
+    mobilePoster: '/mobile banner/poster5.webp',
     badgeText: 'HAND-FORGED CARBON STEEL',
     title: 'Thor Mjolnir Hammers\n& Medieval Weaponry',
     subtitle: 'Solid steel casting with carved ashwood handles and Norse rune engravings',
@@ -72,7 +72,7 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 6,
-    desktopVideo: '/desktop banner/video6.mp4',
+    desktopVideo: '/desktop banner/video6.mp4?v=2',
     desktopPoster: '/desktop banner/poster6.webp',
     mobileVideo: '',
     mobilePoster: '',
@@ -85,10 +85,10 @@ const DEFAULT_HERO_SLIDES = [
   },
   {
     id: 7,
-    desktopVideo: '/desktop banner/video7.mp4',
+    desktopVideo: '/desktop banner/video7.mp4?v=2',
     desktopPoster: '/desktop banner/poster7.webp',
-    mobileVideo: '/mobile banner/video5.mp4',
-    mobilePoster: '/mobile banner/poster5.webp',
+    mobileVideo: '/mobile banner/video6.mp4?v=2',
+    mobilePoster: '/mobile banner/poster6.webp',
     badgeText: 'BESPOKE ARTISAN WORKSHOP',
     title: 'Bespoke Custom Creations\n& Historical Artisanship',
     subtitle: 'We craft custom armour, heraldic shields, weapons & nautical antiquities tailored to your vision',
@@ -103,14 +103,16 @@ const getSlidePoster = (slide, isMobile = false) => {
   if (isMobile) {
     if (slide.mobilePoster) return slide.mobilePoster;
     if (slide.mobileVideo) {
-      const m = String(slide.mobileVideo).match(/video(\d+)\.mp4/i);
+      const clean = String(slide.mobileVideo).split('?')[0];
+      const m = clean.match(/video(\d+)\.mp4/i);
       if (m) return `/mobile banner/poster${m[1]}.webp`;
     }
     return '';
   } else {
     if (slide.desktopPoster) return slide.desktopPoster;
     if (slide.desktopVideo) {
-      const m = String(slide.desktopVideo).match(/video(\d+)\.mp4/i);
+      const clean = String(slide.desktopVideo).split('?')[0];
+      const m = clean.match(/video(\d+)\.mp4/i);
       if (m) return `/desktop banner/poster${m[1]}.webp`;
     }
     return '';

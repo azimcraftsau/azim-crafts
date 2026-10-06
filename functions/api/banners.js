@@ -1,6 +1,7 @@
 function getPosterForVideo(videoUrl, isMobile = false) {
   if (!videoUrl) return '';
-  const m = String(videoUrl).match(/video(\d+)\.mp4/i);
+  const clean = String(videoUrl).split('?')[0];
+  const m = clean.match(/video(\d+)\.mp4/i);
   if (m) {
     return isMobile ? `/mobile banner/poster${m[1]}.webp` : `/desktop banner/poster${m[1]}.webp`;
   }
