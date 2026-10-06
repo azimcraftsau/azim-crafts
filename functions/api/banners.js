@@ -1,10 +1,4 @@
-function getPosterForVideo(videoUrl, isMobile = false) {
-  if (!videoUrl) return '';
-  const clean = String(videoUrl).split('?')[0];
-  const m = clean.match(/video(\d+)\.mp4/i);
-  if (m) {
-    return isMobile ? `/mobile banner/poster${m[1]}.webp` : `/desktop banner/poster${m[1]}.webp`;
-  }
+function getPosterForVideo() {
   return '';
 }
 
@@ -30,9 +24,9 @@ export async function onRequestGet(context) {
       btnText: b.btn_text,
       targetProductId: b.target_product_id,
       desktopVideo: b.desktop_video,
-      desktopPoster: b.desktop_poster || getPosterForVideo(b.desktop_video, false),
+      desktopPoster: b.desktop_poster || '',
       mobileVideo: b.mobile_video,
-      mobilePoster: b.mobile_poster || getPosterForVideo(b.mobile_video, true),
+      mobilePoster: b.mobile_poster || '',
       active: b.active !== undefined ? (b.active === 1 || b.active === true || b.active === '1') : true,
       slide_order: b.slide_order
     }));

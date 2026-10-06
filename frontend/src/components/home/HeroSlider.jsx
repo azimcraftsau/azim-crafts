@@ -8,9 +8,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 1,
     desktopVideo: '/desktop banner/video1.mp4',
-    desktopPoster: '/desktop banner/poster1.webp',
+    desktopPoster: '',
     mobileVideo: '/mobile banner/video1.mp4',
-    mobilePoster: '/mobile banner/poster1.webp',
+    mobilePoster: '',
     badgeText: 'MUSEUM REPRODUCTION ARMOUR',
     title: 'Handcrafted Medieval Knight\nFull Armour Suits',
     subtitle: '18-gauge battle-ready steel plate armour, wearable warrior costumes & forged display sets',
@@ -21,9 +21,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 2,
     desktopVideo: '/desktop banner/video2.mp4',
-    desktopPoster: '/desktop banner/poster2.webp',
+    desktopPoster: '',
     mobileVideo: '/mobile banner/video2.mp4',
-    mobilePoster: '/mobile banner/poster2.webp',
+    mobilePoster: '',
     badgeText: 'HAND-CARVED SOLID HARDWOOD',
     title: 'Battle-Ready Viking\nWooden Round Shields',
     subtitle: 'Authentic Norse Celtic knotwork, heavy steel rims & hand-forged center umbo bosses',
@@ -34,9 +34,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 3,
     desktopVideo: '/desktop banner/video3.mp4?v=3',
-    desktopPoster: '/desktop banner/poster3.webp',
+    desktopPoster: '',
     mobileVideo: '/mobile banner/video3.mp4?v=3',
-    mobilePoster: '/mobile banner/poster3.webp',
+    mobilePoster: '',
     badgeText: '18-GAUGE ARTICULATED STEEL',
     title: 'Handcrafted Medieval Knight\nSteel Combat Gauntlets',
     subtitle: 'Fully articulated finger plates, solid brass rivets & soft genuine leather combat gloves',
@@ -47,9 +47,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 4,
     desktopVideo: '/desktop banner/video4.mp4?v=3',
-    desktopPoster: '/desktop banner/poster4.webp',
+    desktopPoster: '',
     mobileVideo: '/mobile banner/video4.mp4?v=3',
-    mobilePoster: '/mobile banner/poster4.webp',
+    mobilePoster: '',
     badgeText: 'HAND-FORGED WROUGHT IRON',
     title: 'Vintage Medieval Chandeliers\n& Artisan Iron Pendants',
     subtitle: 'Gothic ring frames, candle-style lighting & rustic farmhouse iron ceiling lamps',
@@ -60,9 +60,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 5,
     desktopVideo: '/desktop banner/video5.mp4?v=3',
-    desktopPoster: '/desktop banner/poster5.webp',
+    desktopPoster: '',
     mobileVideo: '/mobile banner/video5.mp4?v=3',
-    mobilePoster: '/mobile banner/poster5.webp',
+    mobilePoster: '',
     badgeText: 'HAND-FORGED CARBON STEEL',
     title: 'Thor Mjolnir Hammers\n& Medieval Weaponry',
     subtitle: 'Solid steel casting with carved ashwood handles and Norse rune engravings',
@@ -73,9 +73,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 6,
     desktopVideo: '/desktop banner/video6.mp4?v=3',
-    desktopPoster: '/desktop banner/poster6.webp',
+    desktopPoster: '',
     mobileVideo: '/desktop banner/video6.mp4?v=3',
-    mobilePoster: '/desktop banner/poster6.webp',
+    mobilePoster: '',
     badgeText: 'ARTICULATED 18-GAUGE STEEL',
     title: 'Handcrafted Steel Pauldrons\n& Articulated Armour',
     subtitle: '18-gauge solid carbon steel pauldrons, articulated knight armor plates & battle-ready protection',
@@ -86,9 +86,9 @@ const DEFAULT_HERO_SLIDES = [
   {
     id: 7,
     desktopVideo: '/desktop banner/video7.mp4?v=4',
-    desktopPoster: '/desktop banner/poster7.webp',
+    desktopPoster: '',
     mobileVideo: '/mobile banner/video6.mp4?v=4',
-    mobilePoster: '/mobile banner/poster6.webp',
+    mobilePoster: '',
     badgeText: 'BESPOKE ARTISAN WORKSHOP',
     title: 'Bespoke Custom Creations\n& Historical Artisanship',
     subtitle: 'We craft custom armour, heraldic shields, weapons & nautical antiquities tailored to your vision',
@@ -98,26 +98,7 @@ const DEFAULT_HERO_SLIDES = [
   }
 ];
 
-const getSlidePoster = (slide, isMobile = false) => {
-  if (!slide) return '';
-  if (isMobile) {
-    if (slide.mobilePoster) return slide.mobilePoster;
-    if (slide.mobileVideo) {
-      const clean = String(slide.mobileVideo).split('?')[0];
-      const m = clean.match(/video(\d+)\.mp4/i);
-      if (m) return `/mobile banner/poster${m[1]}.webp`;
-    }
-    return '';
-  } else {
-    if (slide.desktopPoster) return slide.desktopPoster;
-    if (slide.desktopVideo) {
-      const clean = String(slide.desktopVideo).split('?')[0];
-      const m = clean.match(/video(\d+)\.mp4/i);
-      if (m) return `/desktop banner/poster${m[1]}.webp`;
-    }
-    return '';
-  }
-};
+const getSlidePoster = () => '';
 
 export const HeroSlider = () => {
   const { setQuickViewProduct, openCategory, products } = useCart();
@@ -275,13 +256,12 @@ export const HeroSlider = () => {
               key={`desktop-video-${activeSlideData.id || safeSlideIndex}-${activeSlideData.desktopVideo}`}
               ref={desktopVideoRef}
               src={activeSlideData.desktopVideo}
-              poster={getSlidePoster(activeSlideData, false)}
               autoPlay
               muted
               playsInline
               preload="auto"
               onEnded={nextSlide}
-              className="w-full h-full object-cover object-center opacity-90 transition-opacity duration-500"
+              className="w-full h-full object-cover object-center opacity-90 transition-opacity duration-300"
             />
           )}
           {/* Pure Dark Vignette Gradients for Cinematic Text Legibility */}
@@ -368,13 +348,12 @@ export const HeroSlider = () => {
               key={`mobile-video-${activeSlideData.id || safeSlideIndex}-${activeSlideData.mobileVideo || activeSlideData.desktopVideo}`}
               ref={mobileVideoRef}
               src={activeSlideData.mobileVideo || activeSlideData.desktopVideo}
-              poster={getSlidePoster(activeSlideData, true)}
               autoPlay
               muted
               playsInline
               preload="auto"
               onEnded={nextSlide}
-              className="w-full h-full object-cover object-top opacity-95 transition-opacity duration-500 pointer-events-none"
+              className="w-full h-full object-cover object-top opacity-95 transition-opacity duration-300 pointer-events-none"
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 pointer-events-none" />
